@@ -22,19 +22,20 @@
 
     /* ====TEXT==== */
 
-    --semantic-text-primary: var(--gray-50);/* Color principal de lectura, titulos, textos base del documeto*/
+    --semantic-text-primary: var(--quaternary-950);/* Color principal de lectura, titulos, textos base del documeto*/
     --semantic-text-secundary: var(--gray-200);/* Textos menos dominantes*/
     --semantic-text-muted: var(--gray-500);/*Texto desabilitado por ejemplo*/
     --semantic-text-inverse: var(--gray-900);/*Texto invertido*/
+    --semantic-text-title-gradient: linear-gradient(to rigth, var(--tertiary-950), var(--secundary-900));/*Para los titulos degradados de verde a morado*/
 
     /* ==== BORDER ==== */
 
-    --semantic-border: var(--gray-600);/* Border principal de todooa lkos componentes*/
+    --semantic-border: var(--gray-800);/* Border principal de todooa lkos componentes*/
     --semantic-border-strong: var(--gray-300);/* Bordea más fuertes*/
 
     /* ==== FOCUS ==== */
 
-    --semantic-focus-ring: var(--primary-700);
+    --semantic-focus-ring: var(--gray-300);
     --semantic-focus-border: var(--primary-500);
 
     /* ==== STATE ===== */
@@ -60,6 +61,9 @@
     --semantic-font-weigt-body: var(--font-weight-regular);
     --semantic-font-weigt-label: var(--font-weight-regular);
 
-
+    /* ====== INPUT  ======= */
+    
+    --semantic-input-fill-color: var(--quinary-50);
+    --semantic-input-border: var(--gray-800);
 
 }

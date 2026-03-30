@@ -3,7 +3,7 @@
 export default function Input({
     label,
     type = "Text",
-    ...propos
+    ...props
     // porps son las propiedades de un componenete. Y label para que por defecto el campo sea tipo texto
 }) {
     // cuerpo de la funcion
@@ -11,57 +11,70 @@ export default function Input({
         //Contenedor del input que se exporta con label, cuerpo y feedback message
         <div className="w-[320px]">
             {/* Label  */}
-            <label
-                className="
-                block
-                text-caption
-                mb-1
-                text-text-primary
-            ">
-                {label}
+            {/* LABEL. JWT evalua si tal es 1, si si lo hace  */}
 
-            </label>
+            {label && (
+                <label
+                    className="
+                    block
+                    text-[8px]
+                    mb-1
+                    place-self-start
+                ">
+                    {label}
 
+                </label>
+            )}
+            
             {/* contenedor del input */}
-            <div>
+            {/* este classname permite escribir en todos los campos */}
+            <div className="
+                relative
+                h-12
+                flex
+                items-center
+            ">
                 {/* Area interactiva invisibe de un input  48px*/}
 
-                    <div 
-                        className="
+                <div
+                    className="
                             absolute
                             inset-0
                         "
-                        onMouseDown={(e) =>{
-                            e.preventDefault();
-                            /*Mueve el foco al siguiente elemento hermano el elemento actual*
-                            `currentTarget` referencia el elemento que tiene el handler del evento
-                            `nextSibling` obtiene el siguinete nodo en el DOM (puede ser un input u otro elemento)*/
-                            e.currentTarget.nextElementSibling.focus(); /*Linea de codigo de area disponible de 48px */
-                        }}
-                        >
+                    onMouseDown={(e) => {
+                        e.preventDefault();
+                        /*Mueve el foco al siguiente elemento hermano el elemento actual*
+                        `currentTarget` referencia el elemento que tiene el handler del evento
+                        `nextSibling` obtiene el siguinete nodo en el DOM (puede ser un input u otro elemento)*/
+                        e.currentTarget.nextElementSibling.focus(); /*Linea de codigo de area disponible de 48px */
+                    }}
+                >
 
-                    </div>
-                    {/* Area visual del input */}
-                        {/* border-border es el colo rdel borde con variables */}
-                    <input
+                </div>
+                {/* Area visual del input */}
+                {/* border-border es el colo rdel borde con variables */}
+                <input
                     className="
                         relative
                         w-full
-                        h-12
-                        rounded-md
-                        border
-                        border-border 
+                        h-14
+                        rounded-2xl
+                        border-2
+                        border-input-border
                         px-4
-                        text-base
+                        text-text-primary
+                        bg-input-fill
+                        placeholder-text-primary
 
                         focus:outline-none
                         focus:ring-2
                         focus:ring-focus-ring
-                        focus: corder-focus-border
+                        focus:border-focus-border
+                        transition-all duration-300
                     "
-                        {...propos}
-                    >
-                    </input>
+                    {...props}
+                >
+                </input>
 
             </div>
             {/* Feedback message */}

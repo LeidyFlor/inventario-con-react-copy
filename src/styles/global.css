@@ -1,61 +1,63 @@
-@import url(tokens.css);
-@import url(semantic.css);
 @import "tailwindcss";
+@import "./tokens.css";
+@import "./semantic.css";
 /* Esta linea debe quedar al final para que funcione  */
 
-@theme{
-     /* =====BRAND===== */
-    --color-brand: var(--semantic-brand);
-    --color-brand-hover: var(--semantic-brand-hover);
-    --color-brand-soft: var(--semantic-brand-soft);
+@theme default {
+  /* =====BRAND===== */
+  --color-brand: var(--semantic-brand);
+  --color-brand-hover: var(--semantic-brand-hover);
+  --color-brand-soft: var(--semantic-brand-soft);
 
-    /* ===BACKGROUND===== */
-    
-    --color-background: var(--semantic-background);
-    --color-surface: var(--semantic-surface);
-    --color-surface-muted: var(--semantic-surface-muted);
-    --color-background-inverse: var(--semantic-background-inverse);
+  /* ===BACKGROUND===== */
 
-    /* ===TEXT ===== */
+  --color-background: var(--semantic-background);
+  --color-surface: var(--semantic-surface);
+  --color-surface-muted: var(--semantic-surface-muted);
+  --color-background-inverse: var(--semantic-background-inverse);
 
-     --color-text-primary: var( --semantic-text-primary);
-     --color-text-secondary: var( --semantic-text-secundary);
-     --color-text-muted: var(--semantic-text-muted );
-     --color-text-inverse: var(--semantic-text-inverse);
+  /* ===TEXT ===== */
 
+  --color-text-primary: var(--semantic-text-primary);
+  --color-text-secondary: var(--semantic-text-secundary);
+  --color-text-muted: var(--semantic-text-muted);
+  --color-text-inverse: var(--semantic-text-inverse);
+  --color-background-image-text-gradient: var(--semantic-text-title-gradient);
 
-     /* ==BORDER=== */
+  /* ==BORDER=== */
 
-       --color-border: var( --semantic-border);
-       --color-border-strong: var( --semantic-border-strong);
+  --color-border: var(--semantic-border);
+  --color-border-strong: var(--semantic-border-strong);
 
-     /* ==FOCUS=== */
+  /* ==FOCUS=== */
 
-    --color-focus-ring: var(--semantic-focus-ring);
-    --color-focus-bordes: var( --semantic-focus-border);
+  --color-focus-ring: var(--semantic-focus-ring);
+  --color-focus-border: var(--semantic-focus-border);
 
-    /* == STAGE === */
+  /* == STAGE === */
 
-    --color-success: var(--semantic-success);
-    --color-warning: var( --semantic-warning );
-    --color-error: var(--semantic-error);
+  --color-success: var(--semantic-success);
+  --color-warning: var(--semantic-warning);
+  --color-error: var(--semantic-error);
 
+  /* ====== TYPOGRAPHY ===== */
 
-    /* ====== TYPOGRAPHY ===== */
+  --font-size-display: var(--semantic-font-size-display);
+  --font-size-h1: var(--semantic-font-size-h1);
+  --font-size-h2: var(--semantic-font-size-h2);
+  --font-size-h3: var(--semantic-font-size-h3);
+  --font-size-body: var(--semantic-font-size-body);
+  --font-size-medium: var(--semantic-font-size-medium);
+  --font-size-small: var(--semantic-font-size-small);
+  --font-size-caption: var(--semantic-font-size-caption);
 
-    --text-display: var(--semantic-font-size-display);
-    --text-h1: var(--semantic-font-size-h1);
-    --text-h2: var(--semantic-font-size-h2);
-    --text-h3: var(--semantic-font-size-h3);
-    --text-body: var(--semantic-font-size-body);
-    --text-medium: var(--semantic-font-size-medium);
-    --text-small: var(--semantic-font-size-small);
-    --text-caption: var(--semantic-font-size-caption);
+  /*==== FONT WEIGHT ======*/
 
-    /*==== FONT WEIGHT ======*/
+  --font-weight-heading: var(--semantic-font-weigt-heading);
+  --font-weight-body: var(--semantic-font-weigt-body);
+  --font-weight-label: var(--semantic-font-weigt-label);
 
-    --font-heading: var(--semantic-font-weigt-heading);
-    --font-body: var( --semantic-font-weigt-body);
-    --font-label: var(--semantic-font-weigt-label);
-    
+  /*==== INPUT ======*/
+  --color-input-fill: var(--semantic-input-fill-color);
+  --color-input-border: var(--semantic-input-border);
 }
