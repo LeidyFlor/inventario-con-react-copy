@@ -1,0 +1,1 @@
+export {default as CreteBrandPage} from "./pages/CreateBrandPage";
