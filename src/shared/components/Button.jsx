@@ -11,11 +11,11 @@ export default function Button({
     ...props        //Propiedades adicionales(onClick, diseable, etc)
 }) {
     const variants = {
-        primary: "bg-boton-fill-color-primary text-boton-text-color-primary hover:border-gradient-primary hover:text-tertiary-950",/*boton add*/
-        secondary: "bg-boton-fill-color-secondary hover:border-gradient-back text-white hover:text-secundary-900",
-        warning: "bg-gradient-warning text-black hover:border-gradient-warning",
-        outline: "bg-gradient-outline text-white",
-        ghost: "border-gradient-outline text-quaternary-950 hover:bg-gradient-ghost hover:text-white",
+        primary: "bg-boton-fill-color-primary text-boton-text-color-primary font-medium hover:border-gradient-primary hover:text-tertiary-950",/*boton add*/
+        secondary: "bg-boton-fill-color-secondary font-medium hover:border-gradient-back text-white hover:text-secundary-900",
+        warning: "bg-gradient-warning text-black hover:border-gradient-warning font-medium",
+        outline: "bg-gradient-outline text-white font-medium",
+        ghost: "border-gradient-outline text-quaternary-950 font-medium hover:bg-gradient-ghost hover:text-white",
     };
     // before: -inset - y - [6px] area tactil del boton de y
     const sizes = {

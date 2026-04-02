@@ -30,9 +30,13 @@ export default function UserRegisterForm() {
 
     return (
         <div>
-            <h1 className="text-primary text-2xl mb-6">
-                Registro de usuario
-            </h1>
+            {/* contenenedor del titulo y la linea */}
+            <div className="mb-6 max-w-max">
+                <h1 className="text-gradient-title text-2xl pb-0.5">
+                    Registro de usuario
+                </h1>{/*linea degradada del titulo*/}
+                <div className="h-0.5 bg-gradiant-title-line"></div>
+            </div>
             <form className="grid grid-cols-1 items-center gap-6 ">
                 {/* Inputs */}
                 <div className="grid grid-cols-2 gap-6 my-0 mx-auto">

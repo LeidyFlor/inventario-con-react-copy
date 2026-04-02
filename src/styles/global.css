@@ -70,7 +70,6 @@
   --color-boton-fill-color-secondary: var(--semantic-boton-fill-color-secondary);
 }
 
-/* DEGRADADO DE LAS SECCIONES DE LOS TITULOS : usuarios, materiales */
 @layer utilities {
     /* degradado boton primario ✅*/
     .bg-gradient-primary { 
@@ -87,7 +86,6 @@
 
     .group:hover .btn-primary-icon {
         width: calc(100% - 1rem); /* 1rem = padding izquierdo + derecho */
-
         border-radius: 0.75rem; 
     }
 
@@ -95,11 +93,22 @@
         opacity: 0;
         transition: opacity 0.15s ease;
     }
+
+    /* DEGRADADO DE LAS SECCIONES DE LOS TITULOS : usuarios, materiales */
     .text-gradient-title {
-        background: var(--color-background-image-text-gradient);
+        background: var(--semantic-text-title-gradient);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         background-clip: text;
+        font-weight: var(--font-weight-heading);
+
+        
+    }
+    .bg-gradiant-title-line{
+        /* Línea degradada */
+        border-bottom: 3px solid transparent;
+        -webkit-border-image: var(--semantic-text-title-gradient) 1;
+        border-image: var(--semantic-text-title-gradient) 1;
     }
 
     

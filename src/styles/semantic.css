@@ -26,7 +26,12 @@
     --semantic-text-secundary: var(--gray-200);/* Textos menos dominantes*/
     --semantic-text-muted: var(--gray-500);/*Texto desabilitado por ejemplo*/
     --semantic-text-inverse: var(--gray-900);/*Texto invertido*/
-    --semantic-text-title-gradient: linear-gradient(to rigth, var(--tertiary-950), var(--secundary-900));/*Para los titulos degradados de verde a morado*/
+    --semantic-text-title-gradient: linear-gradient(to right, 
+        /* color stops donde empieza y termina el color */
+        var(--tertiary-950)0%, /* verde puro al inicio */
+        var(--tertiary-950)40%, /* verde se mantiene hasta el 40% */
+        var(--secundary-900)80%, /* morado empieza al 80% */
+        var(--secundary-900)100%); /* morado puro al final */
 
     /* ==== BORDER ==== */
 
