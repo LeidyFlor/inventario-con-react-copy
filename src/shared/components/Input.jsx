@@ -17,7 +17,7 @@ export default function Input({
                 <label
                     className="
                     block
-                    text-[8px]
+                    text-size-caption
                     mb-1
                     place-self-start
                 ">
@@ -30,7 +30,7 @@ export default function Input({
             {/* este classname permite escribir en todos los campos */}
             <div className="
                 relative
-                h-12
+                h-14
                 flex
                 items-center
             ">
@@ -54,6 +54,8 @@ export default function Input({
                 {/* Area visual del input */}
                 {/* border-border es el colo rdel borde con variables */}
                 <input
+                    // toma el input de cuando se crea el input
+                    type={type}
                     className="
                         relative
                         w-full

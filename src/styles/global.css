@@ -1,6 +1,7 @@
 @import "tailwindcss";
 @import "./tokens.css";
 @import "./semantic.css";
+
 /* Esta linea debe quedar al final para que funcione  */
 
 @theme default {
@@ -22,8 +23,7 @@
   --color-text-secondary: var(--semantic-text-secundary);
   --color-text-muted: var(--semantic-text-muted);
   --color-text-inverse: var(--semantic-text-inverse);
-  --color-background-image-text-gradient: var(--semantic-text-title-gradient);
-
+  --color-background-image-text-gradient: var(--semantic-text-title-gradient);/* se utiliza mas abajo */
   /* ==BORDER=== */
 
   --color-border: var(--semantic-border);
@@ -60,4 +60,110 @@
   /*==== INPUT ======*/
   --color-input-fill: var(--semantic-input-fill-color);
   --color-input-border: var(--semantic-input-border);
+
+  /* ====== BUTTONS  ======= */
+  /* boton primary add */
+  --color-boton-fill-color-primary: var(--semantic-boton-fill-color-primary);
+  --color-boton-text-color-primary: var(--semantic-boton-text-color-primary);
+
+  /* boton secundary atras back */
+  --color-boton-fill-color-secondary: var(--semantic-boton-fill-color-secondary);
+}
+
+/* DEGRADADO DE LAS SECCIONES DE LOS TITULOS : usuarios, materiales */
+@layer utilities {
+    /* degradado boton primario ✅*/
+    .bg-gradient-primary { 
+        background: linear-gradient(to right, var(--primary-950), var(--sextario-950));
+    }
+    /* para las transiciones del icono de ICON-PRIMARY-BUTTON  */
+    .btn-primary-icon {
+        transition: width 0.3s ease;
+        width: 2.2rem; /* tamaño inicial del círculo */
+        height: 2.2rem;
+        border-radius: 0.5rem;
+        flex-shrink: 0;
+    }
+
+    .group:hover .btn-primary-icon {
+        width: calc(100% - 1rem); /* 1rem = padding izquierdo + derecho */
+
+        border-radius: 0.75rem; 
+    }
+
+    .group:hover .btn-primary-label {
+        opacity: 0;
+        transition: opacity 0.15s ease;
+    }
+    .text-gradient-title {
+        background: var(--color-background-image-text-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    
+    /* boton edit ✏️*/
+    .bg-gradient-warning {
+        background: linear-gradient(to bottom, var(--quinary-950), var(--quinary-300));
+    }
+    /* boton autenticacion y retorno material  outline 🆔*/
+    .bg-gradient-outline {
+        background: linear-gradient(to right, var(--sextario-950), var(--secundary-950));
+    }
+
+    /* boton previsualizacion ghost 👻*/
+    .border-gradient-outline {
+      border: 2px solid transparent;
+      background:
+        linear-gradient(white, white) padding-box, 
+        /*el fondo blanco solo cubre el área interior del botón*/
+
+        linear-gradient(to right, var(--quaternary-950), var(--sextario-950)) border-box; /*el gradiente cubre toda el área incluyendo el borde*/
+
+        color: var(--quaternary-950); /*para el color del texto*/
+    }
+
+    /* boton primary add  HOVER =========*/
+    .hover\:border-gradient-primary:hover {
+      border: 2px solid transparent;
+      background:
+        linear-gradient(white, white) padding-box, 
+        /*el fondo blanco solo cubre el área interior del botón*/
+
+        linear-gradient(to right, var(--tertiary-950), var(--primary-200)) border-box; /*el gradiente cubre toda el área incluyendo el borde*/
+
+        color: var(--tertiary-950); /*para el color del texto*/
+    }
+    
+    /* boton secundary atras borde back  HOVER =========*/
+
+    .hover\:border-gradient-back:hover {
+      border: 2px solid transparent;
+      background:
+        linear-gradient(white, white) padding-box, 
+        /*el fondo blanco solo cubre el área interior del botón*/
+
+        linear-gradient(to right, var(--secundary-200), var(--secundary-950)) border-box; /*el gradiente cubre toda el área incluyendo el borde*/
+
+        color: var(--secundary-900); /*para el color del texto*/
+    }
+
+    /* boton edit warning  HOVER =========*/
+    .hover\:border-gradient-warning:hover {
+      border: 2px solid transparent;
+      background:
+        linear-gradient(white, white) padding-box, 
+        /*el fondo blanco solo cubre el área interior del botón*/
+
+        linear-gradient(to bottom, var(--quinary-950), var(--quinary-300)) border-box; /*el gradiente cubre toda el área incluyendo el borde*/
+
+        color: var(--color-black); /*para el color del texto*/
+    }
+
+    /* boton previsualizar ghost  HOVER =========*/
+    .hover\:bg-gradient-ghost:hover{
+      background: linear-gradient(to right, var(--quaternary-950), var(--sextario-950));
+      color: var(--color-white);
+    }
 }

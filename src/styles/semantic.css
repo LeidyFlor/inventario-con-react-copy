@@ -66,4 +66,12 @@
     --semantic-input-fill-color: var(--quinary-50);
     --semantic-input-border: var(--gray-800);
 
+    /* ====== BUTTONS  ======= */
+
+    /* boton add */
+    --semantic-boton-fill-color-primary: var(--tertiary-300);
+    --semantic-boton-text-color-primary: var(--tertiary-950);
+
+    /* boton secundary atras back */
+    --semantic-boton-fill-color-secondary: var(--secundary-950);
 }
