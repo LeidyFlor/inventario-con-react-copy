@@ -28,6 +28,7 @@
 
   --color-border: var(--semantic-border);
   --color-border-strong: var(--semantic-border-strong);
+  --color-border-green-container: var(--semantic-border-green-container);
 
   /* ==FOCUS=== */
 
@@ -71,6 +72,10 @@
 }
 
 @layer utilities {
+    /* degradado fill contenedor verde */
+    .bg-gradient-container-green { 
+        background: linear-gradient(to bottom, var(--primary-300), var(--primary-50));
+    }
     /* degradado boton primario ✅*/
     .bg-gradient-primary { 
         background: linear-gradient(to right, var(--primary-950), var(--sextario-950));

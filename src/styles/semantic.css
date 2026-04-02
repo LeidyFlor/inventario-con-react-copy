@@ -37,7 +37,7 @@
 
     --semantic-border: var(--gray-800);/* Border principal de todooa lkos componentes*/
     --semantic-border-strong: var(--gray-300);/* Bordea más fuertes*/
-
+    --semantic-border-green-container: var(--primary-100); /*borde green container*/
     /* ==== FOCUS ==== */
 
     --semantic-focus-ring: var(--gray-300);
