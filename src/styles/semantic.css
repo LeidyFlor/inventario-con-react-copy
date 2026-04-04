@@ -1,0 +1,82 @@
+:root {
+
+    /* ============= LIGHT THEME ============ */
+
+    /* ==== BRAND  logo de la marca========= */
+
+    --semantic-brand: var(--primary-800);
+    --semantic-brand-hover: var(--primary-950);/*Generalmente es de un tono mas alto que el brand*/
+
+    --semantic-brand-soft: var(--primary-200);
+    --semantic-brand-soft-hover: var(--primary-350);
+
+    /* ==== BACKGROUND ==== */
+
+    --semantic-background: var(--white);/* Fondo de toda la aplicacion*/
+
+    --semantic-surface: var(--gray-900);/*Fondo de mpdales, cards containers*/
+
+    --semantic-background-muted: var(--primary-400);/*Zona secundarias, conmenos importancia*/
+
+    --semantic-background-inverse: var(--black); /*Es el opuesto del background*/
+
+    /* ====TEXT==== */
+
+    --semantic-text-primary: var(--quaternary-950);/* Color principal de lectura, titulos, textos base del documeto*/
+    --semantic-text-secundary: var(--gray-200);/* Textos menos dominantes*/
+    --semantic-text-muted: var(--gray-500);/*Texto desabilitado por ejemplo*/
+    --semantic-text-inverse: var(--gray-900);/*Texto invertido*/
+    --semantic-text-title-gradient: linear-gradient(to right, 
+        /* color stops donde empieza y termina el color */
+        var(--tertiary-950)0%, /* verde puro al inicio */
+        var(--tertiary-950)40%, /* verde se mantiene hasta el 40% */
+        var(--secundary-900)80%, /* morado empieza al 80% */
+        var(--secundary-900)100%); /* morado puro al final */
+
+    /* ==== BORDER ==== */
+
+    --semantic-border: var(--gray-800);/* Border principal de todooa lkos componentes*/
+    --semantic-border-strong: var(--gray-300);/* Bordea más fuertes*/
+    --semantic-border-green-container: var(--primary-100); /*borde green container*/
+    /* ==== FOCUS ==== */
+
+    --semantic-focus-ring: var(--gray-300);
+    --semantic-focus-border: var(--primary-500);
+
+    /* ==== STATE ===== */
+
+    --semantic-success: var(--primary-950);
+    --semantic-warning: var(--tertiary-950);
+    --semantic-error: var(--secundary-950);
+
+    /* ====TYPOGRAPHY===== */
+
+    --semantic-font-size-display: var(--fs-xxl);/* Texto de alto impacto, texto protagonista, hero, menú,numeros grandes*/
+    --semantic-font-size-h1: var(--fs-lg);
+    --semantic-font-size-h2: var(--fs-md);
+    --semantic-font-size-h3: var(--fs-sm);
+    --semantic-font-size-body: var(--fs-xs);
+    --semantic-font-size-medium: var(--fs-xxs);
+    --semantic-font-size-small: var(--fs-xxxs);
+    --semantic-font-size-caption: var(--fs-xxxxs);/* Caption es texto auxiliar muy pequeño.*/
+
+    /* ====== FONT WEIGHT ======= */
+
+    --semantic-font-weigt-heading: var(--font-weight-bold);
+    --semantic-font-weigt-body: var(--font-weight-regular);
+    --semantic-font-weigt-label: var(--font-weight-regular);
+
+    /* ====== INPUT  ======= */
+    
+    --semantic-input-fill-color: var(--quinary-50);
+    --semantic-input-border: var(--gray-800);
+
+    /* ====== BUTTONS  ======= */
+
+    /* boton add */
+    --semantic-boton-fill-color-primary: var(--tertiary-300);
+    --semantic-boton-text-color-primary: var(--tertiary-950);
+
+    /* boton secundary atras back */
+    --semantic-boton-fill-color-secondary: var(--secundary-950);
+}
