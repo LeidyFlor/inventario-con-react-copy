@@ -1,26 +1,5 @@
-import { Input, Button, IconButton, DateInput } from "@/shared"
+import { Input, Button, IconButton } from "@/shared"
 import React, { useState } from "react";
-
-{/* Se creó una función Card para no repetir el mismo bloque de tarjeta 4 veces. 
-    Como las funciones JS, definimos una vez y la usamos las veces necesarias.
-    Pasamos los datos de cada tarea y ella se encarga de mostrarlos. */}
-function Card({ nombre, estado, colorEstado, fechaInicio, fechaFin, descripcion }) {
-    return (
-        <div className="grid grid-cols-3 rounded-2xl">
-            <div className="flex flex-col gap-1 p-3 col-span-1">
-                <p className="font-bold text-sm" style={{ color: "var(--secundary-950)" }}>Tarea: {nombre}</p>
-                <p className="text-sm" style={{ color: colorEstado }}>Estado: {estado}</p>
-                <p className="text-sm" style={{ color: "var(--quaternary-950)" }}>Fecha inicio: {fechaInicio}</p>
-                <p className="text-sm" style={{ color: "var(--quaternary-950)" }}>Fecha Fin: {fechaFin}</p>
-            </div>
-            <div className="p-3 border-2 rounded-2xl col-span-2" style={{ borderColor: "var(--secundary-500)" }}>
-                <p className="font-bold text-sm" style={{ color: "var(--quaternary-950)" }}>Descripción:</p>
-                <p className="text-sm" style={{ color: "var(--quaternary-950)" }}>{descripcion}</p>
-            </div>
-        </div>
-    );
-}
-
 
 export default function TaskForm() {
     const [formData, setFormData] = useState({
@@ -32,12 +11,13 @@ export default function TaskForm() {
         fechaFin: "",
     });
 
+    // Handle eventos. onChange cada vez que se escribe. onBlur toma el valor cuando uno sale del campo
     const handleBlur = (e) => {
         const { name, value } = e.target;
         setFormData({
             ...formData,
-            [name]: value
-        });
+            [name]: value //con name react sabe que campo actualizar
+        })
         console.log("Input ", e.target.value);
     }
 
@@ -49,96 +29,86 @@ export default function TaskForm() {
                 </Button>
             </div>
 
-            {/* Layout dos columnas: formulario y tarjetas */}
+            {/* Layout dos columnas: formulario | tarjetas */}
             <div className="grid grid-cols-2 gap-10">
 
-                {/* Usuario y formulario de tarea */}
+                {/* Columna izquierda: usuario y formulario de tarea */}
                 <div className="flex flex-col items-center gap-4">
 
-                    {/* Secciónusuario */}
-                    <div className="max-w-max">
-                        <span className="text-xl">Usuario: Pepito Perez</span>
+                    {/* Sección usuario */}
+                    <div className="flex flex-col items-center w-fit">
+                        <h2 className="font-bold text-xl">Usuario: Pepito Perez</h2>
+                        {/* Línea verde con width al 200% para que se extienda más allá del título y quede más estético */}
+                        <div className="h-0.5 bg-green-700 w-[200%]"></div>
                     </div>
 
-                    <Input placeholder="Tipo de usuario" name="tipoUsuario" onBlur={handleBlur} />
+                    <Input
+                        placeholder="Tipo de usuario"
+                        name="tipoUsuario"
+                        onBlur={handleBlur}
+                    />
 
-                    {/* Sección agregar tarea*/}
-                    <div className="max-w-max">
-                        <span className="text-xl">Agregar tarea</span>
+                    {/* Sección agregar tarea */}
+                    <div className="flex flex-col items-center w-fit">
+                        <h2 className="font-bold text-xl">Agregar tarea</h2>
+                        {/* Línea verde con width al 320% para que se extienda más allá del título y quede más estético */}
+                        <div className="block h-0.5 bg-green-700 w-[320%]"></div>
                     </div>
 
-                    <Input placeholder="Nombre tarea" name="nombreTarea" onBlur={handleBlur} />
+                    <Input 
+                        placeholder="Nombre tarea" 
+                        name="nombreTarea" 
+                        onBlur={handleBlur} 
+                    />
+                    <Input 
+                        placeholder="Descripción tarea" 
+                        name="descripcionTarea" 
+                        onBlur={handleBlur} 
+                    />
+                    <Input 
+                        placeholder="Estado tarea" 
+                        name="estadoTarea" 
+                        onBlur={handleBlur} 
+                    />
 
-                    <Input placeholder="Descripción tarea" name="descripcionTarea" onBlur={handleBlur} />
-
-                    <Input placeholder="Estado tarea" name="estadoTarea" onBlur={handleBlur} />
-
+                    {/* Fechas: se usa type="date" para que el navegador muestre el selector de fecha */}
                     <div className="flex gap-3">
-
-                        <DateInput 
-                            label="Fecha inicio" 
+                        <Input 
+                            placeholder="DD/MM/AAAA" 
+                            type="date" 
                             name="fechaInicio" 
                             onBlur={handleBlur} 
                         />
-                        <DateInput 
-                            label="Fecha fin"    
+                        <Input 
+                            placeholder="DD/MM/AAAA" 
+                            type="date" 
                             name="fechaFin"    
                             onBlur={handleBlur} 
                         />
                     </div>
 
-                    <IconButton 
-                        variant="primary" 
-                        size="md"
-                    >
+                    <IconButton variant="primary" size="md">
                         Asignar
                     </IconButton>
                 </div>
 
-               {/* Título y tarjetas de tareas */}
-                <div className="flex flex-col gap-3 mr-10">
+                {/* Columna derecha */}
+                <div className="flex flex-col gap-3">
 
-                    {/* Título con línea degradada */}
-                    <div className="flex flex-col items-center max-w-max mx-auto mb-1">
-                        <h1 className="text-gradient-title text-2xl pb-0.5">Gestión de tareas</h1>
-                        <div className="h-0.5 bg-gradiant-title-line w-full"></div>
-                    </div>
+                    {/* Div general que contiene el título y el espacio de las tareas */}
+                    <div>
 
-                    {/* Contenedor verde con todas las tarjetas adentro */}
-                    <div className="border-4 p-4 rounded-4xl flex flex-col gap-3" style={{ background: "var(--secundary-100)", borderColor: "var(--secundary-200)" }}>
+                        {/* Título con línea degradada */}
+                        <div className="flex flex-col items-center max-w-max mx-auto mb-1">
+                            <h1 className="text-gradient-title text-2xl pb-0.5">Gestión de tareas</h1>
+                            <div className="h-0.5 bg-gradiant-title-line w-full"></div>
+                        </div>
 
-                        <Card
-                            nombre="Registrar inventario" 
-                            estado="Pendiente" 
-                            colorEstado="var(--secundary-950)" 
-                            fechaInicio="10/02/2025" 
-                            fechaFin="10/02/2025" 
-                            descripcion="Lorem ipsum dolor sit amet consectetur adipiscing elit quisque, vulputate viverra nostra per dapibus."
-                        />
-                        <Card 
-                            nombre="Registrar inventario" 
-                            estado="En progreso" 
-                            colorEstado="var(--tertiary-950)"  
-                            fechaInicio="10/02/2025" 
-                            fechaFin="10/02/2025" 
-                            descripcion="Lorem ipsum dolor sit amet consectetur adipiscing elit quisque, vulputate viverra nostra per dapibus." 
-                        />
-                        <Card 
-                            nombre="Registrar inventario" 
-                            estado="Pendiente"   
-                            colorEstado="var(--secundary-950)" 
-                            fechaInicio="10/02/2025" 
-                            fechaFin="10/02/2025" 
-                            descripcion="Lorem ipsum dolor sit amet consectetur adipiscing elit quisque, vulputate viverra nostra per dapibus." 
-                        />
-                        <Card 
-                            nombre="Registrar inventario" 
-                            estado="Pendiente"   
-                            colorEstado="var(--secundary-950)" 
-                            fechaInicio="10/02/2025" 
-                            fechaFin="10/02/2025" 
-                            descripcion="Lorem ipsum dolor sit amet consectetur adipiscing elit quisque, vulputate viverra nostra per dapibus." 
-                        />
+                        {/* Espacio para las tarjetas de tareas */}
+                        <div>
+
+                            {/* Aquí se mapearían las tareas asignadas al usuario */}
+                        </div>
 
                     </div>
 

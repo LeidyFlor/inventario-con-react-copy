@@ -11,7 +11,7 @@ export default function DateInput({
         // Contenedor del input
         <div className="w-37.5">
 
-            {/* Contenedor del input */}
+            {/* Contenedor del inputt */}
             <div className="
                 relative
                 h-14

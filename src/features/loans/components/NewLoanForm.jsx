@@ -38,35 +38,36 @@ export default function NewLoanForm() {
                     <h1 className="text-gradient-title text-2xl pb-0.5">
                         Nuevo préstamo
                     </h1>
+                    <div className="h-0.5 bg-gradiant-title-line"></div>
                 </div>
 
                 {/* Layout de dos columnas */}
                 <div className="grid grid-cols-2 gap-10">
 
                     {/* Columna izquierda*/}
-                    <div className="flex flex-col gap-8 pr-10 border-r border-border-green-container">
-
+                    {/* border-r -> línea vertical del centro que divide las columnas*/}
+                    <div className="flex flex-col justify-between items-center border-r-2 border-primary-300">          
                         {/* Selección de materiales */}
                         <div className="flex flex-col gap-4">
-                            <span className="font-bold">1. Selecciona los materiales</span>
-                            <div className="flex gap-3">
+                            <h2 className="font-bold">1. Selecciona los materiales</h2>
+                            <div className="flex gap-3 justify-center">
                                 <Button 
                                     variant="primary" 
-                                    size="sm"
-                                >   Devolutivo
+                                    size="md"
+                                >   + Devolutivo
                                 </Button>
                                 <Button 
                                     variant="primary" 
-                                    size="sm"
+                                    size="md"
                                 > 
-                                    Consumible
+                                    + Consumible
                                 </Button>
                             </div>
                         </div>
 
                         {/* Selección usuario solicitante */}
                         <div className="flex flex-col gap-4">
-                            <span className="font-bold">2. Selecciona usuario solicitante</span>
+                            <h2 className="font-bold">2. Selecciona usuario solicitante</h2>
                             <Input
                                 placeholder="Seleccione usuario"
                                 name="usuarioSolicitante"
@@ -76,13 +77,15 @@ export default function NewLoanForm() {
 
                         {/* usuario prestador*/}
                         <div className="flex flex-col gap-4">
-                            <span className="font-bold">3. Usuario prestador</span>
+                            <h2 className="font-bold">3. Usuario prestador</h2>
                             <div className="flex items-center gap-3">
-                                <Input
-                                    placeholder="Nombre del prestador"
-                                    name="usuarioPrestador"
-                                    onBlur={handleBlur}
-                                />
+                                <div className=""w-32 overflow-hidden>
+                                    <Input
+                                        placeholder="Nombre del prestador"
+                                        name="usuarioPrestador"
+                                        onBlur={handleBlur}
+                                    />
+                                </div>
                                 {/* variant="outline" significa que el botón tendrá un estilo de "contorno". Esto crea botones con fondo transparente y un borde coloreado */}
                                 <Button variant="outline" size="sm">
                                     Confirmar identidad
@@ -93,7 +96,7 @@ export default function NewLoanForm() {
 
                     {/* Columna ingresar datos*/}
                     <div className="flex flex-col gap-6">
-                        <span className="font-bold">4. Ingresar los siguientes datos:</span>
+                        <h2 className="font-bold">4. Ingresar los siguientes datos:</h2>
 
                         <div className="flex flex-col gap-4">
                             <Input 
