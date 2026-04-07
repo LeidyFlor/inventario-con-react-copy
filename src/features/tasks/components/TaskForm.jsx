@@ -77,13 +77,19 @@ export default function TaskForm() {
                             placeholder="DD/MM/AAAA" 
                             type="date" 
                             name="fechaInicio" 
-                            onBlur={handleBlur} 
+                            onBlur={handleBlur}
+                            label = "Fecha inicio"
+                            className="w-[200px]"
+                            labelInside  
                         />
                         <Input 
-                            placeholder="DD/MM/AAAA" 
+                            placeholder="DD/MM/AAA" 
                             type="date" 
                             name="fechaFin"    
                             onBlur={handleBlur} 
+                            label="Fecha Fin"
+                            className="w-[200px]"
+                            labelInside  
                         />
                     </div>
 

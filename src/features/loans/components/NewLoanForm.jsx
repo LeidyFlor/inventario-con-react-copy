@@ -46,7 +46,7 @@ export default function NewLoanForm() {
 
                     {/* Columna izquierda*/}
                     {/* border-r -> línea vertical del centro que divide las columnas*/}
-                    <div className="flex flex-col justify-between items-center border-r-2 border-primary-300">          
+                    <div className="flex flex-col justify-evenly  border-r-2  pr-4">          
                         {/* Selección de materiales */}
                         <div className="flex flex-col gap-4">
                             <h2 className="font-bold">1. Selecciona los materiales</h2>
@@ -79,14 +79,14 @@ export default function NewLoanForm() {
                         <div className="flex flex-col gap-4">
                             <h2 className="font-bold">3. Usuario prestador</h2>
                             <div className="flex items-center gap-3">
-                                <div className=""w-32 overflow-hidden>
+                                <div className="">
                                     <Input
                                         placeholder="Nombre del prestador"
                                         name="usuarioPrestador"
                                         onBlur={handleBlur}
                                     />
                                 </div>
-                                {/* variant="outline" significa que el botón tendrá un estilo de "contorno". Esto crea botones con fondo transparente y un borde coloreado */}
+                                {/* boton pra confirmar identidad*/}
                                 <Button variant="outline" size="sm">
                                     Confirmar identidad
                                 </Button>

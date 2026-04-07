@@ -3,24 +3,28 @@
 export default function Input({
     label,
     type = "Text",
+    labelInside = false,
+    className = "", //para definir ancho del contenedor
     ...props
     // porps son las propiedades de un componenete. Y label para que por defecto el campo sea tipo texto
 }) {
+    const isDate = type === "date";
+    
     // cuerpo de la funcion
     return (
         //Contenedor del input que se exporta con label, cuerpo y feedback message
-        <div className="w-[320px]">
-            {/* Label  */}
+        <div className={`${isDate ? "w-fit" : "w-[320px]"} ${className}`}>
+            {/* Label  Por fuera*/}
             {/* LABEL. JWT evalua si tal es 1, si si lo hace  */}
 
-            {label && (
+            {label && !labelInside && (
                 <label
-                    className="
+                className="
                     block
                     text-size-caption
                     mb-1
                     place-self-start
-                ">
+                    ">
                     {label}
 
                 </label>
@@ -28,19 +32,22 @@ export default function Input({
             
             {/* contenedor del input */}
             {/* este classname permite escribir en todos los campos */}
-            <div className="
+            <div className={`
                 relative
                 h-14
                 flex
                 items-center
-            ">
+                ${isDate ? "w-fit" : ""} 
+            `}>
                 {/* Area interactiva invisibe de un input  48px*/}
 
-                <div
-                    className="
-                            absolute
-                            inset-0
-                        "
+                {!isDate &&(
+                    <div
+                    className={`
+                        absolute
+                        inset-0
+                        `}
+                        
                     onMouseDown={(e) => {
                         e.preventDefault();
                         /*Mueve el foco al siguiente elemento hermano el elemento actual*
@@ -48,17 +55,18 @@ export default function Input({
                         `nextSibling` obtiene el siguinete nodo en el DOM (puede ser un input u otro elemento)*/
                         e.currentTarget.nextElementSibling.focus(); /*Linea de codigo de area disponible de 48px */
                     }}
-                >
+                     />
+                )}
 
-                </div>
                 {/* Area visual del input */}
                 {/* border-border es el colo rdel borde con variables */}
                 <input
                     // toma el input de cuando se crea el input
                     type={type}
-                    className="
+                    size={isDate ? 12: undefined}
+                    className={`
                         relative
-                        w-full
+                        ${isDate ? "w-auto" : "w-full"}
                         h-14
                         rounded-2xl
                         border-2
@@ -73,10 +81,33 @@ export default function Input({
                         focus:ring-focus-ring
                         focus:border-focus-border
                         transition-all duration-300
-                    "
+
+                         ${labelInside && label
+                            // Con label dentro: padding superior para dejar espacio al label
+                            ? "px-4 pt-4 pb-1"
+                            // Sin label dentro: padding normal
+                            : "px-4"
+                        }
+
+                        
+                    `}
                     {...props}
                 >
                 </input>
+
+                {/* Label DENTRO (flota arriba del texto) */}
+                {label && labelInside && (
+                    <label className="
+                        absolute
+                        top-2
+                        left-4
+                        text-xs
+                        text-text-primary
+                        pointer-events-none
+                    ">
+                        {label}
+                    </label>
+                )}
 
             </div>
             {/* Feedback message */}
