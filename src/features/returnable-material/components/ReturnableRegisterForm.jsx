@@ -59,32 +59,28 @@ export default function ReturnableRegisterForm() {
 
                 </div>
                 <form className="grid grid-cols-2 justify-end items-center gap-10 -mt-18">
-                    <div>
-                        <div className="mt-6" >
-                            agregar imagen del elemento
-                        </div>
-                        <Input
-                            // Si no se le agrega el tipo esque por defecto es text
+                    <div className="flex justify-center items-center h-screen">
+                        <div className="flex flex-col">
+                            <h2 className="mt-6 font-bold">
+                                Agregar imagen del elemento
+                            </h2>
+                            <Input
                             placeholder="subir imagen"
                             type="imagen"
                             onBlur={handleBlur}
-                            name= "img"
-                        />
-                       
-                        <div className="mt-6">
-                            agregar ficha técnica
-                        </div>
-                            
-                        <div className="mt-6">
-                                <Button
-                                    variant="primary"
-                                    size="sm"
-                                >
-                                    Agregar telefono
-                                </Button>
-                        
+                            name="img"
+                            />
+
+                            <h2 className="mt-6 font-bold">
+                            Agregar ficha técnica
+                            </h2>
+
+                            <div className="mt-6">
+                            <Button variant="primary" size="sm">
+                                Agregar
+                            </Button>
                             </div>
-                        
+                        </div>
                     </div>
                     {/* Inputs */}
                     <div className="grid grid-cols-2 gap-10 ">
@@ -93,7 +89,7 @@ export default function ReturnableRegisterForm() {
                                 // Si no se le agrega el tipe esque por defecto es text
                                 placeholder="Placa Sena"
                                 onBlur={handleBlur}
-                                name= "plate"
+                                name= "placa"
                             />
                             <Input
                                 placeholder="Serial"
@@ -103,29 +99,29 @@ export default function ReturnableRegisterForm() {
                             <Input
                                 placeholder="Marca"
                                 onChange={handleMaterialChange}
-                                name="brand"
+                                name="marca"
                             />
                             <Input
                                 placeholder="Modelo"
                                 onBlur={handleBlur}
-                                name="model"
+                                name="modelo"
                             />
                             <Input
                                 placeholder="Nombre del elemento"
                                 type="name"
                                 onChange={handleMaterialChange}
-                                name="element"
+                                name="nombreElemento"
                             />
                             <Input
                                 placeholder="Seleccione cuentadante"
                                 type="name"
                                 onBlur={handleBlur}
-                                name="select"
+                                name="cunetadante"
                             />
                             <Input
                                 placeholder="Descripcion"
                                 onBlur={handleBlur}
-                                name=" Description"
+                                name="description"
                             />
 
                         </div>
@@ -134,40 +130,40 @@ export default function ReturnableRegisterForm() {
                             <Input
                                 placeholder="Categoria"
                                 onChange={handleMaterialChange}
-                                name="category"
+                                name="categoria"
                             />
 
                             <Input
                                 placeholder="Estado"
                                 onChange={handleMaterialChange}
-                                name="state"
+                                name="estado"
                             />
                             
                             <Input
                                 placeholder="Cantidad"
                                 type="number"
-                                name="amount"
+                                name="cantidad"
                             />
                             <Input
                                 placeholder="Valor unitario"
                                 type="number"
-                                name="unitValue"
+                                name="valorUnitario"
                             />
                             <Input
                                 placeholder="Valor total"
                                 type="number"
-                                name="totalVlue"
+                                name="valorTotal"
                             />
                             <Input
                                 placeholder="Ubicacion"
                                 onBlur={handleBlur}
-                                name="location"
+                                name="ubicacion"
                             />
 
                             <Input
                                 placeholder="Dimensiones"
                                 onBlur={handleBlur}
-                                name="Dimensions"
+                                name="dimensiones"
                             />
 
                             {/* Acciones */}
