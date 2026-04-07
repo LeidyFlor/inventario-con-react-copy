@@ -3,6 +3,9 @@ import { CreateUserPage } from "@/features/users";
 import { CreteBrandPage } from "../features/brands/index.js";
 import { CreateLoanPage } from "../features/loans/index.js";
 import { CreateTaskPage } from "../features/tasks/index.js";
+import CreateConsumablePage from "../features/consumable-material/pages/CreateConsumablePage.jsx";
+import CreateReturnablePage from "../features/returnable-material/pages/CreateReturnablePage.jsx";
+
 
 export default function App(){
 
@@ -11,7 +14,9 @@ export default function App(){
         {/* <CreateUserPage /> */}
         {/* <CreteBrandPage /> */}
         {/* <CreateLoanPage /> */}
-        <CreateTaskPage />
+        {/* <CreateTaskPage /> */}
+        {/* <CreateConsumablePage /> */}
+        <CreateReturnablePage />
     </div>
     );
 };
