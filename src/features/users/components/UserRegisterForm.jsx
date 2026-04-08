@@ -1,5 +1,6 @@
-import { Input, Button, IconButton } from "@/shared"
-import React, {useState} from "react";
+import { Input, Button, IconButton, Select } from "@/shared"
+import React, {useState, useEffect} from "react";
+import { getDocumentTypes } from "@/features/users/services/selectService";
 
 export default function UserRegisterForm() {
     const [formData, setFormData] = useState({
@@ -10,8 +11,14 @@ export default function UserRegisterForm() {
         telefono: "",
         password: "",
     });
-    // Handle eventos. onChange cada vez que se escribe. onBlur toma el valor cuando uno sale del campo
+    // useState que me trae el arreglo mediante el get en servicios
+    const [documentTypes, setDocumentTypes] = useState([]);
 
+    useEffect(() => {
+        getDocumentTypes().then(setDocumentTypes);
+    },[]); //los [] es para que al menos se ejecute una vez, no tiene dependencia
+    
+    // Handle eventos. onChange cada vez que se escribe. onBlur toma el valor cuando uno sale del campo
     const handleNameChange = (e) => {
         console.log("Nombre: ", e.target.value);
     }
@@ -67,6 +74,11 @@ export default function UserRegisterForm() {
                             placeholder="Direccion"
                             onBlur={handleBlur}
                             name="direccion"
+                        />
+                        <Select
+                            label="Tipo de documento"
+                            name="documentType"
+                            options={documentTypes}
                         />
                         <Input
                             placeholder="Número telefónico"

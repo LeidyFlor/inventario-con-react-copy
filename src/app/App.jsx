@@ -11,12 +11,12 @@ export default function App(){
 
     return(
         <div className="min-h-screen flex items-center justify-center">
-        {/* <CreateUserPage /> */}
+        <CreateUserPage />
         {/* <CreteBrandPage /> */}
         {/* <CreateLoanPage /> */}
         {/* <CreateTaskPage /> */}
         {/* <CreateConsumablePage /> */}
-        <CreateReturnablePage />
+        {/* <CreateReturnablePage /> */}
     </div>
     );
 };
