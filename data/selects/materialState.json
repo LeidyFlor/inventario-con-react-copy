@@ -1,0 +1,22 @@
+[
+  {
+    "id": "1",
+    "label": "Disponible"
+  },
+  {
+    "id": "2",
+    "label": "No disponible"
+  },
+  {
+    "id": "3",
+    "label": "Prestado"
+  },
+  {
+    "id": "4",
+    "label": "Traslado"
+  },
+  {
+    "id": "5",
+    "label": "Baja"
+  }
+]

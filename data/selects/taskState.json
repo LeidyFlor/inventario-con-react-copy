@@ -1,0 +1,18 @@
+[
+  {
+    "id": "1",
+    "label": "Pendiente"
+  },
+  {
+    "id": "2",
+    "label": "En progreso"
+  },
+  {
+    "id": "3",
+    "label": "Completada"
+  },
+  {
+    "id": "4",
+    "label": "Cancelada"
+  }
+]

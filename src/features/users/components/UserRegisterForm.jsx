@@ -1,6 +1,6 @@
 import { Input, Button, IconButton, Select } from "@/shared"
 import React, {useState, useEffect} from "react";
-import { getDocumentTypes } from "@/features/users/services/selectService";
+import { getDocumentTypes, getUserTypes } from "@/features/users/services/selectService";
 
 export default function UserRegisterForm() {
     const [formData, setFormData] = useState({
@@ -10,12 +10,15 @@ export default function UserRegisterForm() {
         direccion:"",
         telefono: "",
         password: "",
+        userType: "",
     });
     // useState que me trae el arreglo mediante el get en servicios
     const [documentTypes, setDocumentTypes] = useState([]);
+    const [userTypes, setUserTypes] = useState([]);
 
     useEffect(() => {
         getDocumentTypes().then(setDocumentTypes);
+        getUserTypes().then(setUserTypes);
     },[]); //los [] es para que al menos se ejecute una vez, no tiene dependencia
     
     // Handle eventos. onChange cada vez que se escribe. onBlur toma el valor cuando uno sale del campo
@@ -59,11 +62,21 @@ export default function UserRegisterForm() {
                 <form className="grid grid-cols-1 items-center gap-10 ">
                     {/* Inputs */}
                     <div className="grid grid-cols-3 gap-6 my-0 mx-auto">
+                        <Select
+                            label="Tipo de documento"
+                            name="documentType"
+                            options={documentTypes}
+                        />
                         <Input
                             placeholder="Numero de documento"
                             type="number"
                             onBlur={handleBlur}
                             name= "documento"
+                        />
+                        <Select
+                            label="Tipo de usuario"
+                            name="userType"
+                            options={userTypes}
                         />
                         <Input
                             placeholder="Ingrese su nombre"
@@ -74,11 +87,6 @@ export default function UserRegisterForm() {
                             placeholder="Direccion"
                             onBlur={handleBlur}
                             name="direccion"
-                        />
-                        <Select
-                            label="Tipo de documento"
-                            name="documentType"
-                            options={documentTypes}
                         />
                         <Input
                             placeholder="Número telefónico"

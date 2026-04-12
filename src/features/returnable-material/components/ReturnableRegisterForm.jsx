@@ -1,5 +1,6 @@
-import { Input, Button, IconButton } from "@/shared"
-import React, {useState} from "react";
+import { Input, Button, IconButton, Select } from "@/shared"
+import React, {useState, useEffect} from "react";
+import { getMaterialCategory, getMaterialState, getUserName, getBrandName } from "@/features/returnable-material/services/selectService.js";
 
 export default function ReturnableRegisterForm() {
     const [formData, setFormData] = useState({
@@ -18,6 +19,18 @@ export default function ReturnableRegisterForm() {
         ubicacion: "",
         dimensiones: "",
     });
+
+    const [materialCategory, setMaterialCategory] = useState([]);
+    const [materialState, setMaterialState] = useState([]);
+    const [userName, setUserName] = useState([]);
+    const [brandName, setBrandName] = useState([]);
+
+    useEffect(() => {
+        getMaterialCategory().then(setMaterialCategory);
+        getMaterialState().then(setMaterialState);
+        getUserName().then(setUserName);
+        getBrandName().then(setBrandName);
+    }, [])
     // Handle eventos. onChange cada vez que se escribe. onBlur toma el valor cuando uno sale del campo
 
     const handleMaterialChange = (e) => {
@@ -58,17 +71,18 @@ export default function ReturnableRegisterForm() {
                     <div className="h-0.5 bg-gradiant-title-line"></div>
 
                 </div>
-                <form className="grid grid-cols-2 justify-end items-center gap-10 -mt-18">
+                {/* grid-flow-col-dense para ajustar el ancho de las columanas al contenido */}
+                <form className="grid grid-flow-col-dense justify-end items-center gap-10 -mt-18">
                     <div className="flex justify-center items-center h-screen">
                         <div className="flex flex-col">
-                            <h2 className="mt-6 font-bold">
+                            <h2 className="mb-6 font-bold">
                                 Agregar imagen del elemento
                             </h2>
                             <Input
                             placeholder="subir imagen"
-                            type="imagen"
+                            type="image"
                             onBlur={handleBlur}
-                            name="img"
+                            name="imagen"
                             />
 
                             <h2 className="mt-6 font-bold">
@@ -96,9 +110,9 @@ export default function ReturnableRegisterForm() {
                                 onBlur={handleBlur}
                                 name="serial"
                             />
-                            <Input
-                                placeholder="Marca"
-                                onChange={handleMaterialChange}
+                            <Select
+                                label="Marca"
+                                options={brandName}
                                 name="marca"
                             />
                             <Input
@@ -112,11 +126,10 @@ export default function ReturnableRegisterForm() {
                                 onChange={handleMaterialChange}
                                 name="nombreElemento"
                             />
-                            <Input
-                                placeholder="Seleccione cuentadante"
-                                type="name"
-                                onBlur={handleBlur}
-                                name="cunetadante"
+                            <Select
+                                label="Seleccione cuentadante"
+                                options={userName}
+                                name="cuentadante"
                             />
                             <Input
                                 placeholder="Descripcion"
@@ -127,15 +140,15 @@ export default function ReturnableRegisterForm() {
                         </div>
                         
                         <div className="flex flex-col gap-6">
-                            <Input
-                                placeholder="Categoria"
-                                onChange={handleMaterialChange}
+                            <Select
+                                label="Categoria"
+                                options={materialCategory}
                                 name="categoria"
                             />
 
-                            <Input
-                                placeholder="Estado"
-                                onChange={handleMaterialChange}
+                            <Select
+                                label="Estado"
+                                options={materialState}
                                 name="estado"
                             />
                             

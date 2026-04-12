@@ -1,15 +1,23 @@
-import { Input, Button, IconButton } from "@/shared"
-import React, { useState } from "react";
+import { Input, Button, IconButton, Select } from "@/shared"
+import React, { useState, useEffect } from "react";
+import { getUserTypes, getTaskState } from "@/features/tasks/services/selectService";
 
 export default function TaskForm() {
     const [formData, setFormData] = useState({
-        tipoUsuario: "",
+        userType: "",
         nombreTarea: "",
         descripcionTarea: "",
         estadoTarea: "",
         fechaInicio: "",
         fechaFin: "",
     });
+    const [userTypes, setUserTypes] = useState([]);
+    const [taskState, setTaskState] = useState([]);
+
+    useEffect(() => {
+            getUserTypes().then(setUserTypes);
+            getTaskState().then(setTaskState);
+        },[]);
 
     // Handle eventos. onChange cada vez que se escribe. onBlur toma el valor cuando uno sale del campo
     const handleBlur = (e) => {
@@ -42,10 +50,10 @@ export default function TaskForm() {
                         <div className="h-0.5 bg-green-700 w-[200%]"></div>
                     </div>
 
-                    <Input
-                        placeholder="Tipo de usuario"
-                        name="tipoUsuario"
-                        onBlur={handleBlur}
+                    <Select
+                        label="Tipo de usuario"
+                        name="userType"
+                        options={userTypes}
                     />
 
                     {/* Sección agregar tarea */}
@@ -65,10 +73,10 @@ export default function TaskForm() {
                         name="descripcionTarea" 
                         onBlur={handleBlur} 
                     />
-                    <Input 
-                        placeholder="Estado tarea" 
+                    <Select 
+                        label="Estado tarea" 
                         name="estadoTarea" 
-                        onBlur={handleBlur} 
+                        options={taskState} 
                     />
 
                     {/* Fechas: se usa type="date" para que el navegador muestre el selector de fecha */}

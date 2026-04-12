@@ -1,5 +1,6 @@
-import { Input, Button, IconButton } from "@/shared"
-import React, {useState} from "react";
+import { Input, Button, IconButton, Select } from "@/shared"
+import React, {useState, useEffect} from "react";
+import { getMaterialState, getUserName, getBrandName } from "@/features/consumable-material/services/selectService.js";
 
 export default function ConsumableRegisterForm() {
     const [formData, setFormData] = useState({
@@ -16,6 +17,15 @@ export default function ConsumableRegisterForm() {
         valorTotal: "",
         ubicacion: "",
     });
+    const [materialState, setMaterialState] = useState([]);
+    const [userName, setUserName] = useState([]); //use state para cuentadante
+    const [brandName, setBrandName] = useState([]);
+
+    useEffect(() => {
+        getMaterialState().then(setMaterialState);
+        getUserName().then(setUserName);
+        getBrandName().then(setBrandName);
+    }, []); //los [] es para que al menos se ejecute una vez, no tiene dependencia
     // Handle eventos. onChange cada vez que se escribe. onBlur toma el valor cuando uno sale del campo
 
     const handleMaterialChange = (e) => {
@@ -55,9 +65,9 @@ export default function ConsumableRegisterForm() {
                     <div className="h-0.5 bg-gradiant-title-line mb-30"></div>
 
                 </div>
-                <form className="grid grid-cols-2 justify-end items-center gap-10 -mt-18">
+                <form className="grid grid-flow-col-dense justify-end items-center gap-10 -mt-18 ">
                     <div>
-                        <h2 className="font-bold " >
+                        <h2 className="mb-6 font-bold" >
                             Agregar imagen del elemento
                         </h2>
                         <Input
@@ -83,9 +93,9 @@ export default function ConsumableRegisterForm() {
                                 onBlur={handleBlur}
                                 name="serial"
                             />
-                            <Input
-                                placeholder="Marca"
-                                onChange={handleMaterialChange}
+                            <Select
+                                label="Marca"
+                                options={brandName}
                                 name="marca"
                             />
                             <Input
@@ -99,10 +109,9 @@ export default function ConsumableRegisterForm() {
                                 onChange={handleMaterialChange}
                                 name="nombreElemento"
                             />
-                            <Input
-                                placeholder="Seleccione cuentadante"
-                                type="name"
-                                onBlur={handleBlur}
+                            <Select
+                                label="Seleccione cuentadante"
+                                options={userName}
                                 name="cuentadante"
                             />
                             <Input
@@ -113,9 +122,9 @@ export default function ConsumableRegisterForm() {
 
                         </div>
                         <div className="flex flex-col gap-6">
-                            <Input
-                                placeholder="Estado"
-                                onChange={handleMaterialChange}
+                            <Select
+                                label="Estado"
+                                options={materialState}
                                 name="estado"
                             />
                             <Input

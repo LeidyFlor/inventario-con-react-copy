@@ -1,0 +1,18 @@
+[
+  {
+    "id": "1",
+    "label": "Administrador"
+  },
+  {
+    "id": "2",
+    "label": "Instructor de planta"
+  },
+  {
+    "id": "3",
+    "label": "Instructor contratista"
+  },
+  {
+    "id": "4",
+    "label": "Invitado"
+  }
+]

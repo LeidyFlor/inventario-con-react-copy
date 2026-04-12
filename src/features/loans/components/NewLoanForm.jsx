@@ -1,5 +1,6 @@
-import { Input, Button, IconButton } from "@/shared"
-import React, { useState } from "react";
+import { Input, Button, IconButton, Select } from "@/shared"
+import React, { useState, useEffect } from "react";
+import { getUserName, getLoanTypes } from "@/features/loans/services/selectService.js";
 
 export default function NewLoanForm() {
     const [formData, setFormData] = useState({
@@ -11,6 +12,14 @@ export default function NewLoanForm() {
         fechaEntrega: "",
         tipoPrestamo: "",
     });
+    // useState que me trae el arreglo mediante el get en servicios
+    const [userName, setUserName] = useState([]);
+    const [loanTypes, setLoanTypes] = useState([]);
+
+    useEffect(() => {
+        getUserName().then(setUserName);
+        getLoanTypes().then(setLoanTypes);
+    },[]); //los [] es para que al menos se ejecute una vez, no tiene dependencia
 
     // Handle eventos. onChange cada vez que se escribe. onBlur toma el valor al salir del campo
     const handleBlur = (e) => {
@@ -54,13 +63,13 @@ export default function NewLoanForm() {
                                 <Button 
                                     variant="primary" 
                                     size="md"
-                                >   + Devolutivo
+                                >   Devolutivo
                                 </Button>
                                 <Button 
                                     variant="primary" 
                                     size="md"
                                 > 
-                                    + Consumible
+                                    Consumible
                                 </Button>
                             </div>
                         </div>
@@ -68,10 +77,9 @@ export default function NewLoanForm() {
                         {/* Selección usuario solicitante */}
                         <div className="flex flex-col gap-4">
                             <h2 className="font-bold">2. Selecciona usuario solicitante</h2>
-                            <Input
-                                placeholder="Seleccione usuario"
-                                name="usuarioSolicitante"
-                                onBlur={handleBlur}
+                            <Select
+                                name="userType"
+                                options={userName}
                             />
                         </div>
 
@@ -119,10 +127,10 @@ export default function NewLoanForm() {
                                 name="fechaEntrega" 
                                 onBlur={handleBlur} 
                             />
-                            <Input 
-                                placeholder="Tipo de préstamo" 
-                                name="tipoPrestamo" 
-                                onBlur={handleBlur} 
+                            <Select
+                                label="Tipo de préstamo"
+                                name="loanType"
+                                options={loanTypes}
                             />
                         </div>
 
