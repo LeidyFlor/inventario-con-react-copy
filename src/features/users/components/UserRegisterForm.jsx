@@ -53,7 +53,7 @@ export default function UserRegisterForm() {
             <div className="bg-gradient-container-green border-4 border-border-green-container p-10 rounded-4xl">
                 {/* contenenedor del titulo y la linea */}
                 <div className="mb-6 max-w-max">
-                    <h1 className="text-gradient-title text-2xl pb-0.5">
+                    <h1 className="text-gradient-title text-h3 pb-0.5">
                         Registro de usuario
                     </h1>{/*linea degradada del titulo*/}
                     <div className="h-0.5 bg-gradiant-title-line"></div>
@@ -61,7 +61,7 @@ export default function UserRegisterForm() {
                 </div>
                 <form className="grid grid-cols-1 items-center gap-10 ">
                     {/* Inputs */}
-                    <div className="grid grid-cols-3 gap-6 my-0 mx-auto">
+                    <div className="grid grid-cols-3 gap-3 my-0 mx-auto">
                         <Select
                             label="Tipo de documento"
                             name="documentType"
@@ -72,6 +72,7 @@ export default function UserRegisterForm() {
                             type="number"
                             onBlur={handleBlur}
                             name= "documento"
+                            label="Numero de documento"
                         />
                         <Select
                             label="Tipo de usuario"
@@ -82,45 +83,53 @@ export default function UserRegisterForm() {
                             placeholder="Ingrese su nombre"
                             onChange={handleNameChange}
                             name="nombre"
+                            label="Nombre completo"
                         />
                         <Input
-                            placeholder="Direccion"
+                            placeholder="Dirección"
                             onBlur={handleBlur}
                             name="direccion"
+                            label="Dirección"
                         />
                         <Input
                             placeholder="Número telefónico"
                             type="tel"
                             onBlur={handleBlur}
                             name="telefono"
+                            label="Número telefónico"
                         />
                         <Input
                             placeholder="Número telefónico 2"
                             type="tel"
                             onBlur={handleBlur}
                             name="telefono2"
+                            label="Número telefónico 2"
                         />
                         <Input
                             placeholder="Correo electrónico"
                             type="email"
                             onBlur={handleBlur}
                             name="email"
+                            label="Correo electrónico"
                         />
                         <Input
                             placeholder="Confirmar correo electrónico"
                             type="email"
                             name="emailconfir"
+                            label="Confirmar correo electrónico"
                         />
                         <Input
                             placeholder="Correo institucional"
                             type="email"
                             onBlur={handleBlur}
                             name="email2"
+                            label="Correo institucional"
                         />
                         <Input
                             placeholder="Ingrese su contraseña"
                             type="password"
                             name="password"
+                            label="Contraseña"
                         />
 
                         {/* Acciones */}
@@ -156,11 +165,6 @@ export default function UserRegisterForm() {
                             >
                                 Agregar tarea
                             </Button>
-
-                            
-
-                            
-
                         </div>
                     </div>
 
@@ -171,8 +175,7 @@ export default function UserRegisterForm() {
                         >
                             Crear
                         </IconButton>
-                    </div>
-            
+                    </div> 
             </form>
             </div>
 

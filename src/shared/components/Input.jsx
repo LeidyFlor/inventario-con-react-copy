@@ -21,7 +21,7 @@ export default function Input({
                 <label
                 className="
                     block
-                    text-size-caption
+                    text-caption
                     mb-1
                     place-self-start
                     ">
@@ -34,7 +34,7 @@ export default function Input({
             {/* este classname permite escribir en todos los campos */}
             <div className={`
                 relative
-                h-14
+                h-12
                 flex
                 items-center
                 ${isDate ? "w-fit" : ""} 
@@ -67,11 +67,12 @@ export default function Input({
                     className={`
                         relative
                         ${isDate ? "w-auto" : "w-full"}
-                        h-14
+                        h-12
                         rounded-2xl
                         border-2
                         border-input-border
                         px-4
+                        text-medium
                         text-text-primary
                         bg-input-fill
                         placeholder-text-primary
@@ -101,7 +102,7 @@ export default function Input({
                         absolute
                         top-2
                         left-4
-                        text-xs
+                        text-caption
                         text-text-primary
                         pointer-events-none
                     ">

@@ -57,8 +57,8 @@ export default function ConsumableRegisterForm() {
             <div className="bg-gradient-container-green border-4 border-border-green-container p-10 rounded-4xl ">
                 {/* contenenedor del titulo y la linea */}
                 <div className="mb-6 max-w-max ">
-                    <h1 className="text-gradient-title text-2xl pb-0.5 text-center">
-                        Crear material de <br/> Consumo
+                    <h1 className="text-gradient-title text-h3 pb-0.5 text-center">
+                        Crear material de Consumo
                     </h1>
 
                     {/*linea degradada del titulo*/}
@@ -67,12 +67,10 @@ export default function ConsumableRegisterForm() {
                 </div>
                 <form className="grid grid-flow-col-dense justify-end items-center gap-10 -mt-18 ">
                     <div>
-                        <h2 className="mb-6 font-bold" >
+                        <h2 className="mb-6 font-bold text-body" >
                             Agregar imagen del elemento
                         </h2>
                         <Input
-                            // Si no se le agrega el tipo esque por defecto es text
-                            placeholder="Subir imagen"
                             type="image"
                             onBlur={handleBlur}
                             name= "img"
@@ -81,17 +79,18 @@ export default function ConsumableRegisterForm() {
                     </div>
                     {/* Inputs */}
                     <div className="grid grid-cols-2 gap-10 ">
-                        <div className="flex flex-col gap-6">
+                        <div className="flex flex-col gap-3">
                             <Input
-                                // Si no se le agrega el tipo esque por defecto es text
                                 placeholder="Placa Sena"
                                 onBlur={handleBlur}
                                 name= "placa"
+                                label="Placa Sena"
                             />
                             <Input
                                 placeholder="Serial"
                                 onBlur={handleBlur}
                                 name="serial"
+                                label="Serial"
                             />
                             <Select
                                 label="Marca"
@@ -102,12 +101,14 @@ export default function ConsumableRegisterForm() {
                                 placeholder="Modelo"
                                 onBlur={handleBlur}
                                 name="modelo"
+                                label="Modelo"
                             />
                             <Input
                                 placeholder="Nombre del elemento"
                                 type="name"
                                 onChange={handleMaterialChange}
                                 name="nombreElemento"
+                                label="Nombre del elemento"
                             />
                             <Select
                                 label="Seleccione cuentadante"
@@ -118,10 +119,11 @@ export default function ConsumableRegisterForm() {
                                 placeholder="Descripcion"
                                 onBlur={handleBlur}
                                 name="descripcion"
+                                label="Descipción"
                             />
 
                         </div>
-                        <div className="flex flex-col gap-6">
+                        <div className="flex flex-col gap-3">
                             <Select
                                 label="Estado"
                                 options={materialState}
@@ -131,21 +133,25 @@ export default function ConsumableRegisterForm() {
                                 placeholder="Cantidad"
                                 type="number"
                                 name="cantidad"
+                                label="Cantidad"
                             />
                             <Input
                                 placeholder="Valor unitario"
                                 type="number"
                                 name="valorUnitario"
+                                label= "Valor unitario"
                             />
                             <Input
                                 placeholder="Valor total"
                                 type="number"
                                 name="valorTotal"
+                                label="Valor total"
                             />
                             <Input
-                                placeholder="Ubicacion"
+                                placeholder="Ubicación"
                                 onBlur={handleBlur}
                                 name="ubicacion"
+                                label="Ubicación"
                             />
 
                             {/* Acciones */}

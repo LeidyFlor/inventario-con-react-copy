@@ -29,7 +29,7 @@
   --color-border: var(--semantic-border);
   --color-border-strong: var(--semantic-border-strong);
   --color-border-green-container: var(--semantic-border-green-container);
-
+  --color-border-default-button: var(--semantic-border-default-button);
   /* ==FOCUS=== */
 
   --color-focus-ring: var(--semantic-focus-ring);
@@ -43,14 +43,14 @@
 
   /* ====== TYPOGRAPHY ===== */
 
-  --font-size-display: var(--semantic-font-size-display);
-  --font-size-h1: var(--semantic-font-size-h1);
-  --font-size-h2: var(--semantic-font-size-h2);
-  --font-size-h3: var(--semantic-font-size-h3);
-  --font-size-body: var(--semantic-font-size-body);
-  --font-size-medium: var(--semantic-font-size-medium);
-  --font-size-small: var(--semantic-font-size-small);
-  --font-size-caption: var(--semantic-font-size-caption);
+    --text-display: var(--semantic-font-size-display);
+    --text-h1: var(--semantic-font-size-h1);
+    --text-h2: var(--semantic-font-size-h2);
+    --text-h3: var(--semantic-font-size-h3);
+    --text-body: var(--semantic-font-size-body);
+    --text-medium: var(--semantic-font-size-medium);
+    --text-small: var(--semantic-font-size-small);
+    --text-caption: var(--semantic-font-size-caption);
 
   /*==== FONT WEIGHT ======*/
 

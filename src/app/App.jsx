@@ -14,7 +14,7 @@ export default function App(){
         <CreateUserPage />
         {/* <CreteBrandPage /> */}
         {/* <CreateLoanPage /> */}
-        {/* <CreateTaskPage /> */}
+        {/* <CreateTaskPage />   */}
         {/* <CreateConsumablePage /> */}
         {/* <CreateReturnablePage /> */}
     </div>

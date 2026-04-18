@@ -45,7 +45,7 @@ export default function TaskForm() {
 
                     {/* Sección usuario */}
                     <div className="flex flex-col items-center w-fit">
-                        <h2 className="font-bold text-xl">Usuario: Pepito Perez</h2>
+                        <h2 className="font-bold text-body mb-2">Usuario: Pepito Perez</h2>
                         {/* Línea verde con width al 200% para que se extienda más allá del título y quede más estético */}
                         <div className="h-0.5 bg-green-700 w-[200%]"></div>
                     </div>
@@ -58,7 +58,7 @@ export default function TaskForm() {
 
                     {/* Sección agregar tarea */}
                     <div className="flex flex-col items-center w-fit">
-                        <h2 className="font-bold text-xl">Agregar tarea</h2>
+                        <h2 className="font-bold text-body mb-2">Agregar tarea</h2>
                         {/* Línea verde con width al 320% para que se extienda más allá del título y quede más estético */}
                         <div className="block h-0.5 bg-green-700 w-[320%]"></div>
                     </div>
@@ -114,7 +114,7 @@ export default function TaskForm() {
 
                         {/* Título con línea degradada */}
                         <div className="flex flex-col items-center max-w-max mx-auto mb-1">
-                            <h1 className="text-gradient-title text-2xl pb-0.5">Gestión de tareas</h1>
+                            <h1 className="text-gradient-title text-h3 pb-0.5">Gestión de tareas</h1>
                             <div className="h-0.5 bg-gradiant-title-line w-full"></div>
                         </div>
 

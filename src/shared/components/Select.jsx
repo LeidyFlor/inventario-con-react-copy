@@ -9,7 +9,7 @@ export default function Select({
         <div className="w-[320px]">
             {/* si label trae algo hace lo que esta adentro */}
             {label && (
-                <label className="block text-xs mb-1 text-text-primary place-self-start">
+                <label className="block text-caption mb-1 text-text-primary place-self-start">
                     {label}
                 </label>
             )}
@@ -18,7 +18,8 @@ export default function Select({
                 name={name}
                 className="
                     w-full
-                    h-14
+                    h-12
+                    text-medium
                     rounded-2xl
                     border-2
                     border-input-border

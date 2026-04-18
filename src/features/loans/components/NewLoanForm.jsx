@@ -44,7 +44,7 @@ export default function NewLoanForm() {
 
                 {/* contenedor del titulo y la linea */}
                 <div className="mb-6 max-w-max">
-                    <h1 className="text-gradient-title text-2xl pb-0.5">
+                    <h1 className="text-gradient-title text-h3 pb-0.5">
                         Nuevo préstamo
                     </h1>
                     <div className="h-0.5 bg-gradiant-title-line"></div>
@@ -58,7 +58,7 @@ export default function NewLoanForm() {
                     <div className="flex flex-col justify-evenly  border-r-2  pr-4">          
                         {/* Selección de materiales */}
                         <div className="flex flex-col gap-4">
-                            <h2 className="font-bold">1. Selecciona los materiales</h2>
+                            <h2 className="font-bold text-body">1. Selecciona los materiales</h2>
                             <div className="flex gap-3 justify-center">
                                 <Button 
                                     variant="primary" 
@@ -76,7 +76,7 @@ export default function NewLoanForm() {
 
                         {/* Selección usuario solicitante */}
                         <div className="flex flex-col gap-4">
-                            <h2 className="font-bold">2. Selecciona usuario solicitante</h2>
+                            <h2 className="font-bold text-body">2. Selecciona usuario solicitante</h2>
                             <Select
                                 name="userType"
                                 options={userName}
@@ -85,7 +85,7 @@ export default function NewLoanForm() {
 
                         {/* usuario prestador*/}
                         <div className="flex flex-col gap-4">
-                            <h2 className="font-bold">3. Usuario prestador</h2>
+                            <h2 className="font-bold text-body">3. Usuario prestador</h2>
                             <div className="flex items-center gap-3">
                                 <div className="">
                                     <Input
@@ -95,7 +95,7 @@ export default function NewLoanForm() {
                                     />
                                 </div>
                                 {/* boton pra confirmar identidad*/}
-                                <Button variant="outline" size="sm">
+                                <Button variant="ghost" size="sm">
                                     Confirmar identidad
                                 </Button>
                             </div>
@@ -104,34 +104,43 @@ export default function NewLoanForm() {
 
                     {/* Columna ingresar datos*/}
                     <div className="flex flex-col gap-6">
-                        <h2 className="font-bold">4. Ingresar los siguientes datos:</h2>
+                        <h2 className="font-bold text-body">4. Ingresar los siguientes datos:</h2>
 
                         <div className="flex flex-col gap-4">
                             <Input 
                                 placeholder="Grupo aprendices"
                                 name="grupoAprendices"
                                 onBlur={handleBlur} 
-                            />
-                            <Input
-                                placeholder="Fecha salida" 
-                                name="fechaSalida" 
-                                onBlur={handleBlur} 
+                                label="Grupo aprendices"
                             />
                             <Input 
                                 placeholder="Justificación de uso" 
                                 name="justificacion" 
-                                onBlur={handleBlur} 
-                            />
-                            <Input 
-                                placeholder="Fecha de entrega" 
-                                name="fechaEntrega" 
-                                onBlur={handleBlur} 
+                                onBlur={handleBlur}
+                                label="Justificacion de uso" 
                             />
                             <Select
                                 label="Tipo de préstamo"
                                 name="loanType"
                                 options={loanTypes}
                             />
+                            <div className="flex gap-2">
+                                <Input
+                                    placeholder="DD/MM/AAA"
+                                    type="date"
+                                    name="fechaSalida"
+                                    onBlur={handleBlur}
+                                    label="Fecha salida"
+                                />
+                                <Input
+                                    label="Fecha de entrega"
+                                    type="date"
+                                    name="fechaEntrega"
+                                    onBlur={handleBlur}
+                                />
+
+                            </div>
+                            
                         </div>
 
                         {/* Botón crear */}
