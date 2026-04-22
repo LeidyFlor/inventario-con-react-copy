@@ -30,6 +30,8 @@
   --color-border-strong: var(--semantic-border-strong);
   --color-border-green-container: var(--semantic-border-green-container);
   --color-border-default-button: var(--semantic-border-default-button);
+  --color-border-line-subtitle: var(--semantic-border-line-subtitle); /*para las lineas verdes de algunos subtítulos*/
+
   /* ==FOCUS=== */
 
   --color-focus-ring: var(--semantic-focus-ring);

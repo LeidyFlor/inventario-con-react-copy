@@ -1,17 +1,23 @@
 import { Input, Button, IconButton, Select } from "@/shared"
 import React, {useState, useEffect} from "react";
 import { getDocumentTypes, getUserTypes } from "@/features/users/services/selectService";
+import { userShema } from "../schemas/userShema.js";
 
 export default function UserRegisterForm() {
     const [formData, setFormData] = useState({
-        documento: "",
-        nombre: "",
-        email: "",
-        direccion:"",
-        telefono: "",
-        password: "",
+        userDocument: "",
+        userName: "",
+        userEmail: "",
+        userEmail2: "",
+        userAddres:"",
+        userTel: "",
+        userTel2: "",
+        userPassword: "",
         userType: "",
+        userDocumentType: "",
+        userEmailConfir: "",
     });
+    const [errors, setErrors] = useState({});
     // useState que me trae el arreglo mediante el get en servicios
     const [documentTypes, setDocumentTypes] = useState([]);
     const [userTypes, setUserTypes] = useState([]);
@@ -22,21 +28,63 @@ export default function UserRegisterForm() {
     },[]); //los [] es para que al menos se ejecute una vez, no tiene dependencia
     
     // Handle eventos. onChange cada vez que se escribe. onBlur toma el valor cuando uno sale del campo
-    const handleNameChange = (e) => {
-        console.log("Nombre: ", e.target.value);
-    }
-    // const handleBlur = (e) => {
-    //     console.log("Email: ", e.target.value);
-    // }
-    const handleBlur = (e) => {
-        const {name, value} = e.target;
-        setFormData({
-            ...formData,
-            [name] : value //con name react sabe que campo actualizar
-        })
-        console.log("Input ", e.target.value);
-    }
 
+    // ==================================================
+    //              Handle Genérico
+    // ==================================================
+    /*
+        Función que se ejecuta cada vez que cambia el valor de un input del formulario, para que haga el re-render
+    */
+    const handleChange = (e) => {
+        // Se obtiene el nombre del campo y su valor
+        const { name, value } = e.target; //target es lo que viene cuando se escribe
+
+        setFormData((prev) => ({
+            //Se copian todos los valores anteriores del estado
+            ...prev,
+
+            //Se actualiza unicamente lo que cambió
+            [name]: value,
+        }));
+    };
+    // ==================================================
+    //              Handle Submit
+    // ==================================================
+    /*
+        Función que se ejecuta cuando se envía el formulario
+    */
+
+    const handleSubmit = (e) => {
+
+        e.preventDefault();
+        //Se valida el objeto formData usando el esquema definido con Zod
+        // safeParse devuelve un objeto indicando si la validacion fue exitosa o no
+        const result = userShema.safeParse(formData);
+
+        //Si la validacion falla
+        if (!result.success) {
+            const fieldErrors = {};
+
+            //Zod devuelve los errores en un arreglo llamado issues
+            //se recorren para asociar cada error a su campo correspondiente
+            result.error.issues.forEach((issue) => {
+                const field = issue.path[0]
+
+
+                //Se guarda el mensaje de error en el objeto fieldErrors
+                fieldErrors[field] = issue.message;
+            });
+
+            //Se actualiza el estado de errores para mostrarlos en el formulario
+            setErrors(fieldErrors);
+            //Se detiene la ejecucion porque el formulario tiene errores
+            return;
+        }
+        //Si la validacion es exitosa se limpian los errores anteriores
+        setErrors({});
+        //result.data contiene los datos ya validados por Zod
+        console.log("Usuario valido:", result.data);
+    }
 
     return (
         <div>
@@ -59,77 +107,103 @@ export default function UserRegisterForm() {
                     <div className="h-0.5 bg-gradiant-title-line"></div>
 
                 </div>
-                <form className="grid grid-cols-1 items-center gap-10 ">
+                <form className="grid grid-cols-1 items-center gap-10 " onSubmit={handleSubmit} noValidate>
+                    {/* noValidate es para quitar las validaciones automaticas de html del navegador */}
                     {/* Inputs */}
                     <div className="grid grid-cols-3 gap-3 my-0 mx-auto">
                         <Select
                             label="Tipo de documento"
-                            name="documentType"
+                            name="userDocumentType"
                             options={documentTypes}
+                            value={formData.userDocumentType}
+                            onChange={handleChange}
+                            error={errors.userDocumentType}
                         />
                         <Input
                             placeholder="Numero de documento"
-                            type="number"
-                            onBlur={handleBlur}
-                            name= "documento"
+                            name= "userDocument"
                             label="Numero de documento"
+                            value={formData.userDocument}
+                            onChange={handleChange}
+                            error={errors.userDocument}
                         />
                         <Select
                             label="Tipo de usuario"
                             name="userType"
                             options={userTypes}
+                            value={formData.userType}
+                            onChange={handleChange}
+                            error={errors.userType}
                         />
                         <Input
-                            placeholder="Ingrese su nombre"
-                            onChange={handleNameChange}
-                            name="nombre"
+                            placeholder="Ingrese su nombre completo"
+                            name="userName"
                             label="Nombre completo"
+                            value={formData.userName}
+                            onChange={handleChange}
+                            error={errors.userName}
                         />
                         <Input
                             placeholder="Dirección"
-                            onBlur={handleBlur}
-                            name="direccion"
+                            name="userAddres"
                             label="Dirección"
+                            value={formData.userAddres}
+                            onChange={handleChange}
+                            error={errors.userAddres}
                         />
                         <Input
                             placeholder="Número telefónico"
                             type="tel"
-                            onBlur={handleBlur}
-                            name="telefono"
+                            name="userTel"
                             label="Número telefónico"
+                            value={formData.userTel}
+                            onChange={handleChange}
+                            error={errors.userTel}
                         />
                         <Input
                             placeholder="Número telefónico 2"
                             type="tel"
-                            onBlur={handleBlur}
-                            name="telefono2"
+                            name="userTel2"
                             label="Número telefónico 2"
+                            value={formData.userTel2}
+                            onChange={handleChange}
+                            error={errors.userTel2}
                         />
                         <Input
                             placeholder="Correo electrónico"
                             type="email"
-                            onBlur={handleBlur}
-                            name="email"
+                            name="userEmail"
                             label="Correo electrónico"
+                            value={formData.userEmail}
+                            onChange={handleChange}
+                            error={errors.userEmail}
                         />
                         <Input
                             placeholder="Confirmar correo electrónico"
                             type="email"
-                            name="emailconfir"
+                            name="userEmailConfir"
                             label="Confirmar correo electrónico"
+                            value={formData.userEmailConfir}   
+                            onChange={handleChange}            
+                            error={errors.userEmailConfir} 
                         />
                         <Input
                             placeholder="Correo institucional"
                             type="email"
-                            onBlur={handleBlur}
-                            name="email2"
+                            name="userEmail2"
                             label="Correo institucional"
+                            value={formData.userEmail2}
+                            onChange={handleChange}
+                            error={errors.userEmail2}
                         />
                         <Input
                             placeholder="Ingrese su contraseña"
                             type="password"
-                            name="password"
+                            name="userPassword"
                             label="Contraseña"
+                            value={formData.userPassword}
+                            onChange={handleChange}
+                            error={errors.userPassword}
                         />
 
                         {/* Acciones */}
@@ -172,6 +246,7 @@ export default function UserRegisterForm() {
                         <IconButton
                             variant="primary"
                             size="md"
+                            type="submit"
                         >
                             Crear
                         </IconButton>

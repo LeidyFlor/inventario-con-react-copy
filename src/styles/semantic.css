@@ -39,16 +39,17 @@
     --semantic-border-strong: var(--gray-300);/* Bordea más fuertes*/
     --semantic-border-green-container: var(--primary-100); /*borde green container*/
     --semantic-border-default-button: var(--gray-600);
+    --semantic-border-line-subtitle: var(--tertiary-800);
     /* ==== FOCUS ==== */
 
-    --semantic-focus-ring: var(--gray-300);
+    --semantic-focus-ring: var(--sextario-950);
     --semantic-focus-border: var(--primary-500);
 
     /* ==== STATE ===== */
 
     --semantic-success: var(--primary-950);
-    --semantic-warning: var(--tertiary-950);
-    --semantic-error: var(--secundary-950);
+    --semantic-warning: var(--quinary-950);
+    --semantic-error: var(--color-red-800);
 
     /* ====TYPOGRAPHY===== */
 

@@ -12,3 +12,8 @@ export async function getTaskState() {
   // Se recuperon los datos y se responde con su envio
   return response.json();
 }
+export async function getUserName() {
+  // ubicacion de los datos a llamar
+  const response = await fetch("/../../data/selects/usersName.json");
+  return response.json();
+}

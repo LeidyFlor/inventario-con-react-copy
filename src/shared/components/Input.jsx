@@ -5,6 +5,7 @@ export default function Input({
     type = "Text",
     labelInside = false,
     className = "", //para definir ancho del contenedor
+    error,
     ...props
     // porps son las propiedades de un componenete. Y label para que por defecto el campo sea tipo texto
 }) {
@@ -19,12 +20,15 @@ export default function Input({
 
             {label && !labelInside && (
                 <label
-                className="
-                    block
+                    className={
+                    `block
                     text-caption
                     mb-1
                     place-self-start
-                    ">
+                    ${error ? "text-error" : "text-text-primary" }
+                    `}
+                   
+                    >
                     {label}
 
                 </label>
@@ -77,11 +81,14 @@ export default function Input({
                         bg-input-fill
                         placeholder-text-primary
 
+                        hover:border-2
+                        hover:border-focus-border
+
                         focus:outline-none
-                        focus:ring-2
+                        focus:ring-1
                         focus:ring-focus-ring
-                        focus:border-focus-border
                         transition-all duration-300
+                        ${error ? "border-red-800" : "text-text-primary" }
 
                          ${labelInside && label
                             // Con label dentro: padding superior para dejar espacio al label
@@ -98,14 +105,15 @@ export default function Input({
 
                 {/* Label DENTRO (flota arriba del texto) */}
                 {label && labelInside && (
-                    <label className="
+                    <label className={`
                         absolute
                         top-2
                         left-4
                         text-caption
                         text-text-primary
                         pointer-events-none
-                    ">
+                        ${error ? "text-error" : "text-text-primary" }
+                    `}>
                         {label}
                     </label>
                 )}
@@ -113,7 +121,7 @@ export default function Input({
             </div>
             {/* Feedback message */}
             <div>
-
+                {error && <p className="text-caption text-error place-self-start">{error}</p>}
             </div>
         </div>
     )

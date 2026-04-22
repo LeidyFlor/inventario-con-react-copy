@@ -1,25 +1,26 @@
 import { Input, Button, IconButton, Select } from "@/shared"
 import React, {useState, useEffect} from "react";
 import { getMaterialCategory, getMaterialState, getUserName, getBrandName } from "@/features/returnable-material/services/selectService.js";
+import { returnableMaterialSchema } from "../schemas/returnableMaterialSchema";
 
 export default function ReturnableRegisterForm() {
     const [formData, setFormData] = useState({
-        placa: "",
-        serial: "",
-        marca: "",
-        modelo:"",
-        nombreElemento: "",
-        cuentadante: "",
-        descripcion: "",
-        categoria: "",
-        estado: "",
-        cantidad: "",
-        valorUnitario: "",
-        valorTotal: "",
-        ubicacion: "",
-        dimensiones: "",
+        placaMaterial: "",
+        marcaMaterial: "",
+        modeloMaterialDevolutivo: "",
+        nombreElementoMaterial: "",
+        cuentadanteMaterial: "",
+        descripcionMaterial: "",
+        estadoMaterial: "",
+        cantidadMaterial: "",
+        valorUnitarioMaterial: "",
+        valorTotalMaterial: "",
+        ubicacionMaterial: "",
+        serialMaterialDevolutivo: "",
+        categoriaMaterialDevolutivo: "",
+        dimensionesMaterialDevolutivo: "",
     });
-
+    const [errors, setErrors] = useState({});
     const [materialCategory, setMaterialCategory] = useState([]);
     const [materialState, setMaterialState] = useState([]);
     const [userName, setUserName] = useState([]);
@@ -31,21 +32,55 @@ export default function ReturnableRegisterForm() {
         getUserName().then(setUserName);
         getBrandName().then(setBrandName);
     }, [])
-    // Handle eventos. onChange cada vez que se escribe. onBlur toma el valor cuando uno sale del campo
+    const handleChange = (e) => {
+                // Se obtiene el nombre del campo y su valor
+                const { name, value } = e.target; //target es lo que viene cuando se escribe
+        
+                setFormData((prev) => ({
+                    //Se copian todos los valores anteriores del estado
+                    ...prev,
+        
+                    //Se actualiza unicamente lo que cambió
+                    [name]: value,
+                }));
+            };
+            // ==================================================
+            //              Handle Submit
+            // ==================================================
+            /*
+                Función que se ejecuta cuando se envía el formulario
+            */
+        
+            const handleSubmit = (e) => {
+        
+                e.preventDefault();
+                //Se valida el objeto formData usando el esquema definido con Zod
+                // safeParse devuelve un objeto indicando si la validacion fue exitosa o no
+                const result = returnableMaterialSchema.safeParse(formData);
+        
+                //Si la validacion falla
+                if (!result.success) {
+                    const fieldErrors = {};
+        
+                    //Zod devuelve los errores en un arreglo llamado issues
+                    //se recorren para asociar cada error a su campo correspondiente
+                    result.error.issues.forEach((issue) => {
+                        const field = issue.path[0]
 
-    const handleMaterialChange = (e) => {
-        console.log("Nombre: ", e.target.value);
-    }
-    
-    const handleBlur = (e) => {
-        const {name, value} = e.target;
-        setFormData({
-            ...formData,
-            [name] : value //con name react sabe que campo actualizar
-        })
-        console.log("Input ", e.target.value);
-    }
-
+                        //Se guarda el mensaje de error en el objeto fieldErrors
+                        fieldErrors[field] = issue.message;
+                    });
+        
+                    //Se actualiza el estado de errores para mostrarlos en el formulario
+                    setErrors(fieldErrors);
+                    //Se detiene la ejecucion porque el formulario tiene errores
+                    return;
+                }
+                //Si la validacion es exitosa se limpian los errores anteriores
+                setErrors({});
+                //result.data contiene los datos ya validados por Zod
+                console.log("Usuario valido:", result.data);
+            }
 
     return (
         <div>
@@ -69,7 +104,7 @@ export default function ReturnableRegisterForm() {
 
                 </div>
                 {/* grid-flow-col-dense para ajustar el ancho de las columanas al contenido */}
-                <form className="grid grid-flow-col-dense justify-end items-center gap-10 -mt-18">
+                <form className="grid grid-flow-col-dense justify-end items-center gap-10 -mt-18" onSubmit={handleSubmit} noValidate>
                     <div className="flex justify-center items-center h-screen">
                         <div className="flex flex-col">
                             <h2 className="mb-6 font-bold text-body">
@@ -78,7 +113,6 @@ export default function ReturnableRegisterForm() {
                             <Input
                             placeholder="subir imagen"
                             type="image"
-                            onBlur={handleBlur}
                             name="imagen"
                             />
 
@@ -97,46 +131,60 @@ export default function ReturnableRegisterForm() {
                     <div className="grid grid-cols-2 gap-10 ">
                         <div className="flex flex-col gap-3">
                             <Input
-                                // Si no se le agrega el type esque por defecto es text
                                 placeholder="Placa Sena"
-                                onBlur={handleBlur}
-                                name= "placa"
+                                name= "placaMaterial"
                                 label= "Placa Sena"
+                                value={formData.placaMaterial}
+                                onChange={handleChange}
+                                error={errors.placaMaterial}
                             />
                             <Input
                                 placeholder="Serial"
-                                onBlur={handleBlur}
-                                name="serial"
+                                name="serialMaterialDevolutivo"
                                 label="Serial"
+                                value={formData.serialMaterialDevolutivo}
+                                onChange={handleChange}
+                                error={errors.serialMaterialDevolutivo}
                             />
                             <Select
                                 label="Marca"
                                 options={brandName}
-                                name="marca"
+                                name="marcaMaterial"
+                                value={formData.marcaMaterial}
+                                onChange={handleChange}
+                                error={errors.marcaMaterial}
                             />
                             <Input
                                 placeholder="Modelo"
-                                onBlur={handleBlur}
-                                name="modelo"
+                                name="modeloMaterialDevolutivo"
                                 label="Modelo"
+                                value={formData.modeloMaterialDevolutivo}
+                                onChange={handleChange}
+                                error={errors.modeloMaterialDevolutivo}
                             />
                             <Input
                                 placeholder="Nombre del elemento"
-                                type="name"
-                                onChange={handleMaterialChange}
-                                name="nombreElemento"
+                                name="nombreElementoMaterial"
                                 label="Nombre del elemento"
+                                value={formData.nombreElementoMaterial}
+                                onChange={handleChange}
+                                error={errors.nombreElementoMaterial}
                             />
                             <Select
                                 label="Seleccione cuentadante"
                                 options={userName}
-                                name="cuentadante"
+                                name="cuentadanteMaterial"
+                                value={formData.cuentadanteMaterial}
+                                onChange={handleChange}
+                                error={errors.cuentadanteMaterial}
                             />
                             <Input
                                 placeholder="Descripción"
-                                onBlur={handleBlur}
-                                name="description"
+                                name="descripcionMaterial"
                                 label="Descripción"
+                                value={formData.descripcionMaterial}
+                                onChange={handleChange}
+                                error={errors.descripcionMaterial}
                             />
 
                         </div>
@@ -145,45 +193,62 @@ export default function ReturnableRegisterForm() {
                             <Select
                                 label="Categoría"
                                 options={materialCategory}
-                                name="categoria"
+                                name="categoriaMaterialDevolutivo"
+                                value={formData.categoriaMaterialDevolutivo}
+                                onChange={handleChange}
+                                error={errors.categoriaMaterialDevolutivo}
                             />
-
                             <Select
                                 label="Estado"
                                 options={materialState}
-                                name="estado"
-                            />
-                            
+                                name="estadoMaterial"
+                                value={formData.estadoMaterial}
+                                onChange={handleChange}
+                                error={errors.estadoMaterial}
+                            />      
                             <Input
                                 placeholder="Cantidad"
                                 type="number"
-                                name="cantidad"
+                                name="cantidadMaterial"
                                 label="Cantidad"
+                                value={formData.cantidadMaterial}
+                                onChange={handleChange}
+                                error={errors.cantidadMaterial}
                             />
                             <Input
                                 placeholder="Valor unitario"
                                 type="number"
-                                name="valorUnitario"
+                                name="valorUnitarioMaterial"
                                 label="Valor unitario"
+                                value={formData.valorUnitarioMaterial}
+                                onChange={handleChange}
+                                error={errors.valorUnitarioMaterial}
                             />
                             <Input
                                 placeholder="Valor total"
                                 type="number"
-                                name="valorTotal"
+                                name="valorTotalMaterial"
                                 label="Valor total"
+                                value={formData.valorTotalMaterial}
+                                onChange={handleChange}
+                                error={errors.valorTotalMaterial}
                             />
                             <Input
                                 placeholder="Ubicacion"
-                                onBlur={handleBlur}
-                                name="ubicacion"
+                                name="ubicacionMaterial"
                                 label="Ubicación"
+                                value={formData.ubicacionMaterial}
+                                onChange={handleChange}
+                                error={errors.ubicacionMaterial}
                             />
 
                             <Input
                                 placeholder="Dimensiones"
-                                onBlur={handleBlur}
-                                name="dimensiones"
+                                name="dimensionesMaterialDevolutivo"
                                 label="Dimensiones"
+                                value={formData.dimensionesMaterialDevolutivo}
+                                onChange={handleChange}
+                                error={errors.dimensionesMaterialDevolutivo}
                             />
 
                             {/* Acciones */}
@@ -191,6 +256,7 @@ export default function ReturnableRegisterForm() {
                                 <IconButton
                                     variant="primary"
                                     size="md"
+                                    type="submit"
                                 >
                                     Crear
                                 </IconButton>
