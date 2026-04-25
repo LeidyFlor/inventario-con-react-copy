@@ -23,7 +23,7 @@
     /* ====TEXT==== */
 
     --semantic-text-primary: var(--quaternary-950);/* Color principal de lectura, titulos, textos base del documeto*/
-    --semantic-text-secundary: var(--gray-200);/* Textos menos dominantes*/
+    --semantic-text-secundary: var(--black);/* Textos menos dominantes*/
     --semantic-text-muted: var(--gray-500);/*Texto desabilitado por ejemplo*/
     --semantic-text-inverse: var(--gray-900);/*Texto invertido*/
     --semantic-text-title-gradient: linear-gradient(to right, 

@@ -182,5 +182,17 @@
       background: linear-gradient(to right, var(--quaternary-950), var(--sextario-950));
       color: var(--color-white);
     }
+    /* DEGRADADO PARA EL BORDE DEL INPUT EN EDITS */
+    .border-gradient-input-edit {
+      border-bottom: 2px solid transparent;
+      background:
+        linear-gradient(white, white) padding-box, 
+        /*el fondo blanco solo cubre el área interior del botón*/
+
+        linear-gradient(to right, var(--tertiary-950), var(--secundary-900)) border-box; /*el gradiente cubre toda el área incluyendo el borde*/
+
+        color: var(--quaternary-950); /*para el color del texto*/
+    }
+
 
 }

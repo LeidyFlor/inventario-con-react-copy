@@ -6,9 +6,14 @@ export default function Input({
     labelInside = false,
     className = "", //para definir ancho del contenedor
     error,
+    variant = "default",
     ...props
     // porps son las propiedades de un componenete. Y label para que por defecto el campo sea tipo texto
 }) {
+    const variants ={
+        default: "rounded-2xl border-2 border-input-border text-medium text-text-primary bg-input-fill placeholder-text-primary hover:border-2 hover:border-focus-border focus:outline-none focus:ring-1 focus:ring-focus-ring",
+        isEdit: "border-gradient-input-edit rounded-t-xl text-medium text-text-secundary placeholder-text-primary hover:rounded-2xl hover:border-2 hover:border-focus-border transition-all duration-10 focus:outline-none focus:ring-1 focus:ring-focus-ring",
+    }
     const isDate = type === "date";
     
     // cuerpo de la funcion
@@ -25,9 +30,9 @@ export default function Input({
                     text-caption
                     mb-1
                     place-self-start
+
                     ${error ? "text-error" : "text-text-primary" }
                     `}
-                   
                     >
                     {label}
 
@@ -72,22 +77,10 @@ export default function Input({
                         relative
                         ${isDate ? "w-auto" : "w-full"}
                         h-12
-                        rounded-2xl
-                        border-2
-                        border-input-border
                         px-4
-                        text-medium
-                        text-text-primary
-                        bg-input-fill
-                        placeholder-text-primary
-
-                        hover:border-2
-                        hover:border-focus-border
-
-                        focus:outline-none
-                        focus:ring-1
-                        focus:ring-focus-ring
+                        
                         transition-all duration-300
+                        ${variants[variant]}
                         ${error ? "border-red-800" : "text-text-primary" }
 
                          ${labelInside && label
