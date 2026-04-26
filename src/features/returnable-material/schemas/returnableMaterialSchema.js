@@ -3,21 +3,21 @@ import { consumableMaterialShema } from "../../consumable-material/schemas/consu
 
 export const returnableMaterialSchema = consumableMaterialShema
   .extend({
-    serialMaterialDevolutivo: z
+    returnableMaterialSerial: z
       .string()
       .min(5, "El serial no puede estar vacío")
       .max(100, "Límite de caracteres alcanzados del serial"),
 
-    categoriaMaterialDevolutivo: z
+    returnableMaterialCategory: z
       .string()
       .min(1, "Debe seleccionar una categpría"),
 
-    dimensionesMaterialDevolutivo: z
+    returnableMaterialDimensions: z
       .string()
       .optional() //para campos opcionales
       .or(z.literal("")),
 
-    modeloMaterialDevolutivo: z
+    returnableMaterialModel: z
       .string()
       .min(1, "El modelo no puede estar vacío")
       .max(150, "Nombre de modelo muy largo"),
@@ -25,23 +25,23 @@ export const returnableMaterialSchema = consumableMaterialShema
   //El string a comparar en este caso es la llave del json de la opcion. EN ESTE CASO 3 = "Muebles y enseres"
   //  un superrefine puede hacer varias validaciones y sacar mensajes de error difente
   .superRefine((data, ctx) => {
-    if (data.categoriaMaterialDevolutivo === "3") {
+    if (data.returnableMaterialCategory === "3") {
       // Valida que no esté vacío
       if (
-        !data.dimensionesMaterialDevolutivo ||
-        data.dimensionesMaterialDevolutivo.trim() === ""
+        !data.returnableMaterialDimensions ||
+        data.returnableMaterialDimensions.trim() === ""
       ) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           message: "Las dimensiones son obligatorias para muebles y enseres",
-          path: ["dimensionesMaterialDevolutivo"],
+          path: ["returnableMaterialDimensions"],
         });
         return;
       }
 
       // Valida el formato
       const formato = /^\d+x\d+x\d+(cm|m|mm)$/i;
-      const valorLimpio = data.dimensionesMaterialDevolutivo.replace(
+      const valorLimpio = data.returnableMaterialDimensions.replace(
         /\s+/g,
         "",
       );
@@ -49,7 +49,7 @@ export const returnableMaterialSchema = consumableMaterialShema
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           message: "Formato inválido. Ej: 120x75x20cm",
-          path: ["dimensionesMaterialDevolutivo"],
+          path: ["returnableMaterialDimensions"],
         });
       }
     }

@@ -30,7 +30,7 @@ export const tasksSchema = z
     .string()
     .max(1, "Solo se puede elegir un usuario individual"),
 
-    nombreTarea: z
+    taskName: z
       .string()
       .min(5, "Nombre de la tarea muy corto")
       .max(30, "Título de la tarea muy larga"),
@@ -43,12 +43,12 @@ export const tasksSchema = z
     .string()
     .min(1, "Debe seleccionar un estado para la tarea"),
 
-    fechaInicioTarea: datePreprocess(
+    taskDateStart: datePreprocess(
       "La fecha de inicio es obligatoria",
       "Fecha de inicio inválida",
     ),
 
-    fechaFinTarea: datePreprocess(
+    taskDateEnd: datePreprocess(
       "La fecha fin es obligatoria",
       "Fecha de fin inválida",
     ),
@@ -56,12 +56,12 @@ export const tasksSchema = z
   //Valida que la fecha fin no sea antes que la de inicio
   .refine(
     (data) => {
-      if (!data.fechaFinTarea || !data.fechaInicioTarea) return true; //si alguna de las fechas es nula, se debe activar el error de fecha inválida
-      return data.fechaFinTarea >= data.fechaInicioTarea;
+      if (!data.taskDateEnd || !data.taskDateStart) return true; //si alguna de las fechas es nula, se debe activar el error de fecha inválida
+      return data.taskDateEnd >= data.taskDateStart;
     },
     {
       message: "La fecha fin no puede ser anterior a la fecha de inicio",
-      path: ["fechaFinTarea"],
+      path: ["taskDateEnd"],
     },
   )
   .superRefine((data, ctx) => {

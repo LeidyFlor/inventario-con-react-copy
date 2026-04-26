@@ -5,20 +5,20 @@ import { returnableMaterialSchema } from "../schemas/returnableMaterialSchema";
 
 export default function ReturnableRegisterForm() {
     const [formData, setFormData] = useState({
-        placaMaterial: "",
-        marcaMaterial: "",
-        modeloMaterialDevolutivo: "",
-        nombreElementoMaterial: "",
-        cuentadanteMaterial: "",
-        descripcionMaterial: "",
-        estadoMaterial: "",
-        cantidadMaterial: "",
-        valorUnitarioMaterial: "",
-        valorTotalMaterial: "",
-        ubicacionMaterial: "",
-        serialMaterialDevolutivo: "",
-        categoriaMaterialDevolutivo: "",
-        dimensionesMaterialDevolutivo: "",
+        materialBarcodeSena: "",
+        brandName: "",
+        returnableMaterialModel: "",
+        materialName: "",
+        inventoryManger: "",
+        materialDescription: "",
+        materialState: "",
+        materialQuantity: "",
+        materialUnitPrice: "",
+        materialTotalPrice: "",
+        materialLocation: "",
+        returnableMaterialSerial: "",
+        returnableMaterialCategory: "",
+        returnableMaterialDimensions: "",
     });
     const [errors, setErrors] = useState({});
     const [materialCategory, setMaterialCategory] = useState([]);
@@ -132,59 +132,59 @@ export default function ReturnableRegisterForm() {
                         <div className="flex flex-col gap-3">
                             <Input
                                 placeholder="Placa Sena"
-                                name= "placaMaterial"
+                                name= "materialBarcodeSena"
                                 label= "Placa Sena"
-                                value={formData.placaMaterial}
+                                value={formData.materialBarcodeSena}
                                 onChange={handleChange}
-                                error={errors.placaMaterial}
+                                error={errors.materialBarcodeSena}
                             />
                             <Input
                                 placeholder="Serial"
-                                name="serialMaterialDevolutivo"
+                                name="returnableMaterialSerial"
                                 label="Serial"
-                                value={formData.serialMaterialDevolutivo}
+                                value={formData.returnableMaterialSerial}
                                 onChange={handleChange}
-                                error={errors.serialMaterialDevolutivo}
+                                error={errors.returnableMaterialSerial}
                             />
                             <Select
                                 label="Marca"
                                 options={brandName}
-                                name="marcaMaterial"
-                                value={formData.marcaMaterial}
+                                name="brandName"
+                                value={formData.brandName}
                                 onChange={handleChange}
-                                error={errors.marcaMaterial}
+                                error={errors.brandName}
                             />
                             <Input
                                 placeholder="Modelo"
-                                name="modeloMaterialDevolutivo"
+                                name="returnableMaterialModel"
                                 label="Modelo"
-                                value={formData.modeloMaterialDevolutivo}
+                                value={formData.returnableMaterialModel}
                                 onChange={handleChange}
-                                error={errors.modeloMaterialDevolutivo}
+                                error={errors.returnableMaterialModel}
                             />
                             <Input
                                 placeholder="Nombre del elemento"
-                                name="nombreElementoMaterial"
+                                name="materialName"
                                 label="Nombre del elemento"
-                                value={formData.nombreElementoMaterial}
+                                value={formData.materialName}
                                 onChange={handleChange}
-                                error={errors.nombreElementoMaterial}
+                                error={errors.materialName}
                             />
                             <Select
                                 label="Seleccione cuentadante"
                                 options={userName}
-                                name="cuentadanteMaterial"
-                                value={formData.cuentadanteMaterial}
+                                name="inventoryManger"
+                                value={formData.inventoryManger}
                                 onChange={handleChange}
-                                error={errors.cuentadanteMaterial}
+                                error={errors.inventoryManger}
                             />
                             <Input
                                 placeholder="Descripción"
-                                name="descripcionMaterial"
+                                name="materialDescription"
                                 label="Descripción"
-                                value={formData.descripcionMaterial}
+                                value={formData.materialDescription}
                                 onChange={handleChange}
-                                error={errors.descripcionMaterial}
+                                error={errors.materialDescription}
                             />
 
                         </div>
@@ -193,62 +193,62 @@ export default function ReturnableRegisterForm() {
                             <Select
                                 label="Categoría"
                                 options={materialCategory}
-                                name="categoriaMaterialDevolutivo"
-                                value={formData.categoriaMaterialDevolutivo}
+                                name="returnableMaterialCategory"
+                                value={formData.returnableMaterialCategory}
                                 onChange={handleChange}
-                                error={errors.categoriaMaterialDevolutivo}
+                                error={errors.returnableMaterialCategory}
                             />
                             <Select
                                 label="Estado"
                                 options={materialState}
-                                name="estadoMaterial"
-                                value={formData.estadoMaterial}
+                                name="materialState"
+                                value={formData.materialState}
                                 onChange={handleChange}
-                                error={errors.estadoMaterial}
+                                error={errors.materialState}
                             />      
                             <Input
                                 placeholder="Cantidad"
                                 type="number"
-                                name="cantidadMaterial"
+                                name="materialQuantity"
                                 label="Cantidad"
-                                value={formData.cantidadMaterial}
+                                value={formData.materialQuantity}
                                 onChange={handleChange}
-                                error={errors.cantidadMaterial}
+                                error={errors.materialQuantity}
                             />
                             <Input
                                 placeholder="Valor unitario"
                                 type="number"
-                                name="valorUnitarioMaterial"
+                                name="materialUnitPrice"
                                 label="Valor unitario"
-                                value={formData.valorUnitarioMaterial}
+                                value={formData.materialUnitPrice}
                                 onChange={handleChange}
-                                error={errors.valorUnitarioMaterial}
+                                error={errors.materialUnitPrice}
                             />
                             <Input
                                 placeholder="Valor total"
                                 type="number"
-                                name="valorTotalMaterial"
+                                name="materialTotalPrice"
                                 label="Valor total"
-                                value={formData.valorTotalMaterial}
+                                value={formData.materialTotalPrice}
                                 onChange={handleChange}
-                                error={errors.valorTotalMaterial}
+                                error={errors.materialTotalPrice}
                             />
                             <Input
                                 placeholder="Ubicacion"
-                                name="ubicacionMaterial"
+                                name="materialLocation"
                                 label="Ubicación"
-                                value={formData.ubicacionMaterial}
+                                value={formData.materialLocation}
                                 onChange={handleChange}
-                                error={errors.ubicacionMaterial}
+                                error={errors.materialLocation}
                             />
 
                             <Input
                                 placeholder="Dimensiones"
-                                name="dimensionesMaterialDevolutivo"
+                                name="returnableMaterialDimensions"
                                 label="Dimensiones"
-                                value={formData.dimensionesMaterialDevolutivo}
+                                value={formData.returnableMaterialDimensions}
                                 onChange={handleChange}
-                                error={errors.dimensionesMaterialDevolutivo}
+                                error={errors.returnableMaterialDimensions}
                             />
 
                             {/* Acciones */}

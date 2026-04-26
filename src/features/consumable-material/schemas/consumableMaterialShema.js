@@ -1,26 +1,30 @@
 import { z } from "zod";
 
 export const consumableMaterialShema = z.object({
-  placaMaterial: z
+  materialBarcodeSena: z
     .string()
     .min(10, "La placa Sena debe de tener mas de 10 caractéres")
     .max(20, "La placa debe de tener máximo 20 caractéres"),
 
-  marcaMaterial: z.string().min(1, "Debe seleccionar una marca"),
+  brandName: z
+  .string()
+  .min(1, "Debe seleccionar una marca"),
 
-  cuentadanteMaterial: z
+  inventoryManger: z
   .string()
   .min(1, "Debe seleccionar un cuentadante"),
 
-  descripcionMaterial: z
+  materialDescription: z
     .string()
     .max(500, "Descripción demasiado larga")
     .optional() //para campos opcionales
     .or(z.literal("")),
 
-  estadoMaterial: z.string().min(1, "Debe seleccionar un estado"),
+  materialState: z
+  .string()
+  .min(1, "Debe seleccionar un estado"),
 
-  nombreElementoMaterial: z
+  materialName: z
     .string()
     .min(
       2,
@@ -28,7 +32,7 @@ export const consumableMaterialShema = z.object({
     )
     .max(150, "Nombre del material muy largo"),
 
-  cantidadMaterial: z.coerce
+  materialQuantity: z.coerce
     .number({
       invalid_type_error: "Debe ser un número",
     })
@@ -37,14 +41,14 @@ export const consumableMaterialShema = z.object({
     .min(1, "El valor mínimo debe ser 1")
     .max(99999999999, "La cantidad no puede superar los 11 dígitos"),
 
-  valorUnitarioMaterial: z.coerce
+  materialUnitPrice: z.coerce
     .number({
       invalid_type_error: "Debe ser un número",
     })
     .nonnegative("El valor unitario no puede ser negativo")
     .min(1, "El material debe tener valor unitario positivo"),
 
-  valorTotalMaterial: z.coerce //zod convierte string a numero
+  materialTotalPrice: z.coerce //zod convierte string a numero
     .number({
       invalid_type_error: "Debe ser un número",
     })
@@ -52,7 +56,7 @@ export const consumableMaterialShema = z.object({
     .min(1, "El material debe tener valo positivo")
     .max(9999999999, "La cantidad no puede superar los 10 dígitos"),
 
-  ubicacionMaterial: z
+  materialLocation: z
   .string()
   .max(150, "Resuma la ubicación del material"),
 });

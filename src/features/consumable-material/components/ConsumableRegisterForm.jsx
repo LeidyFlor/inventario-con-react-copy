@@ -5,16 +5,16 @@ import { consumableMaterialShema } from "../schemas/consumableMaterialShema";
 
 export default function ConsumableRegisterForm() {
     const [formData, setFormData] = useState({
-        placaMaterial: "",
-        marcaMaterial: "",
-        nombreElementoMaterial: "",
-        cuentadanteMaterial: "",
-        descripcionMaterial: "",
-        estadoMaterial: "",
-        cantidadMaterial: "",
-        valorUnitarioMaterial: "",
-        valorTotalMaterial: "",
-        ubicacionMaterial: "",
+        materialBarcodeSena: "",
+        brandName: "",
+        materialName: "",
+        inventoryManger: "",
+        materialDescription: "",
+        materialState: "",
+        materialQuantity: "",
+        materialUnitPrice: "",
+        materialTotalPrice: "",
+        materialLocation: "",
     });
     const [errors, setErrors] = useState({});
     const [materialState, setMaterialState] = useState([]);
@@ -74,7 +74,7 @@ export default function ConsumableRegisterForm() {
             //Si la validacion es exitosa se limpian los errores anteriores
             setErrors({});
             //result.data contiene los datos ya validados por Zod
-            console.log("Usuario valido:", result.data);
+            console.log("Material valido:", result.data);
         }
     return (
         <div>
@@ -114,43 +114,43 @@ export default function ConsumableRegisterForm() {
                         <div className="flex flex-col gap-3">
                             <Input
                                 placeholder="Placa Sena"
-                                name= "placaMaterial"
+                                name= "materialBarcodeSena"
                                 label="Placa Sena"
-                                value={formData.placaMaterial}
+                                value={formData.materialBarcodeSena}
                                 onChange={handleChange}
-                                error={errors.placaMaterial}
+                                error={errors.materialBarcodeSena}
                             />
                             <Select
                                 label="Marca"
                                 options={brandName}
-                                name="marcaMaterial"
-                                value={formData.marcaMaterial}
+                                name="brandName"
+                                value={formData.brandName}
                                 onChange={handleChange}
-                                error={errors.marcaMaterial}
+                                error={errors.brandName}
                             />
                             <Input
                                 placeholder="Nombre del elemento"
-                                name="nombreElementoMaterial"
+                                name="materialName"
                                 label="Nombre del elemento"
-                                value={formData.nombreElementoMaterial}
+                                value={formData.materialName}
                                 onChange={handleChange}
-                                error={errors.nombreElementoMaterial}
+                                error={errors.materialName}
                             />
                             <Select
                                 label="Seleccione cuentadante"
                                 options={userName}
-                                name="cuentadanteMaterial"
-                                value={formData.cuentadanteMaterial}
+                                name="inventoryManger"
+                                value={formData.inventoryManger}
                                 onChange={handleChange}
-                                error={errors.cuentadanteMaterial}
+                                error={errors.inventoryManger}
                             />
                             <Input
                                 placeholder="Descripción"
-                                name="descripcionMaterial"
+                                name="materialDescription"
                                 label="Descipción"
-                                value={formData.descripcionMaterial}
+                                value={formData.materialDescription}
                                 onChange={handleChange}
-                                error={errors.descripcionMaterial}
+                                error={errors.materialDescription}
                             />
 
                         </div>
@@ -158,45 +158,45 @@ export default function ConsumableRegisterForm() {
                             <Select
                                 label="Estado"
                                 options={materialState}
-                                name="estadoMaterial"
-                                value={formData.estadoMaterial}
+                                name="materialState"
+                                value={formData.materialState}
                                 onChange={handleChange}
-                                error={errors.estadoMaterial}
+                                error={errors.materialState}
                             />
                             <Input
                                 placeholder="Cantidad"
                                 type="number"
-                                name="cantidadMaterial"
+                                name="materialQuantity"
                                 label="Cantidad"
-                                value={formData.cantidadMaterial}
+                                value={formData.materialQuantity}
                                 onChange={handleChange}
-                                error={errors.cantidadMaterial}
+                                error={errors.materialQuantity}
                             />
                             <Input
                                 placeholder="Valor unitario"
                                 type="number"
-                                name="valorUnitarioMaterial"
+                                name="materialUnitPrice"
                                 label= "Valor unitario"
-                                value={formData.valorUnitarioMaterial}
+                                value={formData.materialUnitPrice}
                                 onChange={handleChange}
-                                error={errors.valorUnitarioMaterial}
+                                error={errors.materialUnitPrice}
                             />
                             <Input
                                 placeholder="Valor total"
                                 type="number"
-                                name="valorTotalMaterial"
+                                name="materialTotalPrice"
                                 label="Valor total"
-                                value={formData.valorTotalMaterial}
+                                value={formData.materialTotalPrice}
                                 onChange={handleChange}
-                                error={errors.valorTotalMaterial}
+                                error={errors.materialTotalPrice}
                             />
                             <Input
                                 placeholder="Ubicación"
-                                name="ubicacionMaterial"
+                                name="materialLocation"
                                 label="Ubicación"
-                                value={formData.ubicacionMaterial}
+                                value={formData.materialLocation}
                                 onChange={handleChange}
-                                error={errors.ubicacionMaterial}
+                                error={errors.materialLocation}
                             />
 
                             {/* Acciones */}

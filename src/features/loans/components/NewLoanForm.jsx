@@ -5,13 +5,13 @@ import { loanSchema } from "../schemas/loanSchema";
 
 export default function NewLoanForm() {
     const [formData, setFormData] = useState({
-        usuarioSolicitantePrestamo: "",
-        usuarioPrestador: "",
-        grupoAprendices: "",
-        fechaSalidaPrestamo: "",
-        justificacionPrestamo: "",
-        fechaEntregaPrestamo: "",
-        tipoPrestamo: "",
+        loanUserRequester: "",
+        loanUserLender: "",
+        loanStudentsGroup: "",
+        loanDateOut: "",
+        loanJustification: "",
+        loanDateIn: "",
+        loanType: "",
     });
     const [errors, setErrors] = useState({});
     // useState que me trae el arreglo mediante el get en servicios
@@ -121,11 +121,11 @@ export default function NewLoanForm() {
                         <div className="flex flex-col gap-4">
                             <h2 className="font-bold text-body">2. Selecciona usuario solicitante</h2>
                             <Select
-                                name="usuarioSolicitantePrestamo"
+                                name="loanUserRequester"
                                 options={userName}
-                                value={formData.usuarioSolicitantePrestamo}
+                                value={formData.loanUserRequester}
                                 onChange={handleChange}
-                                error={errors.usuarioSolicitantePrestamo}
+                                error={errors.loanUserRequester}
                             />
                         </div>
 
@@ -136,8 +136,8 @@ export default function NewLoanForm() {
                                 <div className="">
                                     <Input
                                         placeholder="Nombre del prestador"
-                                        name="usuarioPrestador"
-                                        value={formData.usuarioPrestador}
+                                        name="loanUserLender"
+                                        value={formData.loanUserLender}
                                         onChange={handleChange}
                                     />
                                 </div>
@@ -156,44 +156,44 @@ export default function NewLoanForm() {
                         <div className="flex flex-col gap-4">
                             <Input 
                                 placeholder="Grupo aprendices"
-                                name="grupoAprendices"
+                                name="loanStudentsGroup"
                                 label="Grupo aprendices"
-                                value={formData.grupoAprendices}
+                                value={formData.loanStudentsGroup}
                                 onChange={handleChange}
-                                error={errors.grupoAprendices}
+                                error={errors.loanStudentsGroup}
                             />
                             <Input 
                                 placeholder="Justificación de uso" 
-                                name="justificacionPrestamo" 
+                                name="loanJustification" 
                                 label="Justificacion de uso"
-                                value={formData.justificacionPrestamo}
+                                value={formData.loanJustification}
                                 onChange={handleChange}
-                                error={errors.justificacionPrestamo}
+                                error={errors.loanJustification}
                             />
                             <Select
                                 label="Tipo de préstamo"
-                                name="tipoPrestamo"
+                                name="loanType"
                                 options={loanTypes}
-                                value={formData.tipoPrestamo}
+                                value={formData.loanType}
                                 onChange={handleChange}
-                                error={errors.tipoPrestamo}
+                                error={errors.loanType}
                             />
                             <div className="flex gap-2">
                                 <Input
                                     type="date"
-                                    name="fechaSalidaPrestamo"
+                                    name="loanDateOut"
                                     label="Fecha salida"
-                                    value={formData.fechaSalidaPrestamo}
+                                    value={formData.loanDateOut}
                                     onChange={handleChange}
-                                    error={errors.fechaSalidaPrestamo}
+                                    error={errors.loanDateOut}
                                 />
                                 <Input
                                     label="Fecha de entrega"
                                     type="date"
-                                    name="fechaEntregaPrestamo"
-                                    value={formData.fechaEntregaPrestamo}
+                                    name="loanDateIn"
+                                    value={formData.loanDateIn}
                                     onChange={handleChange}
-                                    error={errors.fechaEntregaPrestamo}
+                                    error={errors.loanDateIn}
                                 />
 
                             </div>

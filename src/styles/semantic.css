@@ -14,7 +14,7 @@
 
     --semantic-background: var(--white);/* Fondo de toda la aplicacion*/
 
-    --semantic-surface: var(--gray-900);/*Fondo de mpdales, cards containers*/
+    --semantic-surface: var(--white);/*Fondo de mpdales, cards containers*/
 
     --semantic-background-muted: var(--primary-400);/*Zona secundarias, conmenos importancia*/
 
@@ -35,11 +35,12 @@
 
     /* ==== BORDER ==== */
 
-    --semantic-border: var(--gray-800);/* Border principal de todooa lkos componentes*/
+    --semantic-border: var(--tertiary-950);/* Border principal de todooa lkos componentes*/
     --semantic-border-strong: var(--gray-300);/* Bordea más fuertes*/
     --semantic-border-green-container: var(--primary-100); /*borde green container*/
     --semantic-border-default-button: var(--gray-600);
     --semantic-border-line-subtitle: var(--tertiary-800);
+    --semantic-border-edit-information: var(--gray-800);/* Border principal de todooa lkos componentes*/
     /* ==== FOCUS ==== */
 
     --semantic-focus-ring: var(--sextario-950);

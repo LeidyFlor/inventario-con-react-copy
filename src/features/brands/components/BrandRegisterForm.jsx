@@ -19,7 +19,7 @@ export default function BrandRegisterForm(){
                     placeholder ="Escriba la marca"
                     label = "Agregar marca"
                     onChange={handleBrand}
-                    name="marca"
+                    name="brandName"
                 >
                 </Input>
                 <IconButton>

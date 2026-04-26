@@ -5,11 +5,11 @@ import { tasksSchema } from "../schemas/tasksSchema";
 export default function TaskForm() {
     const [formData, setFormData] = useState({
         userType: "",
-        nombreTarea: "",
-        descripcionTarea: "",
-        estadoTarea: "",
-        fechaInicioTarea: "",
-        fechaFinTarea: "",
+        taskName: "",
+        taskDescription: "",
+        taskState: "",
+        taskDateStart: "",
+        taskDateEnd: "",
         userName: "",
     });
     const [errors, setErrors] = useState({});
@@ -123,26 +123,26 @@ export default function TaskForm() {
                     <Input 
                         label="Nombre de la tarea" 
                         placeholder="Nombre de la tarea" 
-                        name="nombreTarea"
-                        value={formData.nombreTarea}
+                        name="taskName"
+                        value={formData.taskName}
                         onChange={handleChange}
-                        error={errors.nombreTarea}
+                        error={errors.taskName}
                     />
                     <Input 
                         label="Descripción de la tarea" 
                         placeholder="Descripción de la tarea" 
-                        name="descripcionTarea"
-                        value={formData.descripcionTarea}
+                        name="taskDescription"
+                        value={formData.taskDescription}
                         onChange={handleChange}
-                        error={errors.descripcionTarea}
+                        error={errors.taskDescription}
                     />
                     <Select 
                         label="Estado tarea" 
-                        name="estadoTarea" 
+                        name="taskState" 
                         options={taskState}
-                        value={formData.estadoTarea}
+                        value={formData.taskState}
                         onChange={handleChange}
-                        error={errors.estadoTarea}
+                        error={errors.taskState}
                     />
 
                     {/* Fechas: se usa type="date" para que el navegador muestre el selector de fecha */}
@@ -150,24 +150,24 @@ export default function TaskForm() {
                         <Input 
                             placeholder="DD/MM/AAAA" 
                             type="date" 
-                            name="fechaInicioTarea" 
+                            name="taskDateStart" 
                             label = "Fecha inicio"
                             className="w-[200px]"
                             labelInside
-                            value={formData.fechaInicioTarea}
+                            value={formData.taskDateStart}
                             onChange={handleChange}
-                            error={errors.fechaInicioTarea}
+                            error={errors.taskDateStart}
                         />
                         <Input 
                             placeholder="DD/MM/AAA" 
                             type="date" 
-                            name="fechaFinTarea"    
+                            name="taskDateEnd"    
                             label="Fecha Fin"
                             className="w-[200px]"
                             labelInside
-                            value={formData.fechaFinTarea}
+                            value={formData.taskDateEnd}
                             onChange={handleChange}
-                            error={errors.fechaFinTarea}
+                            error={errors.taskDateEnd}
                         />
                     </div>
 

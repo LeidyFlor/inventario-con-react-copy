@@ -27,6 +27,7 @@
   /* ==BORDER=== */
 
   --color-border: var(--semantic-border);
+  --color-border-edit-informaion: var(--semantic-border-edit-information);
   --color-border-strong: var(--semantic-border-strong);
   --color-border-green-container: var(--semantic-border-green-container);
   --color-border-default-button: var(--semantic-border-default-button);
@@ -184,7 +185,7 @@
     }
     /* DEGRADADO PARA EL BORDE DEL INPUT EN EDITS */
     .border-gradient-input-edit {
-      border-bottom: 2px solid transparent;
+      border-bottom: 2.5px solid transparent;
       background:
         linear-gradient(white, white) padding-box, 
         /*el fondo blanco solo cubre el área interior del botón*/

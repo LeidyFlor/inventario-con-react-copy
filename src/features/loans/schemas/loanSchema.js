@@ -25,28 +25,28 @@ const datePreprocess = (mensajeError) =>
 
 export const loanSchema = z
   .object({
-    usuarioSolicitantePrestamo: z
+    loanUserRequester: z
       .string()
       .min(1, "Debe seleccionar usuario solicitante"),
 
-    grupoAprendices: z
+    loanStudentsGroup: z
       .string()
       .trim()
       .min(7, "Un número de grupo válido debe de tener 7 números")
       .max(7, "Un número de grupo válido debe de tener 7 números")
       .regex(/^[0-9]+$/, "Debe contener solo números"),
 
-    justificacionPrestamo: z
+    loanJustification: z
         .string()
         .min(10, "Ingrese una justificación más detallada")
         .max(500, "Justificación demasiado larga")
     ,
 
-    tipoPrestamo: z
+    loanType: z
         .string()
         .min(1, "Debe seleccionar el tipo de préstamo"),
 
-    fechaSalidaPrestamo: datePreprocess(
+    loanDateOut: datePreprocess(
       "La fecha de inicio es obligatoria",
       "Fecha de inicio inválida",
     ),
@@ -59,8 +59,8 @@ export const loanSchema = z
   //Valida que la fecha fin no sea antes que la de inicio
   .refine(
     (data) => {
-      if (!data.fechaEntregaPrestamo || !data.fechaSalidaPrestamo) return true; //si alguna de las fechas es nula, se debe activar el error de fecha inválida
-      return data.fechaEntregaPrestamo >= data.fechaSalidaPrestamo;
+      if (!data.fechaEntregaPrestamo || !data.loanDateOut) return true; //si alguna de las fechas es nula, se debe activar el error de fecha inválida
+      return data.fechaEntregaPrestamo >= data.loanDateOut;
     },
     {
       message: "La fecha de entrega no puede ser anterior a la fecha de salida",
