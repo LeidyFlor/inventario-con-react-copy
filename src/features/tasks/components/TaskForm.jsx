@@ -1,4 +1,4 @@
-import { Input, Button, IconButton, Select } from "@/shared"
+import { Input, Button, IconButton, Select, Checkbox } from "@/shared"
 import React, { useState, useEffect } from "react";
 import { getUserTypes, getTaskState, getUserName } from "@/features/tasks/services/selectService";
 import { tasksSchema } from "../schemas/tasksSchema";
@@ -25,14 +25,14 @@ export default function TaskForm() {
     []);
      const handleChange = (e) => {
                 // Se obtiene el nombre del campo y su valor
-                const { name, value } = e.target; //target es lo que viene cuando se escribe
+                const { name, value, type, checked } = e.target; //target es lo que viene cuando se escribe
         
                 setFormData((prev) => ({
                     //Se copian todos los valores anteriores del estado
                     ...prev,
         
                     //Se actualiza unicamente lo que cambió
-                    [name]: value,
+                    [name]: type === "checkbox" ? checked : value,
                 }));
             };
             // ==================================================
@@ -74,15 +74,15 @@ export default function TaskForm() {
                 console.log("Usuario valido:", result.data);
             }
     return (
-        <div>
-            <div className="mb-4">
+        <div className="flex flex-col place-items-center justify-items-center relative">
+            <div className="inset-2 absolute w-fit h-fit">
                 <Button variant="secondary" size="sm">
                     Atrás
                 </Button>
             </div>
 
             {/* Layout dos columnas: formulario | tarjetas */}
-            <div className="grid grid-cols-2 gap-10">
+            <div className="grid grid-cols-2 gap-10 mt-3">
 
                 {/* Columna izquierda: usuario y formulario de tarea */}
                 <form className="flex flex-col items-center gap-4" onSubmit={handleSubmit} noValidate>
@@ -97,14 +97,6 @@ export default function TaskForm() {
                     <p className="w-80 text-small text-text-primary">Seleccione tipo de usuario o usuario individual para asignar o consultar tareas</p>
 
                     <Select
-                        label="Seleccione tipo de usuario"
-                        name="userType"
-                        options={userTypes}
-                        value={formData.userType}
-                        onChange={handleChange}
-                        error={errors.userType}
-                    />
-                    <Select
                         label="Seleccione usuario"
                         name="userName"
                         options={userName}
@@ -112,6 +104,29 @@ export default function TaskForm() {
                         onChange={handleChange}
                         error={errors.userName}
                     />
+                    <Select
+                        label="Seleccione tipo de usuario"
+                        name="userType"
+                        options={userTypes}
+                        value={formData.userType}
+                        onChange={handleChange}
+                        error={errors.userType}
+                    />
+                    <div className="flex gap-6">
+                        <Button
+                            variant="primary"
+                            size="sm"
+                        >
+                            Nuevo grupo
+                        </Button>
+                        <Button
+                            variant="primary"
+                            size="sm"
+                        >
+                            Nueva marca
+                        </Button>
+
+                    </div>
 
                     {/* Sección agregar tarea */}
                     <div className="flex flex-col items-center w-fit">

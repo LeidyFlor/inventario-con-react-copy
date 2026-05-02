@@ -51,7 +51,7 @@ export const loanSchema = z
       "Fecha de inicio inválida",
     ),
 
-    fechaEntregaPrestamo: datePreprocess(
+    loanDateIn: datePreprocess(
       "La fecha fin es obligatoria",
       "Fecha de fin inválida",
     ),
@@ -59,11 +59,11 @@ export const loanSchema = z
   //Valida que la fecha fin no sea antes que la de inicio
   .refine(
     (data) => {
-      if (!data.fechaEntregaPrestamo || !data.loanDateOut) return true; //si alguna de las fechas es nula, se debe activar el error de fecha inválida
-      return data.fechaEntregaPrestamo >= data.loanDateOut;
+      if (!data.loanDateIn || !data.loanDateOut) return true; //si alguna de las fechas es nula, se debe activar el error de fecha inválida
+      return data.loanDateIn >= data.loanDateOut;
     },
     {
       message: "La fecha de entrega no puede ser anterior a la fecha de salida",
-      path: ["fechaEntregaPrestamo"],
+      path: ["loanDateIn"],
     },
   );

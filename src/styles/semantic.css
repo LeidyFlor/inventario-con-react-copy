@@ -16,6 +16,8 @@
 
     --semantic-surface: var(--white);/*Fondo de mpdales, cards containers*/
 
+    --semantic-login-container: var(--primary-100);
+
     --semantic-background-muted: var(--primary-400);/*Zona secundarias, conmenos importancia*/
 
     --semantic-background-inverse: var(--black); /*Es el opuesto del background*/
@@ -40,7 +42,9 @@
     --semantic-border-green-container: var(--primary-100); /*borde green container*/
     --semantic-border-default-button: var(--gray-600);
     --semantic-border-line-subtitle: var(--tertiary-800);
-    --semantic-border-edit-information: var(--gray-800);/* Border principal de todooa lkos componentes*/
+    --semantic-border-login-container: var(--secundary-500);
+    --semantic-border-edit-information: var(--gray-800);/* Border para contenedores del login*/
+    --semantic-border-cian-line: linear-gradient(to top, var(--sextario-950), var(--secundary-950) ) ; /*Borde cian que divide contenidos*/
     /* ==== FOCUS ==== */
 
     --semantic-focus-ring: var(--sextario-950);

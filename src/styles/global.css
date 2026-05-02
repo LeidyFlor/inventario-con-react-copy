@@ -14,6 +14,7 @@
 
   --color-background: var(--semantic-background);
   --color-surface: var(--semantic-surface);
+  --color-background-login-coontainer: var(--semantic-login-container);
   --color-surface-muted: var(--semantic-surface-muted);
   --color-background-inverse: var(--semantic-background-inverse);
 
@@ -30,6 +31,7 @@
   --color-border-edit-informaion: var(--semantic-border-edit-information);
   --color-border-strong: var(--semantic-border-strong);
   --color-border-green-container: var(--semantic-border-green-container);
+  --color-border-login-container: var(--semantic-border-login-container);
   --color-border-default-button: var(--semantic-border-default-button);
   --color-border-line-subtitle: var(--semantic-border-line-subtitle); /*para las lineas verdes de algunos subtítulos*/
 
@@ -109,7 +111,6 @@
         -webkit-text-fill-color: transparent;
         background-clip: text;
         font-weight: var(--font-weight-heading);
-
         
     }
     .bg-gradiant-title-line{
@@ -117,6 +118,12 @@
         border-bottom: 3px solid transparent;
         -webkit-border-image: var(--semantic-text-title-gradient) 1;
         border-image: var(--semantic-text-title-gradient) 1;
+    }
+
+    .bg-gradiant-cian-purple-line{
+        /* Línea degradada */
+        -webkit-border-image: var(--semantic-border-cian-line) 1;
+        border-image: var(--semantic-border-cian-line) 1;
     }
 
     
@@ -133,7 +140,7 @@
     .border-gradient-outline {
       border: 2px solid transparent;
       background:
-        linear-gradient(white, white) padding-box, 
+        linear-gradient(var(--white), var(--white)) padding-box, 
         /*el fondo blanco solo cubre el área interior del botón*/
 
         linear-gradient(to right, var(--quaternary-950), var(--sextario-950)) border-box; /*el gradiente cubre toda el área incluyendo el borde*/
@@ -145,7 +152,7 @@
     .hover\:border-gradient-primary:hover {
       border: 2px solid transparent;
       background:
-        linear-gradient(white, white) padding-box, 
+        linear-gradient(var(--white), var(--white)) padding-box, 
         /*el fondo blanco solo cubre el área interior del botón*/
 
         linear-gradient(to right, var(--tertiary-950), var(--primary-200)) border-box; /*el gradiente cubre toda el área incluyendo el borde*/
@@ -158,7 +165,7 @@
     .hover\:border-gradient-back:hover {
       border: 2px solid transparent;
       background:
-        linear-gradient(white, white) padding-box, 
+        linear-gradient(var(--white), var(--white)) padding-box, 
         /*el fondo blanco solo cubre el área interior del botón*/
 
         linear-gradient(to right, var(--secundary-200), var(--secundary-950)) border-box; /*el gradiente cubre toda el área incluyendo el borde*/
@@ -170,7 +177,7 @@
     .hover\:border-gradient-warning:hover {
       border: 2px solid transparent;
       background:
-        linear-gradient(white, white) padding-box, 
+        linear-gradient(var(--white), var(--white)) padding-box, 
         /*el fondo blanco solo cubre el área interior del botón*/
 
         linear-gradient(to bottom, var(--quinary-950), var(--quinary-300)) border-box; /*el gradiente cubre toda el área incluyendo el borde*/
@@ -187,13 +194,18 @@
     .border-gradient-input-edit {
       border-bottom: 2.5px solid transparent;
       background:
-        linear-gradient(white, white) padding-box, 
+        linear-gradient(var(--white), var(--white)) padding-box, 
         /*el fondo blanco solo cubre el área interior del botón*/
 
         linear-gradient(to right, var(--tertiary-950), var(--secundary-900)) border-box; /*el gradiente cubre toda el área incluyendo el borde*/
 
         color: var(--quaternary-950); /*para el color del texto*/
     }
-
+    /* Texto para subtitulos de informacion seccion editar */
+    .parrafo-edit-style{
+        font-size: var(--text-body);
+        font-weight: var(--font-weight-semibold);
+        color: var(--color-text-primary);
+    }
 
 }

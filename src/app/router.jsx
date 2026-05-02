@@ -2,10 +2,10 @@ import { createBrowserRouter } from "react-router-dom";
 import MainLayout from "@/shared/layouts/MainLayout";
 import { CreateUserPage, EditUserPage } from "@/features/users";
 import { CreteBrandPage } from "@/features/brands";
-import { CreateLoanPage } from "@/features/loans";
+import { CreateLoanPage,  } from "@/features/loans";
 import { CreateTaskPage } from "@/features/tasks";
 import { CreateConsumablePage, EditConsumablePage } from "@/features/consumable-material";
-import {CreateReturnablePage} from "@/features/returnable-material";
+import { CreateReturnablePage, EditReturnablePage } from "@/features/returnable-material";
 
 const router = createBrowserRouter([
     {

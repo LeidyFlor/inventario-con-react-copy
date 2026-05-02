@@ -3,4 +3,5 @@ export { default as Button } from "./components/Button.jsx";
 export { default as IconButton } from "./components/IconButton.jsx";
 export { default as DateInput } from "./components/DateInput.jsx";
 export { default as Select } from "./components/Select.jsx";
+export { default as Checkbox } from "./components/Checkbox.jsx";
 //Exporta layout y components

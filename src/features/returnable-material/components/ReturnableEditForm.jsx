@@ -1,12 +1,13 @@
 import { Input, Button, IconButton, Select } from "@/shared"
 import React, { useState, useEffect } from "react";
-import { getMaterialState, getUserName, getBrandName } from "@/features/consumable-material/services/selectService.js";
-import { consumableMaterialShema } from "../schemas/consumableMaterialShema";
+import { getMaterialCategory, getMaterialState, getUserName, getBrandName } from "@/features/returnable-material/services/selectService.js";
+import { returnableMaterialSchema } from "../schemas/returnableMaterialSchema";
 
 export default function ReturnableEditForm() {
     const [formData, setFormData] = useState({
         materialBarcodeSena: "",
         brandName: "",
+        returnableMaterialModel: "",
         materialName: "",
         inventoryManger: "",
         materialDescription: "",
@@ -15,17 +16,22 @@ export default function ReturnableEditForm() {
         materialUnitPrice: "",
         materialTotalPrice: "",
         materialLocation: "",
+        returnableMaterialSerial: "",
+        returnableMaterialCategory: "",
+        returnableMaterialDimensions: "",
     });
     const [errors, setErrors] = useState({});
+    const [materialCategory, setMaterialCategory] = useState([]);
     const [materialState, setMaterialState] = useState([]);
-    const [userName, setUserName] = useState([]); //use state para cuentadante
+    const [userName, setUserName] = useState([]);
     const [brandName, setBrandName] = useState([]);
 
     useEffect(() => {
+        getMaterialCategory().then(setMaterialCategory);
         getMaterialState().then(setMaterialState);
         getUserName().then(setUserName);
         getBrandName().then(setBrandName);
-    }, []); //los [] es para que al menos se ejecute una vez, no tiene dependencia
+    }, [])
     const handleChange = (e) => {
         // Se obtiene el nombre del campo y su valor
         const { name, value } = e.target; //target es lo que viene cuando se escribe
@@ -50,7 +56,7 @@ export default function ReturnableEditForm() {
         e.preventDefault();
         //Se valida el objeto formData usando el esquema definido con Zod
         // safeParse devuelve un objeto indicando si la validacion fue exitosa o no
-        const result = consumableMaterialShema.safeParse(formData);
+        const result = returnableMaterialSchema.safeParse(formData);
 
         //Si la validacion falla
         if (!result.success) {
@@ -87,17 +93,17 @@ export default function ReturnableEditForm() {
                 </Button>
             </div>
             {/* contenedor verde */}
-            <div className="bg-gradient-container-green border-4 border-border-green-container p-6 rounded-4xl  w-fit mt-2">
+            <div className="bg-gradient-container-green border-4 border-border-green-container p-10 rounded-4xl w-fit mt-2">
                 {/* contenenedor del titulo y la linea */}
                 <div className="mb-6 max-w-max">
                     <h1 className="text-gradient-title text-h3 pb-0.5">
-                        Editar Material
+                        Editar material devolutivo
                     </h1>{/*linea degradada del titulo*/}
                     <div className="h-0.5 bg-gradiant-title-line"></div>
 
                 </div>
-                <form className="flex items-center gap-x-10" onSubmit={handleSubmit} noValidate>
-                    <div className="flex flex-col gap-5">
+                <form className="flex items-center justify-between gap-x-10" onSubmit={handleSubmit} noValidate>
+                    <div className="flex flex-col gap-5 place-items-center">
                         <Input
                             placeholder="subir imagen"
                             type="image"
@@ -118,6 +124,15 @@ export default function ReturnableEditForm() {
                             onChange={handleChange}
                             error={errors.materialDescription}
                         />
+                        <h2 className="mt-6 font-bold text-body">
+                            Editar ficha técnica
+                        </h2>
+
+                        <div className="mb-2">
+                            <Button variant="primary" size="sm">
+                                Subir
+                            </Button>
+                        </div>
                         <div className="flex gap-10 place-items-center justify-center">
                             <h3 className="font-semibold text-medium">Habilitar / Deshabilitar</h3>
                             <Button
@@ -154,6 +169,15 @@ export default function ReturnableEditForm() {
                                 value={formData.inventoryManger}
                                 onChange={handleChange}
                                 error={errors.inventoryManger}
+                                variant="isEdit"
+                            />
+                            <p className="parrafo-edit-style">Categoría:</p>
+                            <Select
+                                options={materialCategory}
+                                name="returnableMaterialCategory"
+                                value={formData.returnableMaterialCategory}
+                                onChange={handleChange}
+                                error={errors.returnableMaterialCategory}
                                 variant="isEdit"
                             />
                             <p className="parrafo-edit-style">Cantidad:</p>

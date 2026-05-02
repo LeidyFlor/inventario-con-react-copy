@@ -75,15 +75,15 @@ export default function NewLoanForm() {
     }
 
     return (
-        <div>
-            <div className="mb-10">
+        <div className="flex flex-col place-items-center justify-items-center relative">
+            <div className="absolute inset-2 w-fit h-fit">
                 <Button variant="secondary" size="sm">
                     Atrás
                 </Button>
             </div>
 
             {/* Contenedor verde */}
-            <div className="bg-gradient-container-green border-4 border-border-green-container p-10 rounded-4xl">
+            <div className="bg-gradient-container-green border-4 border-border-green-container p-6 rounded-4xl w-fit mt-10">
 
                 {/* contenedor del titulo y la linea */}
                 <div className="mb-6 max-w-max">
@@ -94,11 +94,11 @@ export default function NewLoanForm() {
                 </div>
 
                 {/* Layout de dos columnas */}
-                <form className="grid grid-cols-2 gap-10" onSubmit={handleSubmit} noValidate>
+                <form className="flex gap-10 mx-2" onSubmit={handleSubmit} noValidate>
 
                     {/* Columna izquierda*/}
                     {/* border-r -> línea vertical del centro que divide las columnas*/}
-                    <div className="flex flex-col justify-evenly  border-r-2  pr-4">          
+                    <div className="flex flex-col justify-evenly  border-r-2  pr-4 bg-gradiant-cian-purple-line">          
                         {/* Selección de materiales */}
                         <div className="flex flex-col gap-4">
                             <h2 className="font-bold text-body">1. Selecciona los materiales</h2>
@@ -149,8 +149,8 @@ export default function NewLoanForm() {
                         </div>
                     </div>
 
-                    {/* Columna ingresar datos*/}
-                    <div className="flex flex-col gap-6">
+                    {/* Columna DERECHA ingresar datos*/}
+                    <div className="flex flex-col gap-6 w-fit">
                         <h2 className="font-bold text-body">4. Ingresar los siguientes datos:</h2>
 
                         <div className="flex flex-col gap-4">

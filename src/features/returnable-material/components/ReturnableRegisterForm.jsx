@@ -83,8 +83,8 @@ export default function ReturnableRegisterForm() {
             }
 
     return (
-        <div>
-            <div className="mb-10">
+        <div className="flex flex-col place-items-center justify-items-center relative">
+            <div className="inset-2 absolute w-fit h-fit">
                 <Button
                     variant="secondary"
                     size="sm"
@@ -94,7 +94,7 @@ export default function ReturnableRegisterForm() {
 
             </div>
             {/* contenedor verde */}
-            <div className="bg-gradient-container-green border-4 border-border-green-container p-10 rounded-4xl ">
+            <div className="bg-gradient-container-green border-4 border-border-green-container p-6 rounded-4xl  w-fit mt-2 h-fit">
                 {/* contenenedor del titulo y la linea */}
                 <div className="mb-6 max-w-max ">
                     <h1 className="text-gradient-title text-h3 pb-0.5">
@@ -104,9 +104,9 @@ export default function ReturnableRegisterForm() {
 
                 </div>
                 {/* grid-flow-col-dense para ajustar el ancho de las columanas al contenido */}
-                <form className="grid grid-flow-col-dense justify-end items-center gap-10 -mt-18" onSubmit={handleSubmit} noValidate>
-                    <div className="flex justify-center items-center h-screen">
-                        <div className="flex flex-col">
+                <form className="grid grid-flow-col-dense items-center gap-10 " onSubmit={handleSubmit} noValidate>
+                    <div className="flex justify-center items-center">
+                        <div className="flex flex-col place-items-center">
                             <h2 className="mb-6 font-bold text-body">
                                 Agregar imagen del elemento
                             </h2>
@@ -120,7 +120,7 @@ export default function ReturnableRegisterForm() {
                             Agregar ficha técnica
                             </h2>
 
-                            <div className="mt-6">
+                            <div className="mt-6 ">
                             <Button variant="primary" size="sm">
                                 Agregar
                             </Button>

@@ -10,7 +10,7 @@ export const returnableMaterialSchema = consumableMaterialShema
 
     returnableMaterialCategory: z
       .string()
-      .min(1, "Debe seleccionar una categpría"),
+      .min(1, "Debe seleccionar una categoría"),
 
     returnableMaterialDimensions: z
       .string()

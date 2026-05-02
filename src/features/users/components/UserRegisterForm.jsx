@@ -16,6 +16,8 @@ export default function UserRegisterForm() {
         userType: "",
         userDocumentType: "",
         userEmailConfir: "",
+        userDateEnd: "",
+        userDateStart: "",
     });
     const [errors, setErrors] = useState({});
     // useState que me trae el arreglo mediante el get en servicios
@@ -87,8 +89,8 @@ export default function UserRegisterForm() {
     }
 
     return (
-        <div>
-            <div className="mb-10">
+        <div className="flex flex-col place-items-center justify-items-center relative">
+            <div className="inset-2 absolute w-fit h-fit">
                 <Button
                     variant="secondary"
                     size="sm"
@@ -98,7 +100,7 @@ export default function UserRegisterForm() {
 
             </div>
             {/* contenedor verde */}
-            <div className="bg-gradient-container-green border-4 border-border-green-container p-10 rounded-4xl">
+            <div className="bg-gradient-container-green border-4 border-border-green-container p-6 rounded-4xl w-fit mt-10">
                 {/* contenenedor del titulo y la linea */}
                 <div className="mb-6 max-w-max">
                     <h1 className="text-gradient-title text-h3 pb-0.5">
@@ -107,7 +109,7 @@ export default function UserRegisterForm() {
                     <div className="h-0.5 bg-gradiant-title-line"></div>
 
                 </div>
-                <form className="grid grid-cols-1 items-center gap-10 " onSubmit={handleSubmit} noValidate>
+                <form className="grid grid-cols-1 w-fit items-center justify-center gap-10 " onSubmit={handleSubmit} noValidate>
                     {/* noValidate es para quitar las validaciones automaticas de html del navegador */}
                     {/* Inputs */}
                     <div className="grid grid-cols-3 gap-3 my-0 mx-auto">
@@ -205,6 +207,26 @@ export default function UserRegisterForm() {
                             onChange={handleChange}
                             error={errors.userPassword}
                         />
+                        <div className="flex gap-1.5">
+                            {/* Fecha inicio usuario */}
+                            <Input
+                                type="date"
+                                name="userDateStart"
+                                label="Fecha inicio"
+                                value={formData.userDateStart}
+                                onChange={handleChange}
+                                error={errors.userDateStart}
+                            />
+                            {/* Fecha fin usuario */}
+                            <Input
+                                type="date"
+                                name="userDateEnd"
+                                label="Fecha fin"
+                                value={formData.userDateEnd}
+                                onChange={handleChange}
+                                error={errors.userDateEnd}
+                            />
+                        </div>
 
                         {/* Acciones */}
                         <div className="flex justify-end">

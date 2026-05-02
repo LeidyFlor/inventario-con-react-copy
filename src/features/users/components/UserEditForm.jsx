@@ -87,8 +87,8 @@ export default function UserEditForm() {
         console.log("Usuario valido:", result.data);
     }
     return(
-        <div>
-            <div className="mb-10">
+        <div className="flex flex-col place-items-center justify-items-center relative">
+            <div className="inset-2 absolute w-fit h-fit">
                 <Button
                     variant="secondary"
                     size="sm"
@@ -97,7 +97,7 @@ export default function UserEditForm() {
                 </Button>
             </div>
             {/* contenedor verde */}
-            <div className="bg-gradient-container-green border-4 border-border-green-container p-10 rounded-4xl">
+            <div className="bg-gradient-container-green border-4 border-border-green-container p-6 rounded-4xl w-fit mt-2">
                 {/* contenenedor del titulo y la linea */}
                 <div className="mb-6 max-w-max">
                     <h1 className="text-gradient-title text-h3 pb-0.5">
@@ -106,8 +106,8 @@ export default function UserEditForm() {
                     <div className="h-0.5 bg-gradiant-title-line"></div>
 
                 </div>
-                <form className="flex items-center gap-x-10" onSubmit={handleSubmit} noValidate>
-                    <div className="flex flex-col gap-5">
+                <form className="flex items-center justify-between gap-x-10" onSubmit={handleSubmit} noValidate>
+                    <div className="flex flex-col gap-2 pr-10">
                         <Input
                             placeholder="subir imagen"
                             type="image"
@@ -133,7 +133,7 @@ export default function UserEditForm() {
                     </div>
                     <div className="grid grid-cols-dense items-center gap-10 bg-background border-2 border-border-edit-informaion p-8 rounded-xl">
                         <div className="grid grid-cols-2 items-center gap-3">
-                            <p className="text-body font-semibold text-text-primary">Tipo de documento:</p>
+                            <p className="parrafo-edit-style">Tipo de documento:</p>
                             <Select
                                 name="userDocumentType"
                                 options={documentTypes}
@@ -142,7 +142,7 @@ export default function UserEditForm() {
                                 error={errors.userDocumentType}
                                 variant="isEdit"
                             />
-                            <p className="text-body font-semibold text-text-primary">Número de documento:</p>
+                            <p className="parrafo-edit-style">Número de documento:</p>
                             <Input
                                 placeholder="10000001"
                                 name="userDocument"
@@ -151,7 +151,7 @@ export default function UserEditForm() {
                                 error={errors.userDocument}
                                 variant="isEdit"
                             />
-                            <p className="text-body font-semibold text-text-primary">Tipo de usuario:</p>
+                            <p className="parrafo-edit-style">Tipo de usuario:</p>
                             <Select
                                 name="userType"
                                 options={userTypes}
@@ -160,23 +160,25 @@ export default function UserEditForm() {
                                 error={errors.userType}
                                 variant="isEdit"
                             />
-                            <p className="text-body font-semibold text-text-primary">Fecha inicio:</p>
+                            <p className="parrafo-edit-style">Fecha inicio:</p>
                             <Input
                                 type="date"
                                 name="userDateStart"
                                 value={formData.userDateStart}
                                 onChange={handleChange}
                                 variant="isEdit"
+                                error={errors.userDateStart}
                             />
-                            <p className="text-body font-semibold text-text-primary">Fecha fin:</p>
+                            <p className="parrafo-edit-style">Fecha fin:</p>
                             <Input
                                 type="date"
                                 name="userDateEnd"
                                 value={formData.userDateEnd}
                                 onChange={handleChange}
                                 variant="isEdit"
+                                error={errors.userDateEnd}
                             />
-                            <p className="text-body font-semibold text-text-primary">Correo electrónico:</p>
+                            <p className="parrafo-edit-style">Correo electrónico:</p>
                             <Input
                                 placeholder="pepito33@gmail.com"
                                 type="email"
@@ -186,7 +188,7 @@ export default function UserEditForm() {
                                 error={errors.userEmail}
                                 variant="isEdit"
                             />
-                            <p className="text-body font-semibold text-text-primary">Número telefónico:</p>
+                            <p className="parrafo-edit-style">Número telefónico:</p>
                             <Input
                                 placeholder="32000000"
                                 type="tel"
@@ -196,7 +198,7 @@ export default function UserEditForm() {
                                 error={errors.userTel}
                                 variant="isEdit"
                             />
-                            <p className="text-body font-semibold text-text-primary">Dirección:</p>
+                            <p className="parrafo-edit-style">Dirección:</p>
                             <Input
                                 placeholder="Dg. 27a #4-2 a 4-114, Dosquebradas"
                                 name="userAddres"
@@ -205,7 +207,7 @@ export default function UserEditForm() {
                                 error={errors.userAddres}
                                 variant="isEdit"
                             />
-                            <p className="text-body font-semibold text-text-primary">Segundo número telefónico:</p>
+                            <p className="parrafo-edit-style">Segundo número telefónico:</p>
                             <Input
                                 placeholder="32000000"
                                 type="tel"
@@ -215,7 +217,7 @@ export default function UserEditForm() {
                                 error={errors.userTel2}
                                 variant="isEdit"
                             />
-                            <p className="text-body font-semibold text-text-primary">Correo institucional:</p>
+                            <p className="parrafo-edit-style">Correo institucional:</p>
                             <Input
                                 placeholder="pepito33@sena.edu.co"
                                 type="email"

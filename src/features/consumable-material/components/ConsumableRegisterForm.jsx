@@ -77,8 +77,8 @@ export default function ConsumableRegisterForm() {
             console.log("Material valido:", result.data);
         }
     return (
-        <div>
-            <div className="mb-10">
+        <div className="flex flex-col place-items-center justify-items-center relative">
+            <div className="inset-2 absolute w-fit h-fit">
                 <Button
                     variant="secondary"
                     size="sm"
@@ -88,7 +88,7 @@ export default function ConsumableRegisterForm() {
 
             </div>
             {/* contenedor verde */}
-            <div className="bg-gradient-container-green border-4 border-border-green-container p-10 rounded-4xl ">
+            <div className="bg-gradient-container-green border-4 border-border-green-container p-6 rounded-4xl w-fit mt-2">
                 {/* contenenedor del titulo y la linea */}
                 <div className="mb-6 max-w-max ">
                     <h1 className="text-gradient-title text-h3 pb-0.5 text-center">

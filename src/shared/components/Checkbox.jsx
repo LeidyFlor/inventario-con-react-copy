@@ -29,7 +29,7 @@ export default function Checkbox({
                 checked={checked}
                 disabled={disabled}
                 onChange={onChange}
-                className="w-5 h-5"
+                className="w-5 h-5 bg-amber-700"
             />
 
             {/* Texto del checkbox */}
