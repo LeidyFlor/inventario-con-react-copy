@@ -13,7 +13,6 @@ export default function MainLayout() {
         <div className="relative min-h-screen text-text-primary">
             {/* outlet inyecta los elemntos hijos de las routes */}
             <Outlet />
-            <LoginForm />
         </div>
     )
 }

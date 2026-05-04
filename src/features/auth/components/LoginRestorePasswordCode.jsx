@@ -1,18 +1,17 @@
-import { Input, Button, IconButton  } from "@/shared"
-import React, {useState} from "react";
-import { loginShema } from "../schemas/loginSchema";
-import  logoSigi  from "@/assets/images/LOGO-SIGI.png";
-import { useNavigate, Link } from "react-router-dom";
+import { Input, Button, IconButton, Select, Checkbox } from "@/shared"
+import React, { useState } from "react";
+import { loginCodeSchema } from "../schemas/loginCodeSchema";
+import logoSigi from "@/assets/images/LOGO-SIGI.png";
+import { useNavigate } from "react-router-dom";
 
-export default function LoginForm() {
+export default function LoginRestorePasswordCode() {
     const navigate = useNavigate();
     const [formData, setFormData] = useState({
-        userEmail: "",
-        userPassword: "",
+        userCode: "",
     });
     const [errors, setErrors] = useState({});
 
-    
+
     // Handle eventos. onChange cada vez que se escribe. onBlur toma el valor cuando uno sale del campo
 
     // ==================================================
@@ -45,7 +44,7 @@ export default function LoginForm() {
         e.preventDefault();
         //Se valida el objeto formData usando el esquema definido con Zod
         // safeParse devuelve un objeto indicando si la validacion fue exitosa o no
-        const result = loginShema.safeParse(formData);
+        const result = loginCodeSchema.safeParse(formData);
 
         //Si la validacion falla
         if (!result.success) {
@@ -70,41 +69,45 @@ export default function LoginForm() {
         setErrors({});
         //result.data contiene los datos ya validados por Zod
         console.log("Usuario valido:", result.data);
-        navigate("/dashboard")
+        navigate("/auth/newpassword")
     }
 
     return (
         <div className="flex flex-col items-center justify-center relative h-screen">
             {/* contenedor principal */}
-            <div className="bg-background-login-coontainer border-2 border-border-login-container p-13 w-fit shadow-lg shadow-border-login-container rounded-2xl">
-                {/* contenenedor del titulo y la linea */}
+            <div className="bg-background-login-coontainer border-2 border-border-login-container p-13 w-fit shadow-lg shadow-border-login-container rounded-2xl relative">
+                <div className="top-4 left-2 absolute w-fit h-fit z-5">
+                    <Button
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => navigate(-1)}
+                    >
+                        Atrás
+                    </Button>
+
+                </div>
+
+                {/* contenenedor del titulo*/}
                 <div className="flex flex-col place-self-center mb-6 max-w-max place-items-center gap-4">
-                    <img src={logoSigi} alt="Logo del sistema" className="h-auto w-18 "/>
                     <h1 className="text-gradient-title justify-end text-h3 pb-0.5">
-                        Inicio de sesión
+                        Ingresa código de recuperación
                     </h1>
+                    <img src={logoSigi} alt="Logo del sistema" className="h-auto w-18 " />
+                    <span className="text-small text-text-muted w-80">
+                        Ingrese el código de recuperación enviado del correo electrónico
+                    </span>
                 </div>
                 <form className="grid grid-cols-1 w-fit items-center justify-center gap-10 " onSubmit={handleSubmit} noValidate>
                     {/* noValidate es para quitar las validaciones automaticas de html del navegador */}
                     {/* Inputs */}
                     <div className="grid grid-cols-1 gap-3 my-0 mx-auto">
                         <Input
-                            placeholder="Usuario"
-                            type="email"
-                            name="userEmail"
-                            label="Usuario"
-                            value={formData.userEmail}
+                            placeholder="Código"
+                            name="userCode"
+                            label="Código"
+                            value={formData.userCode}
                             onChange={handleChange}
-                            error={errors.userEmail}
-                        />
-                        <Input
-                            placeholder="Contraseña"
-                            type="password"
-                            name="userPassword"
-                            label="Contraseña"
-                            value={formData.userPassword}
-                            onChange={handleChange}
-                            error={errors.userPassword}
+                            error={errors.userCode}
                         />
 
                         {/* Acciones */}
@@ -117,15 +120,21 @@ export default function LoginForm() {
                             size="md"
                             type="submit"
                         >
-                            Iniciar sesión
+                            Recuperar
                         </IconButton>
-                        <Link to={"/auth/restore"} className="h-12">
-                            <span className="text-small font-label">¿Olvidó su contraseña?</span>
-                        </Link>
-                    </div> 
-            </form>
-            </div>
 
+                    </div>
+                </form>
+                <div className="flex gap-1 mt-3 justify-center">
+                    <h3 className="text-small font-label text-text-primary">
+                        ¿No recibiste el token?
+                    </h3>
+                    <span className="text-small text-brand">
+                        Reenviar token
+                    </span>
+                </div>
+
+            </div>
         </div>
     )
 };

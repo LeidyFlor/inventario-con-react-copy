@@ -99,8 +99,8 @@
     --secondary-font: Calibri, Helvetica, Arial;
 
     /* Font weight crudos */
-    --font-weight-light: 300;
-    --font-weight-regular: 400;
+    --font-weight-light: 400;
+    --font-weight-regular: 600;
     --font-weight-bold: 700;
 
     /* Font variants */

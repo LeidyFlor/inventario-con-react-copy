@@ -78,15 +78,6 @@ export default function ConsumableRegisterForm() {
         }
     return (
         <div className="flex flex-col place-items-center justify-items-center relative">
-            <div className="inset-2 absolute w-fit h-fit">
-                <Button
-                    variant="secondary"
-                    size="sm"
-                >
-                    Atrás
-                </Button>
-
-            </div>
             {/* contenedor verde */}
             <div className="bg-gradient-container-green border-4 border-border-green-container p-6 rounded-4xl w-fit mt-2">
                 {/* contenenedor del titulo y la linea */}

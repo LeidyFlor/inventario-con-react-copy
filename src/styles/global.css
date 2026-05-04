@@ -17,6 +17,8 @@
   --color-background-login-coontainer: var(--semantic-login-container);
   --color-surface-muted: var(--semantic-surface-muted);
   --color-background-inverse: var(--semantic-background-inverse);
+  --color-background-navbar: var(--semantic-background-nav-bar);
+  --color-background-dropdown: var(--semantic-background-dropdown);
 
   /* ===TEXT ===== */
 
@@ -34,7 +36,7 @@
   --color-border-login-container: var(--semantic-border-login-container);
   --color-border-default-button: var(--semantic-border-default-button);
   --color-border-line-subtitle: var(--semantic-border-line-subtitle); /*para las lineas verdes de algunos subtítulos*/
-
+  --color-border-navbar: var(--semantic-border-navbar-line);
   /* ==FOCUS=== */
 
   --color-focus-ring: var(--semantic-focus-ring);
@@ -206,6 +208,10 @@
         font-size: var(--text-body);
         font-weight: var(--font-weight-semibold);
         color: var(--color-text-primary);
+    }
+    /* NAVBAR FONDO DEGRADADADO  🧭*/
+    .bg-gradient-navbar {
+        background:  var(--semantic-background-nav-bar);
     }
 
 }

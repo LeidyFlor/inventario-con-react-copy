@@ -4,7 +4,7 @@ import clsx from "clsx";
  * IconButton
  * */
 
-export const IconButton = React.forwardRef(function IconButton(
+export const IconButtonReal = React.forwardRef(function IconButton(
     {
         children,
         onClick,
@@ -46,7 +46,7 @@ export const IconButton = React.forwardRef(function IconButton(
             focus-visible:ring-neutral-300
         `,
         primary: `
-            text-white bg-blue-600
+            text-white
             hover:bg-neutral-700
             focus-visible:ring-blue-500
         `,

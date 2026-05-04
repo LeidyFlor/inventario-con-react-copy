@@ -15,12 +15,14 @@
     --semantic-background: var(--white);/* Fondo de toda la aplicacion*/
 
     --semantic-surface: var(--white);/*Fondo de mpdales, cards containers*/
+    --semantic-background-dropdown: var(--gray-800);/*Fondo del dropdown*/
 
     --semantic-login-container: var(--primary-100);
 
     --semantic-background-muted: var(--primary-400);/*Zona secundarias, conmenos importancia*/
 
     --semantic-background-inverse: var(--black); /*Es el opuesto del background*/
+    --semantic-background-nav-bar: linear-gradient(to right, var(--secundary-950), var(--quaternary-900)); /*Color de fondo degradadi del navbar*/
 
     /* ====TEXT==== */
 
@@ -44,7 +46,8 @@
     --semantic-border-line-subtitle: var(--tertiary-800);
     --semantic-border-login-container: var(--secundary-500);
     --semantic-border-edit-information: var(--gray-800);/* Border para contenedores del login*/
-    --semantic-border-cian-line: linear-gradient(to top, var(--sextario-950), var(--secundary-950) ) ; /*Borde cian que divide contenidos*/
+    --semantic-border-cian-line: linear-gradient(to top, var(--sextario-950), var(--secundary-950) ); /*Borde cian que divide contenidos*/
+    --semantic-border-navbar-line: var(--quinary-950);
     /* ==== FOCUS ==== */
 
     --semantic-focus-ring: var(--sextario-950);
@@ -70,7 +73,7 @@
     /* ====== FONT WEIGHT ======= */
 
     --semantic-font-weigt-heading: var(--font-weight-bold);
-    --semantic-font-weigt-body: var(--font-weight-regular);
+    --semantic-font-weigt-body: var(--font-weight-light);
     --semantic-font-weigt-label: var(--font-weight-regular);
 
     /* ====== INPUT  ======= */

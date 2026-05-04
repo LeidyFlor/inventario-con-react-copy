@@ -90,15 +90,7 @@ export default function UserRegisterForm() {
 
     return (
         <div className="flex flex-col place-items-center justify-items-center relative">
-            <div className="inset-2 absolute w-fit h-fit">
-                <Button
-                    variant="secondary"
-                    size="sm"
-                >
-                    Atrás
-                </Button>
 
-            </div>
             {/* contenedor verde */}
             <div className="bg-gradient-container-green border-4 border-border-green-container p-6 rounded-4xl w-fit mt-10">
                 {/* contenenedor del titulo y la linea */}
@@ -112,7 +104,7 @@ export default function UserRegisterForm() {
                 <form className="grid grid-cols-1 w-fit items-center justify-center gap-10 " onSubmit={handleSubmit} noValidate>
                     {/* noValidate es para quitar las validaciones automaticas de html del navegador */}
                     {/* Inputs */}
-                    <div className="grid grid-cols-3 gap-3 my-0 mx-auto">
+                    <div className="lg:grid lg:grid-cols-3 md:grid md:grid-cols-2 gap-3 my-0 mx-auto grid grid-cols-1">
                         <Select
                             label="Tipo de documento"
                             name="userDocumentType"

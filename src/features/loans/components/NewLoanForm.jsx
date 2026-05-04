@@ -76,11 +76,6 @@ export default function NewLoanForm() {
 
     return (
         <div className="flex flex-col place-items-center justify-items-center relative">
-            <div className="absolute inset-2 w-fit h-fit">
-                <Button variant="secondary" size="sm">
-                    Atrás
-                </Button>
-            </div>
 
             {/* Contenedor verde */}
             <div className="bg-gradient-container-green border-4 border-border-green-container p-6 rounded-4xl w-fit mt-10">

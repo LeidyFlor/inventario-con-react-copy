@@ -88,26 +88,19 @@ export default function UserEditForm() {
     }
     return(
         <div className="flex flex-col place-items-center justify-items-center relative">
-            <div className="inset-2 absolute w-fit h-fit">
-                <Button
-                    variant="secondary"
-                    size="sm"
-                >
-                    Atrás
-                </Button>
-            </div>
+
             {/* contenedor verde */}
             <div className="bg-gradient-container-green border-4 border-border-green-container p-6 rounded-4xl w-fit mt-2">
                 {/* contenenedor del titulo y la linea */}
                 <div className="mb-6 max-w-max">
-                    <h1 className="text-gradient-title text-h3 pb-0.5">
+                    <h1 className="text-gradient-title text-h3 sm:pb-0.5">
                         Editar perfil del usuario
                     </h1>{/*linea degradada del titulo*/}
                     <div className="h-0.5 bg-gradiant-title-line"></div>
 
                 </div>
-                <form className="flex items-center justify-between gap-x-10" onSubmit={handleSubmit} noValidate>
-                    <div className="flex flex-col gap-2 pr-10">
+                <form className="lg:flex lg:flex-row flex-col items-center justify-between lg:gap-10" onSubmit={handleSubmit} noValidate>
+                    <div className="flex flex-col gap-2 place-items-center">
                         <Input
                             placeholder="subir imagen"
                             type="image"
@@ -131,9 +124,9 @@ export default function UserEditForm() {
                             </Button>
                         </div>
                     </div>
-                    <div className="grid grid-cols-dense items-center gap-10 bg-background border-2 border-border-edit-informaion p-8 rounded-xl">
-                        <div className="grid grid-cols-2 items-center gap-3">
-                            <p className="parrafo-edit-style">Tipo de documento:</p>
+                    <div className="grid grid-cols-dense  items-center gap-10 bg-background border-2 border-border-edit-informaion p-8 rounded-xl sm:mt-4">
+                        <div className="md:grid md:grid-cols-2 grid grid-cols-1 auto-cols-[150px] items-center gap-3">
+                            <p className="parrafo-edit-style ">Tipo de documento:</p>
                             <Select
                                 name="userDocumentType"
                                 options={documentTypes}
@@ -228,23 +221,24 @@ export default function UserEditForm() {
                                 variant="isEdit"
                             />
                             {/* botones de accion */}
-                            <div className="place-items-start">
-                                <Button
-                                    variant="secondary"
-                                    size="sm"
-                                >
-                                    Cancelar
-                                </Button>
-                            </div>
-                            <div className="mt-1 flex items-end justify-end">
-                                <IconButton
+                                <div className="place-items-start">
+                                    <Button
+                                        variant="secondary"
+                                        size="sm"
+                                    >
+                                        Cancelar
+                                    </Button>
+                                </div>
+                                <div className="mt-1 flex items-end justify-end">
+                                    <IconButton
                                         variant="primary"
                                         size="md"
                                         type="submit"
                                     >
                                         Guardar
                                     </IconButton>
-                            </div>
+                                </div>
+                            
                         </div>
 
                     </div>
