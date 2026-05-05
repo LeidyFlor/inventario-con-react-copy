@@ -122,7 +122,7 @@ export default function ReturnableEditForm() {
                         </div>
                     </div>
                     <div className="grid grid-cols-dense items-center gap-10 bg-background border-2 border-border-edit-informaion p-8 rounded-xl">
-                        <div className="grid grid-cols-2 items-center gap-3">
+                        <div className="grid grid-cols-2 items-center 4">
                             <p className="parrafo-edit-style">Placa sena:</p>
                             <Input
                                 name="materialBarcodeSena"

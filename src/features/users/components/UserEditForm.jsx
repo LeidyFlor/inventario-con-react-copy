@@ -125,7 +125,7 @@ export default function UserEditForm() {
                         </div>
                     </div>
                     <div className="grid grid-cols-dense  items-center gap-10 bg-background border-2 border-border-edit-informaion p-8 rounded-xl sm:mt-4">
-                        <div className="md:grid md:grid-cols-2 grid grid-cols-1 auto-cols-[150px] items-center gap-3">
+                        <div className="md:grid md:grid-cols-[150px_1fr] grid auto-cols items-center gap-4">
                             <p className="parrafo-edit-style ">Tipo de documento:</p>
                             <Select
                                 name="userDocumentType"
@@ -240,9 +240,6 @@ export default function UserEditForm() {
                                 </div>
                             
                         </div>
-
-                    </div>
-                    <div>
 
                     </div>
                 </form>

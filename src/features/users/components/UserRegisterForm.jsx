@@ -104,7 +104,7 @@ export default function UserRegisterForm() {
                 <form className="grid grid-cols-1 w-fit items-center justify-center gap-10 " onSubmit={handleSubmit} noValidate>
                     {/* noValidate es para quitar las validaciones automaticas de html del navegador */}
                     {/* Inputs */}
-                    <div className="lg:grid lg:grid-cols-3 md:grid md:grid-cols-2 gap-3 my-0 mx-auto grid grid-cols-1">
+                    <div className="lg:grid lg:grid-cols-3 md:grid md:grid-cols-2 gap-4 my-0 mx-auto grid grid-cols-1">
                         <Select
                             label="Tipo de documento"
                             name="userDocumentType"

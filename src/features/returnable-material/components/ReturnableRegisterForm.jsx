@@ -120,7 +120,7 @@ export default function ReturnableRegisterForm() {
                     </div>
                     {/* Inputs */}
                     <div className="grid grid-cols-2 gap-10 ">
-                        <div className="flex flex-col gap-3">
+                        <div className="flex flex-col gap-4">
                             <Input
                                 placeholder="Placa Sena"
                                 name= "materialBarcodeSena"
