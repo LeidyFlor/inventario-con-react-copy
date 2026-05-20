@@ -14,7 +14,7 @@ export default function Select({
     }
 
     return (
-        <div className="w-[320px]">
+        <div className="w-full">
             {/* si label trae algo hace lo que esta adentro */}
             {label && (
                 <label className={

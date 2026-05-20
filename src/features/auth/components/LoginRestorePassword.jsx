@@ -76,8 +76,8 @@ export default function LoginRestorePassword() {
     return (
         <div className="flex flex-col items-center justify-center relative h-screen">
             {/* contenedor principal */}
-            <div className="bg-background-login-coontainer border-2 border-border-login-container p-13 w-fit shadow-lg shadow-border-login-container rounded-2xl relative">
-                <div className="top-4 left-2 absolute w-fit h-fit z-5">
+            <div className="bg-background-login-coontainer border-2 border-border-login-container p-12 w-fit shadow-lg shadow-border-login-container rounded-2xl relative">
+                <div className="top-2 left-2 absolute w-fit h-fit z-5">
                     <Button
                         variant="secondary"
                         size="sm"
@@ -101,7 +101,7 @@ export default function LoginRestorePassword() {
                 <form className="grid grid-cols-1 w-fit items-center justify-center gap-10 " onSubmit={handleSubmit} noValidate>
                     {/* noValidate es para quitar las validaciones automaticas de html del navegador */}
                     {/* Inputs */}
-                    <div className="grid grid-cols-1 gap-3 my-0 mx-auto">
+                    <div className="grid grid-cols-1 gap-3 w-80 my-0 mx-auto">
                         <Input
                             placeholder="Correo electrónico"
                             type="email"

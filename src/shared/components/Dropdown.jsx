@@ -1,10 +1,7 @@
 import {
     useContext, //Consume el estado en cualquier subcomponente(Button,     menu, item)
     createContext, //Define un contenedor de datos
-    useEffect, 
-    useRef, 
-    useState, 
-    cloneElement
+    useEffect, useRef, useState
 } from "react";
 
 export const DropdownContext = createContext(null)//contenedor empieza vacio
@@ -15,6 +12,9 @@ export function Dropdown({
     onOpenChange,
     className = "",
 }) {
+    // Para saber la posiscion del trigger
+    const [pos, setPos] = useState({ top: 0, left: 0 });
+    const triggerRef = useRef(null);
     const [uncontrolledOpen, setUncontrolledOpen] = useState(false);
 
     const isControlled = controlledOpen !== undefined
@@ -54,52 +54,81 @@ export function Dropdown({
     }, []);
 
     return (
-        //Inyecta el estado compartido al dropdown
-        <DropdownContext.Provider value={{ open, setOpen }}>
-            <div ref={containerRef} className={`relative inline-block ${className}`}>
+        //Inyecta el estado compartido al dropdown, se exporta trigeerRef y pos con el contexto
+        <DropdownContext.Provider value={{ open, setOpen, triggerRef, pos, setPos }}>
+            <div ref={containerRef} className={`inline-block ${className}`}>
                 {children}
             </div>
         </DropdownContext.Provider>
     )
 }
-// Trigger (asChild pattern)
+// Trigger (asChild pattern), para caluclar la posisicon al abirir
 export function DropdownTrigger({ children }) {
-    const { open, setOpen } = useContext(DropdownContext)
+    const { open, setOpen, setPos } = useContext(DropdownContext)
+    const triggerRef = useRef(null)  // 👈 ref local
 
     if (!children) return null
 
-    return cloneElement(children, {
-        onClick: (e) => {
-            children.props.onClick?.(e)
-            setOpen(!open)
-        },
-        "aria-expanded": open,
-        "aria-haspopup": "menu"
-    })
+    //cloneElemnt y ref no se pudeen usar a la vez, se replaza el clone por un handle que si maneja el evento
+    const handleClick = (e) => {
+        if (triggerRef.current) {
+            const rect = triggerRef.current.getBoundingClientRect()
+            const dropdownWidth = 192 // min-w-48 = 192px
+
+            // ¿Cabe a la derecha?
+            const fitsRight = rect.left + dropdownWidth < window.innerWidth
+            setPos({
+                top: rect.bottom + 4,
+                left: fitsRight
+                    ? rect.left    // alinea a la izquierda del trigger (inicio)
+                    : rect.right - dropdownWidth  // 👈 alinea a la derecha del trigger (fin)
+            })
+        }
+        children.props.onClick?.(e)
+        setOpen(!open)
+    }
+
+    return (
+        //Contededor de referencia invisible
+        <span
+            ref={triggerRef}   // 👈 el ref va en el span, no en el children
+            onClick={handleClick}
+            aria-expanded={open}
+            aria-haspopup="menu"
+            style={{ display: "inline-block" }}
+        >
+            {children}
+        </span>
+    )
 }
 //Content
 export function DropdownContent({ children, className = "" }) {
-    const { open } = useContext(DropdownContext);
+    const { open, pos } = useContext(DropdownContext);
 
     if (!open) return null
 
     return (
         <div
             role="menu"
+            style={{
+                position: "fixed",
+                top: pos.top,    // posición calculada del trigger 🔫
+                left: pos.left,
+            }}
             className={`
-            absolute
-            z-50
+            fixed
+            overflow-hidden
             mt-1
             min-w-48
             border
-            border-white
             text-text-primary
+            font-medium
             p-1
-            bg-background-dropdown
+            z-100
+            bg-background
             backdrop-blur-[1px]
             shadow-lg
             rounded-2xl
-            overflow-hidden
             hover:shadow-black
             transition-shadow duration-700
             ${className}    

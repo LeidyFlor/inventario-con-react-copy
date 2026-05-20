@@ -1,7 +1,8 @@
-import { Input, Button, IconButton, Select } from "@/shared"
+import { Input, Button, IconButton, Select, StatusSwitch } from "@/shared"
 import React, {useState, useEffect} from "react";
 import { getDocumentTypes, getUserTypes } from "@/features/users/services/selectService";
 import { userShema } from "../schemas/userShema.js";
+import { UserRoundPlus } from "lucide-react";
 
 export default function UserRegisterForm() {
     const [formData, setFormData] = useState({
@@ -28,6 +29,16 @@ export default function UserRegisterForm() {
         getDocumentTypes().then(setDocumentTypes);
         getUserTypes().then(setUserTypes);
     },[]); //los [] es para que al menos se ejecute una vez, no tiene dependencia
+    //Estado que controla el Switch
+    const [isActive, setIsActive] = useState(true);
+
+    //Manejadro del estado del switch 😂
+    const handleStatusChange = (value) => {
+        setIsActive(value);
+
+        //Aqui generalmente va el llamado a una API
+        console.log("Nuevo estado", value)
+    }
     
     // Handle eventos. onChange cada vez que se escribe. onBlur toma el valor cuando uno sale del campo
 
@@ -92,10 +103,11 @@ export default function UserRegisterForm() {
         <div className="flex flex-col place-items-center justify-items-center relative">
 
             {/* contenedor verde */}
-            <div className="bg-gradient-container-green border-4 border-border-green-container p-6 rounded-4xl w-fit mt-10">
+            <div className="bg-gradient-container-green border-4 border-border-green-container p-6 rounded-4xl w-fit place-self-center">
                 {/* contenenedor del titulo y la linea */}
-                <div className="mb-6 max-w-max">
-                    <h1 className="text-gradient-title text-h3 pb-0.5">
+                <div className=" mb-6 max-w-max">
+                    <h1 className="flex gap-2 text-gradient-title text-h3 pb-0.5">
+                        <UserRoundPlus  className="text-brand"/>
                         Registro de usuario
                     </h1>{/*linea degradada del titulo*/}
                     <div className="h-0.5 bg-gradiant-title-line"></div>
@@ -217,6 +229,17 @@ export default function UserRegisterForm() {
                                 value={formData.userDateEnd}
                                 onChange={handleChange}
                                 error={errors.userDateEnd}
+                            />
+                        </div>
+                        <div className="flex place-items-center justify-center align-middle gap-3">
+                            <p className="parrafo-edit-style relative bottom-0.5">Estado:</p>
+                            {/* Switch */}
+                            <StatusSwitch
+                                checked={isActive}
+                                onChange={handleStatusChange}
+                                size="md"
+                                // inline-flex-> ocupa el espacio asignado
+                                className="inline-flex"
                             />
                         </div>
 

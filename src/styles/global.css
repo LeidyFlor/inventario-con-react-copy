@@ -17,7 +17,7 @@
   --color-background-login-coontainer: var(--semantic-login-container);
   --color-surface-muted: var(--semantic-surface-muted);
   --color-background-inverse: var(--semantic-background-inverse);
-  --color-background-navbar: var(--semantic-background-nav-bar);
+  --color-background-side-navbar: var(--semantic-background-side-nav);
   --color-background-dropdown: var(--semantic-background-dropdown);
 
   /* ===TEXT ===== */
@@ -76,6 +76,11 @@
 
   /* boton secundary atras back */
   --color-boton-fill-color-secondary: var(--semantic-boton-fill-color-secondary);
+
+  /* ====== ICONOS SIDEBAR  ======= */
+  --color-icon-fill-sidebar: var(--semantic-icon-fill-sidebar);
+  --color-border-icon-sidebar: var(--semantic-border-icon-sidebar);
+  --color-icon-fill-hover: var(--semantic-icon-fill-hover);
 }
 
 @layer utilities {
@@ -190,7 +195,7 @@
     /* boton previsualizar ghost  HOVER =========*/
     .hover\:bg-gradient-ghost:hover{
       background: linear-gradient(to right, var(--quaternary-950), var(--sextario-950));
-      color: var(--color-white);
+      color: var(--white);
     }
     /* DEGRADADO PARA EL BORDE DEL INPUT EN EDITS */
     .border-gradient-input-edit {
@@ -212,6 +217,9 @@
     /* NAVBAR FONDO DEGRADADADO  🧭*/
     .bg-gradient-navbar {
         background:  var(--semantic-background-nav-bar);
+    }
+    .bg-gradient-side-navbar {
+        background:  var(--semantic-background-side-nav);
     }
 
 }

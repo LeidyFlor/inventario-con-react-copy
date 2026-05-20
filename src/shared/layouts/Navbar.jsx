@@ -1,80 +1,175 @@
-import { CircleUserRound, Search } from "lucide-react";
+import { Drill, ClipboardList, Router, ToolCase, Cable, Settings, LogOut } from "lucide-react";
 import { Link } from "react-router-dom";
-import { IconButtonReal, Dropdown, DropdownContent, DropdownItem, DropdownTrigger } from "@/shared";
-import  logoSenaBlanco  from "@/assets/images/logo-sena-blanco.png";
-import  logoSigiBlanco  from "@/assets/images/sigi-blanco.png";
+import { IconButtonReal, Dropdown, DropdownContent, DropdownItem, DropdownTrigger, Button } from "@/shared";
 
-export default function Navbar(){
+export default function Navbar( { isOpen, onClose }){
     return(
-        <nav className="w-full bg-gradient-navbar border-b-2 border-border-navbar">
-            <div className="mx-auto max-w-7xl px-4">
-                <div className="flex h-18 items-center justify-between">
-                    <div className="flex items-center gap-6">
-                        <Link to={"/"} className="">
-                        <img src={logoSenaBlanco} alt="Logo del sena" className="h-12" />
-                        </Link>
-                        <div className="rounded-2xl w-0.5 bg-background text-text-inverse">
-                            .
-                        </div>
-                        <Link to={"/"} className="">
-                        <img src={logoSigiBlanco} alt="Logo del sistema ,Sigi" className="h-13" />
-                        </Link>
-                    </div>
+        <nav className={`
+            fixed 
+            lg:absolute    /* sale del flujo normal en lg para no empujar el main */  
+            lg:h-full
+            w-fit
+            z-20
+            bg-gradient-side-navbar
+            transition-transform duration-300
+            ${isOpen ? "translate-x-0" : "-translate-x-full"}  /* drawer en móvil */
+            lg:translate-x-0          /* siempre visible en lg */
+        `}>
 
-                    {/* Seccion de la derecha: busqueda + usuario */}
-                    <div className="flex items-center gap-5 h-fit">
+                    {/* Seleccion asidebar */}
+                    <div className="flex flex-col lg:h-screen place-items-center gap-4 px-4 my-4 lg:my-0 lg:justify-center">
                         {/* sm:block cuando el tamano de pantalla sea menor a 640 se escconda el buscar */}
-                        <div className="relative hidden sm:block">
-                            {/* Icono de busqueda */}
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-text-primary" />
-                            {/* Input del buscador*/}
-                            <input
-                                type="text"
-                                placeholder="Buscar préstamo"
-                                className="pl-9 pr-4 py-2.5 border border-border-strong bg-surface rounded-lg text-body focus:outline-none focus:right-2 focus:ring-text-primary"
-                            />
-                        </div>
-                        {/* Icono de usuario */}
-                        <div className="p-10">
+                        
+                        {/* boton co icono de préstamo */}
+                        <div className="">
                             <Dropdown>
                                 <DropdownTrigger>
-                                    <IconButtonReal arialLabel="Menu de usuario" variant="primary">
-                                        
-                                        <CircleUserRound />
-                                        
-                                    </IconButtonReal>
+                                    <div className="">
+                                        <IconButtonReal hitSize="50" label="Préstamo" arialLabel="Menu de préstamo" variant="default" >
+                                            
+                                            <ClipboardList />
+                                            
+                                        </IconButtonReal>
+
+                                    </div>
                                 </DropdownTrigger>
 
                                 <DropdownContent className="right-0 w-48">
                                     <DropdownItem>
-                                        <Link to="/dashboard/user-create" className="block w-full">
-                                            Crear usuario
+                                        <Link to="user-create" className="block w-full">
+                                            Crear préstamo
                                         </Link>
                                     </DropdownItem>
                                     <DropdownItem>
-                                        <Link to="/dashboard/user-edit" className="block w-full">
-                                            Editar usuario
+                                        <Link to="user-edit" className="block w-full">
+                                            Listar préstamo
                                         </Link>
                                     </DropdownItem>
                                     <DropdownItem>
                                         <Link to="/auth" className="block w-full">
-                                            Cerrar sesion
+                                            Generar reporte de préstamo
+                                        </Link>
+                                    </DropdownItem>
+                                    
+
+                                </DropdownContent>
+                            </Dropdown>
+                        </div>
+                        {/* Boton de material devolutivo */}
+                        <div className="">
+                            <Dropdown>
+                                <DropdownTrigger>
+                                    <div className="">
+                                        <IconButtonReal hitSize="50" label="Material Devolutivo" arialLabel="Menu de material devolutivo" variant="default" >
+                                            
+                                            <Router />
+                                            
+                                        </IconButtonReal>
+
+                                    </div>
+                                </DropdownTrigger>
+
+                                <DropdownContent className="right-0 w-48">
+                                    <DropdownItem>
+                                        <Link to="user-create" className="block w-full">
+                                            Crear material devolutivo
                                         </Link>
                                     </DropdownItem>
                                     <DropdownItem>
-                                        <Link to="/dashboard/loan-return" className="block w-full">
-                                            Retornar préstamo
+                                        <Link to="user-edit" className="block w-full">
+                                            Listar material devolutivo
+                                        </Link>
+                                    </DropdownItem>
+                                    <DropdownItem>
+                                        <Link to="/auth" className="block w-full">
+                                            Generar reporte material devolutivo
+                                        </Link>
+                                    </DropdownItem>
+                                    <DropdownItem>
+                                        <Link to="loan-return" className="block w-full">
+                                            Editar material
                                         </Link>
                                     </DropdownItem>
 
                                 </DropdownContent>
                             </Dropdown>
                         </div>
+                        {/* Boton de material de consumo */}
+                        <div className="">
+                            <Dropdown>
+                                <DropdownTrigger>
+                                    <div className="">
+                                        <IconButtonReal hitSize="50" label="Material Consumo" arialLabel="Menu de material de consumo" variant="default" >
+                                            
+                                            <Cable />
+                                            
+                                        </IconButtonReal>
+
+                                    </div>
+                                </DropdownTrigger>
+
+                                <DropdownContent className="right-0 w-48">
+                                    <DropdownItem>
+                                        <Link to="user-create" className="block w-full">
+                                            Crear material de consumo
+                                        </Link>
+                                    </DropdownItem>
+                                    <DropdownItem>
+                                        <Link to="user-edit" className="block w-full">
+                                            Listar material de consumo
+                                        </Link>
+                                    </DropdownItem>
+                                    <DropdownItem>
+                                        <Link to="/auth" className="block w-full">
+                                            Generar reporte material de consumo
+                                        </Link>
+                                    </DropdownItem>
+                                </DropdownContent>
+                            </Dropdown>
+                        </div>
+                        {/* Boton de configuración */}
+                        <div className="">
+                            <Dropdown>
+                                <DropdownTrigger>
+                                    <div className="">
+                                        <IconButtonReal hitSize="50" label="Configuración" arialLabel="Menu de configuración" variant="default" >
+                                            
+                                            <Settings />
+                                            
+                                        </IconButtonReal>
+
+                                    </div>
+                                </DropdownTrigger>
+
+                                <DropdownContent className="right-0 w-48">
+                                    <DropdownItem>
+                                        <Link to="user-create" className="block w-full">
+                                            Gestión de marcas
+                                        </Link>
+                                    </DropdownItem>
+                                    <DropdownItem>
+                                        <Link to="user-edit" className="block w-full">
+                                            Gestión de permisos
+                                        </Link>
+                                    </DropdownItem>
+                                    <DropdownItem>
+                                        <Link to="/auth" className="block w-full">
+                                            Gestión de tareas
+                                        </Link>
+                                    </DropdownItem>
+
+                                </DropdownContent>
+                            </Dropdown>
+                        </div>
+                            <div className="">
+                                <IconButtonReal className="py-8 px-8" hitSize="50" label="Cerrar sesión" arialLabel="Menu de configuración" variant="primary" >
+
+                                    <LogOut />
+
+                                </IconButtonReal>
+
+                            </div>
                     </div>
-
-                </div>
-
-            </div>
 
         </nav>
     )

@@ -20,7 +20,7 @@ export default function Input({
     // cuerpo de la funcion
     return (
         //Contenedor del input que se exporta con label, cuerpo y feedback message
-        <div className={`${isDate ? "w-fit" : "w-[320px]"} ${className}`}>
+        <div className={`${isDate ? "w-fit" : "w-full"} ${className}`}>
             {/* Label  Por fuera*/}
             {/* LABEL. JWT evalua si tal es 1, si si lo hace  */}
 

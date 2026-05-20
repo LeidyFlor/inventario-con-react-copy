@@ -7,6 +7,7 @@ import clsx from "clsx";
 export const IconButtonReal = React.forwardRef(function IconButton(
     {
         children,
+        label, //para texto opcional en el icono
         onClick,
         disabled = false,
         className = "",
@@ -28,7 +29,6 @@ export const IconButtonReal = React.forwardRef(function IconButton(
 ) {
     const baseStyles = `
         inline-flex items-center justify-center
-        rounded-full
         transition-colors duration-200
         focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2
         disabled:opacity-50 disabled:pointer-events-none
@@ -36,9 +36,16 @@ export const IconButtonReal = React.forwardRef(function IconButton(
 
     const variants = {
         default: `
-            text-neutral-700
-            hover:bg-neutral-200
-            focus-visible:ring-neutral-400
+            text-white
+            bg-icon-fill-sidebar
+            hover:bg-icon-fill-hover
+            border-border-icon-sidebar
+            hover:border-border-navbar
+            focus-visible:ring-blue-500
+            border-2
+            p-11
+            rounded-3xl
+            py-11
         `,
         ghost: `
             text-neutral-600
@@ -47,8 +54,9 @@ export const IconButtonReal = React.forwardRef(function IconButton(
         `,
         primary: `
             text-white
-            hover:bg-neutral-700
+            hover:bg-brand-hover
             focus-visible:ring-blue-500
+            rounded-2xl
         `,
     };
     return (
@@ -58,8 +66,11 @@ export const IconButtonReal = React.forwardRef(function IconButton(
             aria-label={ariaLabel}
             disabled={disabled}
             onClick={onClick}
-            className={clsx(baseStyles, variants[variant], className, {
-                "bg-neutral-300": isActive,
+            className={clsx(baseStyles, 
+                variants[variant], 
+                className, 
+                label && "flex-col h-auto py-2 rounded-2xl", //Si hay labe se vuelve vertical
+                {"bg-neutral-300": isActive,
             })}
             style={{
                 width: `${hitSize}px`,
@@ -76,6 +87,12 @@ export const IconButtonReal = React.forwardRef(function IconButton(
             >
                 {children}
             </span>
+            {/* Solo aparece si se pasa label */}
+            {label && (
+                <span className="text-small mt-1 text-center leading-tight ">
+                    {label}
+                </span>
+            )}
         </button>
     );
 });

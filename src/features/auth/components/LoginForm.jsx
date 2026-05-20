@@ -76,7 +76,7 @@ export default function LoginForm() {
     return (
         <div className="flex flex-col items-center justify-center relative h-screen">
             {/* contenedor principal */}
-            <div className="bg-background-login-coontainer border-2 border-border-login-container p-13 w-fit shadow-lg shadow-border-login-container rounded-2xl">
+            <div className="bg-background-login-coontainer border-2 border-border-login-container p-13 w-90 shadow-lg shadow-border-login-container rounded-2xl">
                 {/* contenenedor del titulo y la linea */}
                 <div className="flex flex-col place-self-center mb-6 max-w-max place-items-center gap-4">
                     <img src={logoSigi} alt="Logo del sistema" className="h-auto w-18 "/>
@@ -87,7 +87,7 @@ export default function LoginForm() {
                 <form className="grid grid-cols-1 w-fit items-center justify-center gap-10 " onSubmit={handleSubmit} noValidate>
                     {/* noValidate es para quitar las validaciones automaticas de html del navegador */}
                     {/* Inputs */}
-                    <div className="grid grid-cols-1 gap-3 my-0 mx-auto">
+                    <div className="grid grid-cols-1 w-62 gap-3 my-0 mx-auto">
                         <Input
                             placeholder="Usuario"
                             type="email"
@@ -119,7 +119,7 @@ export default function LoginForm() {
                         >
                             Iniciar sesión
                         </IconButton>
-                        <Link to={"/auth/restore"} className="h-12">
+                        <Link to={"restore"} className="h-12">
                             <span className="text-small font-label">¿Olvidó su contraseña?</span>
                         </Link>
                     </div> 

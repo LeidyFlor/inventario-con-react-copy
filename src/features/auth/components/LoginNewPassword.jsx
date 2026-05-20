@@ -99,7 +99,7 @@ export default function LoginRestoreNewPassword() {
                 <form className="grid grid-cols-1 w-fit items-center justify-center gap-10 " onSubmit={handleSubmit} noValidate>
                     {/* noValidate es para quitar las validaciones automaticas de html del navegador */}
                     {/* Inputs */}
-                    <div className="grid grid-cols-1 gap-3 my-0 mx-auto">
+                    <div className="grid grid-cols-1 gap-3 w-80 my-0 mx-auto">
                         <Input
                             placeholder="Contraseña"
                             type="password"

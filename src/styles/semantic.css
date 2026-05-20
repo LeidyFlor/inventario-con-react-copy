@@ -4,7 +4,7 @@
 
     /* ==== BRAND  logo de la marca========= */
 
-    --semantic-brand: var(--primary-800);
+    --semantic-brand: var(--tertiary-950);
     --semantic-brand-hover: var(--primary-950);/*Generalmente es de un tono mas alto que el brand*/
 
     --semantic-brand-soft: var(--primary-200);
@@ -23,6 +23,8 @@
 
     --semantic-background-inverse: var(--black); /*Es el opuesto del background*/
     --semantic-background-nav-bar: linear-gradient(to right, var(--secundary-950), var(--quaternary-900)); /*Color de fondo degradadi del navbar*/
+
+    --semantic-background-side-nav: linear-gradient(to bottom, var(--secundary-950), var(--quaternary-900)); /*Color de fondo degradado del aside navbar*/
 
     /* ====TEXT==== */
 
@@ -89,4 +91,9 @@
 
     /* boton secundary atras back */
     --semantic-boton-fill-color-secondary: var(--secundary-950);
+
+    /* ====== ICONOS SIDEBAR  ======= */
+    --semantic-icon-fill-sidebar: var(--tertiary-800);
+    --semantic-border-icon-sidebar: var(--tertiary-800);
+    --semantic-icon-fill-hover: var(--tertiary-950);
 }

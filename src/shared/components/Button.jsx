@@ -1,7 +1,7 @@
 /* Componente boton
 Boton reutilizable con cariables viauales y tamanos controlados, area interactiva minima de 48px
 */
-
+import { CirclePlus } from "lucide-react";
 
 export default function Button({
     variant = "primary", //Define el estilo visual, variante por defecto
@@ -34,16 +34,25 @@ export default function Button({
         <button
             type ={type}
             className={`
+            group 
             relative
             inline-flex items-center justify-center
             rounded-3xl
             transition-colors
+            gap-2
             ${variants[variant]}
             ${sizes[size]}
         `}
 
             {...props}
         >
+            {/* Icono solo utilizado en primary */}
+            {variant === "primary" && (
+                <CirclePlus 
+                    className=" transition-transform duration-500 group-hover:rotate-180"
+                    size={size === "sm"? 16 : 20}
+                />
+            )}
 
             {children}
 

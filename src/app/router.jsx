@@ -20,9 +20,9 @@ const router = createBrowserRouter([
         element: <AuthLayout />,
         children: [
             { index: true, element: <LoginForm/> },
-            { path: "/auth/restore", element: <LoginRestorePassword /> },
-            { path: "/auth/code", element: <LoginRestorePasswordCode /> },
-            { path: "/auth/newpassword", element: <LoginRestoreNewPassword /> },
+            { path: "restore", element: <LoginRestorePassword /> },
+            { path: "code", element: <LoginRestorePasswordCode /> },
+            { path: "newpassword", element: <LoginRestoreNewPassword /> },
         ],
     },
     {
@@ -31,10 +31,10 @@ const router = createBrowserRouter([
         // Nested Routes
         children: [
             { index: true, element: <CreateUserPage /> },
-            { path: "/dashboard/auth", element: <LoginForm /> },
-            { path: "/dashboard/user-create", element: <CreateUserPage /> },
-            { path: "/dashboard/user-edit", element: <EditUserPage /> },
-            { path: "/dashboard/loan-return", element: <ReturnLoan /> }
+            { path: "auth", element: <LoginForm /> },
+            { path: "user-create", element: <CreateUserPage /> },
+            { path: "user-edit", element: <EditUserPage /> },
+            { path: "loan-return", element: <ReturnLoan /> }
         ],
     }
 ]);

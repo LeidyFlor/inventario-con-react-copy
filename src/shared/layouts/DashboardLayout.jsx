@@ -2,15 +2,17 @@ import { Outlet } from "react-router-dom";
 import { CreateUserPage } from "@/features/users";
 import { CloudBackup } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
-import { IconButton, Navbar, Button } from "@/shared"
+import { IconButton, Navbar, Button, Header } from "@/shared"
 import { LoginForm } from "@/features/auth";
+import { useState } from "react";
 
 export default function DashboardLayout() {
     const navigate = useNavigate();
+    const [menuOpen, setMenuOpen] = useState(false);
     return (
-        <div className="relative min-h-screen text-text-primary">
+        <div className="relative min-h-screen text-text-primary overflow-hidden bg-background">
 
-            <div className="top-19 left-2 absolute w-fit h-fit z-5">
+            <div className=" lg:top-20 top-19 left-2 lg:left-34 absolute w-fit h-fit z-5">
                 <Button
                     variant="secondary"
                     size="sm"
@@ -21,9 +23,17 @@ export default function DashboardLayout() {
 
             </div>
             
-            <Navbar />
+            <Header onMenuToggle={() => setMenuOpen(prev => !prev)} />
+            {/* Overlay — solo en móvil, captura click afuera */}
+            {menuOpen && (
+                <div
+                    className="fixed inset-0 z-10 lg:hidden"
+                    onClick={() => setMenuOpen(false)}
+                />
+            )}
+            <Navbar isOpen={menuOpen} onClose={() => setMenuOpen(false)} />
             {/* Contenido dinamico de las paginas */}
-            <main>
+            <main className="lg:ml-[124px] flex flex-1 items-center justify-center min-h-[calc(100vh-72px)] pt-12 px-4">
 
                 <Outlet />
 
