@@ -257,7 +257,7 @@ export default function UserRegisterForm() {
                                 variant="primary"
                                 size="sm"
                             >
-                                Agregar telefono
+                                Agregar teléfono
                             </Button>
 
                         </div>

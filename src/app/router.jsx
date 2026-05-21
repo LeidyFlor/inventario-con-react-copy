@@ -12,7 +12,7 @@ import { AuthLayout, DashboardLayout } from "@/shared/";
 const router = createBrowserRouter([
     {
         path: "/",
-        //Por defecto me lleva al auth
+        //Por defecto lleva al auth
         element: <Navigate to="/auth" replace />,
     },
     {
