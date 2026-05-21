@@ -1,6 +1,6 @@
 import { createBrowserRouter, Navigate } from "react-router-dom";
 import MainLayout from "@/shared/layouts/MainLayout";
-import { CreateUserPage, EditUserPage } from "@/features/users";
+import { CreateUserPage, EditUserPage, ListUserPage } from "@/features/users";
 import { CreteBrandPage } from "@/features/brands";
 import { CreateLoanPage, ReturnLoan, ApproveReturnLoan } from "@/features/loans";
 import { CreateTaskPage } from "@/features/tasks";
@@ -34,7 +34,8 @@ const router = createBrowserRouter([
             { path: "auth", element: <LoginForm /> },
             { path: "user-create", element: <CreateUserPage /> },
             { path: "user-edit", element: <EditUserPage /> },
-            { path: "loan-return", element: <ReturnLoan /> }
+            { path: "loan-return", element: <ReturnLoan /> },
+            { path: "user-list", element: <ListUserPage /> }
         ],
     }
 ]);
