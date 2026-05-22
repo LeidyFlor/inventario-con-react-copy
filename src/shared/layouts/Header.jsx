@@ -151,6 +151,11 @@ export default function Header( { onMenuToggle } ) {
                                             Retornar préstamo
                                         </Link>
                                     </DropdownItem>
+                                    <DropdownItem>
+                                        <Link to="user-list" className="block w-full">
+                                            Gestión de Usuarios
+                                        </Link>
+                                    </DropdownItem>
 
                                 </DropdownContent>
                             </Dropdown>

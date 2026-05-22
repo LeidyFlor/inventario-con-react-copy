@@ -3,17 +3,17 @@
 import { StatusSwitch } from "@/shared/";
 
 // Componente que contiene los botones de acciones (editar y eliminar) para cada usuario
-import UserRowActions from "../components/UserRowAction";
+import UserRowActions from "../components/UserRowActions";
 
 // Definición de las columnas de la tabla de usuarios
 // Este arreglo suele usarse en librerías de tablas como TanStack Table
-export const userColumns = [
+export const usersColumns = [
 
 
     // Columna ID
     {
         accessorKey: "id", // Propiedad del objeto user que se mostrará en la columna
-        header: "Id",      // Título de la columna
+        header: "Id",      // Título de la columnas
     },
 
 
@@ -71,7 +71,7 @@ export const userColumns = [
                 <StatusSwitch
                     checked={user.is_active} // Estado actual del usuario
                     onChange={handleChange}  // Función que maneja el cambio
-                    className="inline-flex" ///OJOOOOOO paar que se ponga derecho flex
+                    className="inline-flex" // OJOOOOOO para que se ponga derecho flex
                 />
             );
         },
