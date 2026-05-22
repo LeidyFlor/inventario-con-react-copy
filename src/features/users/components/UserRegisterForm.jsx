@@ -238,7 +238,7 @@ export default function UserRegisterForm() {
                                 checked={isActive}
                                 onChange={handleStatusChange}
                                 size="md"
-                                // inline-flex-> ocupa el espacio asignado
+                                // inline-flex -> ocupa el espacio asignado
                                 className="inline-flex"
                             />
                         </div>
