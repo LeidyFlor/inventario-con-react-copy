@@ -11,8 +11,11 @@ export default function Input({
     // porps son las propiedades de un componenete. Y label para que por defecto el campo sea tipo texto
 }) {
     const variants ={
+        //Variante normal de formularios (fondo amarillo borde gris)
         default: "rounded-2xl border-2 border-input-border text-medium text-text-primary bg-input-fill placeholder-text-primary hover:border-2 hover:border-focus-border focus:outline-none focus:ring-1 focus:ring-focus-ring",
+        //Variante cuando se edita un campo común (borde botton multicolor)
         isEdit: "border-gradient-input-edit rounded-t-xl text-medium text-text-secundary placeholder-text-primary hover:rounded-2xl hover:border-2 hover:border-focus-border transition-all-duration-10 focus:outline-none focus:ring-1 focus:ring-focus-ring",
+        //Variante cunaod se edita el nombre de elementos (border botton verde)
         nameEdit: "border-b-2 border-border rounded-t-xl text-body font-semibold text-text-secundary text-center placeholder-text-primary hover:rounded-2xl hover:border-2 hover:border-focus-border transition-all-duration-10 focus:outline-none focus:ring-1 focus:ring-focus-ring",
     }
     const isDate = type === "date";
