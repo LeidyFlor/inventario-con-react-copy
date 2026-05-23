@@ -7,6 +7,7 @@ export default function Button({
     variant = "primary", //Define el estilo visual, variante por defecto
     size = "md",     //Define tamano visual
     type = "button", //Tipos de boton (button, submit, reset)
+    showIcon = true, //Controla si se muestra o no el icono
     children,       //Contenido interno del boton(texto, icono)
     ...props        //Propiedades adicionales(onClick, diseable, etc)
 }) {
@@ -46,8 +47,8 @@ export default function Button({
 
             {...props}
         >
-            {/* Icono solo utilizado en primary */}
-            {variant === "primary" && (
+            {/* Icono + solo utilizado en primary, si showICon = true se muestra el boton */}
+            {variant === "primary" && showIcon && (
                 <CirclePlus 
                     className=" transition-transform duration-500 group-hover:rotate-180"
                     size={size === "sm"? 16 : 20}
