@@ -10,31 +10,36 @@ import UserRowActions from "../components/UserRowActions";
 export const usersColumns = [
 
 
-    // Columna ID
-    {
-        accessorKey: "id", // Propiedad del objeto user que se mostrará en la columna
-        header: "Id",      // Título de la columnas
-    },
-
-
+    
+    
     // Columna Nombre
     {
-        accessorKey: "name", // Campo del objeto user
+        accessorKey: "userName", // Campo del objeto user
         header: "Nombre",    // Encabezado visible
     },
-
-
-    // Columna Email
+    
+    
+    // Columna userType
     {
-        accessorKey: "email",
-        header: "Email",
+        accessorKey: "userType",
+        header: "Tipo de usuario",
+    },
+    
+    // Columna userDocument
+    {
+        accessorKey: "userDocument", // Propiedad del objeto user que se mostrará en la columna
+        header: "Número de documento",      // Título de la columnas
     },
 
-
-    // Columna Dirección
+    // Columna userEmail
     {
-        accessorKey: "address",
-        header: "Dirección",
+        accessorKey: "userEmail",
+        header: "Email",
+    },
+    // Columna userTel
+    {
+        accessorKey: "userTel",
+        header: "Teléfono",
     },
 
 
