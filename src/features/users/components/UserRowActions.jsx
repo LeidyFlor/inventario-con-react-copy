@@ -6,7 +6,7 @@ import { Pencil, EllipsisVertical, Menu } from "lucide-react";
 import { useNavigate, Link } from "react-router-dom";
 import {
     Dropdown,
-    IconButton,
+    IconButtonReal,
     DropdownContent,
     DropdownTrigger,
     DropdownItem
@@ -50,23 +50,21 @@ export default function UserRowActions({ user }) {
       {/* Botón editar */}
       <button
         onClick={handleEdit} // Ejecuta la navegación a la página de edición
-        className="p-1 rounded hover:bg-gray-100"
+        className="p-1 rounded hover:bg-focus-border"
       >
         <Pencil size={16} /> {/* Icono de editar */}
       </button>
 
 
-      {/* Botón eliminar */}
+      {/* Botón opciones */}
       <button
-        onClick={handleDelete} // Ejecuta la acción de eliminación
-        className="p-1 rounded hover:bg-gray-100"
+        //onClick={handleDelete} // Ejecuta la acción de eliminación
+        className="p-1 rounded hover:bg-focus-border"
       >
         <div className="p-1">
             <Dropdown>
                 <DropdownTrigger>
-                  <IconButton ariaLabel="Más opciones">
                       <EllipsisVertical size={16} />
-                  </IconButton>
                 </DropdownTrigger>
 
                 <DropdownContent className="w-48">

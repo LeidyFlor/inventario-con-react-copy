@@ -14,7 +14,7 @@
 
     --semantic-background: var(--white);/* Fondo de toda la aplicacion*/
 
-    --semantic-surface: var(--white);/*Fondo de mpdales, cards containers*/
+    --semantic-surface: var(--gray-900);/*Fondo de mpdales, cards containers*/
     --semantic-background-dropdown: var(--gray-800);/*Fondo del dropdown*/
 
     --semantic-login-container: var(--primary-100);

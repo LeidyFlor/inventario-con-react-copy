@@ -95,7 +95,7 @@ export default function DataTable({ data, columns }) {
                     placeholder="Buscar..."
                     value={globalFilter ?? ""}
                     onChange={(e) => setGlobalFilter(e.target.value)}
-                    className="border rounded px-3 py-2 w-64"
+                    className="border rounded-xl px-3 py-2 w-64 hover:border-focus-border focus:outline-none focus:ring-1 focus:ring-focus-ring"
                 />
 
 
@@ -104,7 +104,7 @@ export default function DataTable({ data, columns }) {
                 <select
                     value={table.getState().pagination.pageSize}
                     onChange={(e) => table.setPageSize(Number(e.target.value))}
-                    className="border rounded px-2 py-2"
+                    className="border rounded-xl px-2 py-2 w-64 hover:border-focus-border focus:outline-none focus:ring-1 focus:ring-focus-ring"
                 >
                     {[5, 7, 10, 20, 50].map(size => (
                         <option key={size} value={size}>
@@ -138,7 +138,7 @@ export default function DataTable({ data, columns }) {
 
                                     <th
                                         key={header.id}
-                                        className="p-3 text-left border-b"
+                                        className="p-3 text-left border-b text-text-inverse"
                                     >
 
 
@@ -174,7 +174,7 @@ export default function DataTable({ data, columns }) {
                         {table.getRowModel().rows.map(row => (
 
 
-                            <tr key={row.id} className="hover:bg-background-login-coontainer">
+                            <tr key={row.id} className="hover:bg-surface">
 
 
                                 {/* Celdas visibles de cada fila */}
@@ -211,12 +211,12 @@ export default function DataTable({ data, columns }) {
 
 
             {/* ================== FOOTER ================== */}
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col md:flex-row items-center justify-between">
 
 
                 {/* ================== INFORMACIÓN ================== */}
                 {/* Cantidad de registros visibles */}
-                <span className="text-body text-text-primary">
+                <span className="text-body text-text-primary mb-2 md:mb-0">
                     Mostrando {table.getRowModel().rows.length} de{" "}
                     {table.getFilteredRowModel().rows.length} registros
                 </span>
@@ -229,9 +229,9 @@ export default function DataTable({ data, columns }) {
                     {/* Ir a la primera página */}
                     <Button
                         size="sm"
-                        variant="ghost"
                         onClick={() => table.setPageIndex(0)}
                         disabled={!table.getCanPreviousPage()}
+                        showIcon={false}
                     >
                         Inicio
                     </Button>
@@ -240,7 +240,7 @@ export default function DataTable({ data, columns }) {
                     {/* Página anterior */}
                     <Button
                         size="sm"
-                        variant="ghost"
+                        variant="secondary"
                         onClick={() => table.previousPage()}
                         disabled={!table.getCanPreviousPage()}
                     >
@@ -249,7 +249,7 @@ export default function DataTable({ data, columns }) {
 
 
                     {/* Información de página actual */}
-                    <span className="text-sm px-2">
+                    <span className="text-sm px-2 hidden md:block">
                         Página {table.getState().pagination.pageIndex + 1} de{" "}
                         {table.getPageCount()}
                     </span>
@@ -260,6 +260,7 @@ export default function DataTable({ data, columns }) {
                         size="sm"
                         onClick={() => table.nextPage()}
                         disabled={!table.getCanNextPage()}
+                        showIcon={false}
                     >
                         Siguiente
                     </Button>
@@ -270,6 +271,7 @@ export default function DataTable({ data, columns }) {
                         size="sm"
                         onClick={() => table.setPageIndex(table.getPageCount() - 1)}
                         disabled={!table.getCanNextPage()}
+                        showIcon = {false}
                     >
                         Final
                     </Button>
@@ -281,7 +283,7 @@ export default function DataTable({ data, columns }) {
 
             {/* ================== IR A PÁGINA ================== */}
             {/* Permite navegar directamente a una página específica */}
-            <div className="flex items-center gap-2 text-sm">
+            <div className="flex items-center justify-center md:justify-start gap-2 text-sm">
 
 
                 <span>Ir a página:</span>
@@ -305,12 +307,17 @@ export default function DataTable({ data, columns }) {
                     }}
 
 
-                    className="border rounded px-2 py-1 w-16"
+                    className="border rounded-xl px-2 py-1 w-16 hover:border-focus-border focus:outline-none focus:ring-1 focus:ring-focus-ring"
                 />
+                
+                {/* Información de página actual */}
+                <span className="text-sm px-2  md:hidden">
+                    Página {table.getState().pagination.pageIndex + 1} de{" "}
+                    {table.getPageCount()}
+                </span>  
 
 
             </div>
-
 
         </div>
     )
