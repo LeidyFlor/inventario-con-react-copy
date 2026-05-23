@@ -1,4 +1,4 @@
-import { Input, Button, IconButton, Select } from "@/shared"
+import { Input, Button, IconButton, Select, Textarea } from "@/shared"
 import React, { useState } from "react";
 import { loanSchema } from "../schemas/loanSchema";
 
@@ -65,22 +65,31 @@ export default function ReturnLoan() {
         <div className="flex flex-col place-items-center justify-items-center relative">
 
             {/* Contenedor verde */}
-            <div className="bg-gradient-container-green border-4 border-border-green-container p-6 rounded-4xl w-fit mt-10">
+            <div className="bg-gradient-container-green border-4 border-border-green-container p-6 rounded-4xl">
 
                 {/* contenedor del titulo y la linea */}
-                <div className="mb-6 max-w-max">
-                    <h1 className="text-gradient-title text-h3 pb-0.5">
+                <div className="grid md:grid-cols-2 grid-cols-1  mb-6 max-w-max gap-10 mb:gap-20 place-items-center">
+                    <h1 className="text-gradient-title text-h3 pb-0.5 ">
                         Regresar material devolutivo/consumo
-                    </h1>
                     <div className="h-0.5 bg-gradiant-title-line"></div>
+                    </h1>
+                    <div>
+                        <div className="flex gap-2 mb-1 justify-center">
+                            <h2 className="font-bold text-body">ID péstamo:</h2>
+                            <h2 className="text-body">AAB000000014</h2>
+
+                        </div>
+
+                        <div className="h-0.5 bg-border-line-subtitle w-full"></div>
+                    </div>
                 </div>
 
 
-                    {/* Columna izquierda*/}
-                {/* Layout de dos columnas */}
-                <form className="flex gap-10 mx-2" onSubmit={handleSubmit} noValidate>
 
-                    <div className="flex flex-col-2 gap-11">
+                {/* Layout de dos columnas */}
+                <form className="flex flex-row mx-2 w-max" onSubmit={handleSubmit} noValidate>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-20">
                         {/* Selección de materiales */}
                         <div className="flex flex-col gap-4 place-items-center justify-center">
                             <h2 className="font-bold text-body">Selecciona los materiales a devolver</h2>
@@ -100,18 +109,9 @@ export default function ReturnLoan() {
                         </div>
 
                         {/* Columna derecha */}
-                        <div className="flex flex-col gap-20">
-                            <div>
-                                <div className="flex gap-2 mb-1 justify-center">
-                                <h2 className="font-bold text-body">ID péstamo:</h2>
-                                <h2 className="text-body">AAB000000014</h2>
-                                {/* Línea verde con width al 200% para que se extienda más allá del título y quede más estético */}
-
-                                </div>
+                        <div className="flex flex-col gap-10">
                             
-                            <div className="h-0.5 bg-border-line-subtitle w-full"></div>
-                            </div>
-                            <Input
+                            <Textarea
                                 label="Observación"
                                 placeholder="Observación"
                                 name="loanUserRequesterNote"
