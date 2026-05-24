@@ -110,12 +110,12 @@ export default function Navbar( { isOpen, onClose }){
 
                                 <DropdownContent className="right-0 w-48">
                                     <DropdownItem>
-                                        <Link to="user-create" className="block w-full">
+                                        <Link to="consumable-material-create" className="block w-full">
                                             Crear material de consumo
                                         </Link>
                                     </DropdownItem>
                                     <DropdownItem>
-                                        <Link to="user-edit" className="block w-full">
+                                        <Link to="consumable-material-list" className="block w-full">
                                             Listar material de consumo
                                         </Link>
                                     </DropdownItem>
