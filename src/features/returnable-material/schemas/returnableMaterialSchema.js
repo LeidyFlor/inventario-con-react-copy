@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { fileSchema } from "@/shared";
 import { consumableMaterialShema } from "../../consumable-material/schemas/consumableMaterialShema"; //importa el esquema de materiales de consumo para heredar las validaciones
 
 export const returnableMaterialSchema = consumableMaterialShema
@@ -21,6 +22,9 @@ export const returnableMaterialSchema = consumableMaterialShema
       .string()
       .min(1, "El modelo no puede estar vacío")
       .max(150, "Nombre de modelo muy largo"),
+
+    returnnableMaterialImagen: fileSchema.shape.files.optional(),
+    returnnableMaterialTechnicalSheet: fileSchema.shape.files.optional(),
   })
   //El string a comparar en este caso es la llave del json de la opcion. EN ESTE CASO 3 = "Muebles y enseres"
   //  un superrefine puede hacer varias validaciones y sacar mensajes de error difente
@@ -41,10 +45,7 @@ export const returnableMaterialSchema = consumableMaterialShema
 
       // Valida el formato
       const formato = /^\d+x\d+x\d+(cm|m|mm)$/i;
-      const valorLimpio = data.returnableMaterialDimensions.replace(
-        /\s+/g,
-        "",
-      );
+      const valorLimpio = data.returnableMaterialDimensions.replace(/\s+/g, "");
       if (!formato.test(valorLimpio)) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,

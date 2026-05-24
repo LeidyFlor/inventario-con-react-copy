@@ -6,6 +6,8 @@ import clsx from "clsx";
 
 export const IconButtonReal = React.forwardRef(function IconButton(
     {
+        // Por defecto será un button, pero cuando se necesite anidar 2 botones se necesita que se comporte como un div donde sea llamado (menu hamburguesa)
+        as: Component = "button",
         children,
         label, //para texto opcional en el icono
         onClick,
@@ -60,9 +62,9 @@ export const IconButtonReal = React.forwardRef(function IconButton(
         `,
     };
     return (
-        <button
+        <Component
             ref={ref}
-            type="button"
+            type={Component === "button" ? "button" : undefined} //type solo si es button
             aria-label={ariaLabel}
             disabled={disabled}
             onClick={onClick}
@@ -93,6 +95,6 @@ export const IconButtonReal = React.forwardRef(function IconButton(
                     {label}
                 </span>
             )}
-        </button>
+        </Component>
     );
 });

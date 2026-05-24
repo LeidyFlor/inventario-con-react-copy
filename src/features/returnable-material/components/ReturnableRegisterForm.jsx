@@ -1,7 +1,8 @@
-import { Input, Button, IconButton, Select } from "@/shared"
+import { Input, Button, IconButton, Select, FileInput, Textarea } from "@/shared"
 import React, {useState, useEffect} from "react";
 import { getMaterialCategory, getMaterialState, getUserName, getBrandName } from "@/features/returnable-material/services/selectService.js";
 import { returnableMaterialSchema } from "../schemas/returnableMaterialSchema";
+import { Router } from "lucide-react";
 
 export default function ReturnableRegisterForm() {
     const [formData, setFormData] = useState({
@@ -19,6 +20,8 @@ export default function ReturnableRegisterForm() {
         returnableMaterialSerial: "",
         returnableMaterialCategory: "",
         returnableMaterialDimensions: "",
+        returnnableMaterialImagen: [],
+        returnnableMaterialTechnicalSheet: [],
     });
     const [errors, setErrors] = useState({});
     const [materialCategory, setMaterialCategory] = useState([]);
@@ -34,14 +37,14 @@ export default function ReturnableRegisterForm() {
     }, [])
     const handleChange = (e) => {
                 // Se obtiene el nombre del campo y su valor
-                const { name, value } = e.target; //target es lo que viene cuando se escribe
+        const { name, value, type, checked } = e.target; //target es lo que viene cuando se escribe
         
                 setFormData((prev) => ({
                     //Se copian todos los valores anteriores del estado
                     ...prev,
         
                     //Se actualiza unicamente lo que cambió
-                    [name]: value,
+                    [name]: type === "checkbox" ? checked : value,
                 }));
             };
             // ==================================================
@@ -79,7 +82,7 @@ export default function ReturnableRegisterForm() {
                 //Si la validacion es exitosa se limpian los errores anteriores
                 setErrors({});
                 //result.data contiene los datos ya validados por Zod
-                console.log("Usuario valido:", result.data);
+                console.log("Material devolutivo valido:", result.data);
             }
 
     return (
@@ -88,38 +91,59 @@ export default function ReturnableRegisterForm() {
             <div className="bg-gradient-container-green border-4 border-border-green-container p-6 rounded-4xl  w-fit mt-2 h-fit">
                 {/* contenenedor del titulo y la linea */}
                 <div className="mb-6 max-w-max ">
-                    <h1 className="text-gradient-title text-h3 pb-0.5">
+                    <h1 className="flex gap-2 text-gradient-title text-h3 pb-0.5">
+                        <Router className="text-brand" />
                         Crear material devolutivo
                     </h1>{/*linea degradada del titulo*/}
                     <div className="h-0.5 bg-gradiant-title-line"></div>
 
                 </div>
                 {/* grid-flow-col-dense para ajustar el ancho de las columanas al contenido */}
-                <form className="grid grid-flow-col-dense items-center gap-10 " onSubmit={handleSubmit} noValidate>
-                    <div className="flex justify-center items-center">
+                <form className="grid md:grid-flow-col-dense items-center gap-10 " onSubmit={handleSubmit} noValidate>
+                    <div className="flex flex-col md:flex-row justify-center items-center">
                         <div className="flex flex-col place-items-center">
                             <h2 className="mb-6 font-bold text-body">
                                 Agregar imagen del elemento
                             </h2>
-                            <Input
-                            placeholder="subir imagen"
-                            type="image"
-                            name="imagen"
-                            />
+                            {/* Contenedor fileInput Imagen del archivo. tipo de arhcivo, cantidad y tamano */}
+                            <div className="flex flex-col gap-4 place-items-center">
+                                <h2 className="w-80">Puede subir 1 archivo, archivos permitidos: PDF, PNG, JPG. Máximo de 10MB</h2>
+                                <FileInput
+                                    value={formData.returnnableMaterialImagen}
+                                    onChange={(files) =>
+                                        setFormData((prev) => ({ ...prev, returnnableMaterialImagen: files }))
+                                    }
+                                    multiple={false}
+                                />
+                                {errors.returnnableMaterialImagen && (
+                                    <span className="text-red-800 text-sm">{errors.returnnableMaterialImagen}</span>
+                                )}
 
-                            <h2 className="mt-6 font-bold text-body">
+                            </div>
+
+                            <h2 className="my-6 font-bold text-body">
                             Agregar ficha técnica
                             </h2>
 
-                            <div className="mt-6 ">
-                            <Button variant="primary" size="sm">
-                                Agregar
-                            </Button>
+                            {/* Contenedor fileInput Ficha técnica. tipo de arhcivo, cantidad y tamano */}
+                            <div className="flex flex-col gap-4 place-items-center">
+                                <h2 className="w-80">Máximo puede subir 12 archivos, archivos permitidos: PDF, PNG, JPG. Máximo de 10MB</h2>
+                                <FileInput
+                                    value={formData.returnnableMaterialTechnicalSheet}
+                                    onChange={(files) =>
+                                        setFormData((prev) => ({ ...prev, returnnableMaterialTechnicalSheet: files }))
+                                    }
+                                    multiple={true}
+                                />
+                                {errors.returnnableMaterialTechnicalSheet && (
+                                    <span className="text-red-800 text-sm">{errors.returnnableMaterialTechnicalSheet}</span>
+                                )}
+
                             </div>
                         </div>
                     </div>
                     {/* Inputs */}
-                    <div className="grid grid-cols-2 gap-10 ">
+                    <div className="grid grid-cols-1 md:grid-cols-2 md:gap-10 ">
                         <div className="flex flex-col gap-4">
                             <Input
                                 placeholder="Placa Sena"
@@ -169,10 +193,11 @@ export default function ReturnableRegisterForm() {
                                 onChange={handleChange}
                                 error={errors.inventoryManger}
                             />
-                            <Input
+                            <Textarea
+                                className="mb-3 mb:mb-0"
+                                label="Descripción"
                                 placeholder="Descripción"
                                 name="materialDescription"
-                                label="Descripción"
                                 value={formData.materialDescription}
                                 onChange={handleChange}
                                 error={errors.materialDescription}
@@ -180,7 +205,7 @@ export default function ReturnableRegisterForm() {
 
                         </div>
                         
-                        <div className="flex flex-col gap-3">
+                        <div className="flex flex-col gap-4">
                             <Select
                                 label="Categoría"
                                 options={materialCategory}

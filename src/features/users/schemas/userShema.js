@@ -1,4 +1,6 @@
 import { z } from "zod";
+import { fileSchema } from "@/shared";
+
 const datePreprocess = (mensajeError) =>
   z.preprocess(
     //preprocess convirte la fecha "" a undefined (cuando se deja el campo de fecha sin llenar)
@@ -33,7 +35,10 @@ export const userShema = z
     userEmail: z
       .string()
       .regex(/^[^\s@]+@[^\s@]+\.[^\s@]+$/, "Debe ingresar un email válido")
-      .regex(/^((?!(soy\.)?sena\.edu\.co).)*$/, "El correo debe ser el personal"),
+      .regex(
+        /^((?!(soy\.)?sena\.edu\.co).)*$/,
+        "El correo debe ser el personal",
+      ),
 
     userEmailConfir: z
       .string()
@@ -87,16 +92,16 @@ export const userShema = z
       .regex(/[a-z]/, "Debe contener al menos una minúscula")
       .regex(/[0-9]/, "Debe contener al menos un número")
       .regex(/[^A-Za-z0-9]/, "Debe contener al menos un caractér especial"),
-    
+
     userDateStart: datePreprocess(
       "La fecha de inicio es obligatoria",
-      "Fecha de inicio inválida"
+      "Fecha de inicio inválida",
     ),
     userDateEnd: datePreprocess(
       "La fecha fin es obligatoria",
-      "Fecha de fin inválida"
+      "Fecha de fin inválida",
     ),
-
+    userImage: fileSchema.shape.files.optional(),
   })
   //para que email y confirmación sean iguales
   .refine((data) => data.userEmail === data.userEmailConfir, {

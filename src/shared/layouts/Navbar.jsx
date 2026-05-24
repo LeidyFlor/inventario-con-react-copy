@@ -71,7 +71,7 @@ export default function Navbar( { isOpen, onClose }){
 
                                 <DropdownContent className="right-0 w-48">
                                     <DropdownItem>
-                                        <Link to="user-create" className="block w-full">
+                                <Link to="returnable-material-create" className="block w-full">
                                             Crear material devolutivo
                                         </Link>
                                     </DropdownItem>

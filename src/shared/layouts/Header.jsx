@@ -73,18 +73,13 @@ export default function Header( { onMenuToggle } ) {
                         <Link to={"/"} className="hidden md:block">
                             <img src={logoSigiBlanco} alt="Logo del sistema ,Sigi" className="h-13" />
                         </Link>
-                        <button
-                            type="button"
-                            className={`lg:hidden`}
-                            onClick={ onMenuToggle }
-                        >
-                            <IconButtonReal arialLabel="Ícono buscar" variant="primary">
+
+                        <IconButtonReal as="div" className={`lg:hidden`}
+                            onClick={onMenuToggle} arialLabel="Ícono buscar"variant="primary">
 
                                 <Menu />
 
-                            </IconButtonReal>
-
-                        </button>
+                        </IconButtonReal>
                     </div>
 
                     {/* Seccion de la derecha: busqueda + usuario */}
@@ -96,7 +91,7 @@ export default function Header( { onMenuToggle } ) {
                                 className={`md:hidden ${searchOpen ? "hidden" : "flex"}`}
                                 onClick={() => setSearchOpen(!searchOpen)}
                             >
-                                <IconButtonReal label="Buscar" arialLabel="Ícono buscar" variant="primary">
+                                <IconButtonReal as="div" label="Buscar" arialLabel="Ícono buscar" variant="primary">
 
                                     <Search />
 

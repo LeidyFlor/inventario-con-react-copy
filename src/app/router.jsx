@@ -34,8 +34,9 @@ const router = createBrowserRouter([
             { path: "auth", element: <LoginForm /> },
             { path: "user-create", element: <CreateUserPage /> },
             { path: "user-edit", element: <EditUserPage /> },
+            { path: "user-list", element: <ListUserPage /> },
             { path: "loan-return", element: <ReturnLoan /> },
-            { path: "user-list", element: <ListUserPage /> }
+            { path: "returnable-material-create", element: <CreateReturnablePage /> },
         ],
     }
 ]);
