@@ -2,7 +2,7 @@ import  PermissionsForm  from "../components/PermissionsForm";
 import { Settings } from "lucide-react";
 export default function ListPermissionsPage(){
     return(
-        <div className="flex justify-between">
+        <div className="flex flex-col lg:flex-row justify-between">
             {/* Grupos */}
             <div>
                 {/* contenenedor del titulo y la linea */}

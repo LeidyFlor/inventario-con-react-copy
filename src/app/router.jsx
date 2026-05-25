@@ -39,7 +39,7 @@ const router = createBrowserRouter([
             { path: "loan-return", element: <ReturnLoan /> },
             { path: "returnable-material-create", element: <CreateReturnablePage /> },
             { path: "consumable-material-create", element: <CreateConsumablePage /> },
-            // { path: "consumable-material-list", element: <ListMaterialPage /> },
+
             { path: "permissions-list", element: <ListPermissionsPage /> },
         ],
     }
