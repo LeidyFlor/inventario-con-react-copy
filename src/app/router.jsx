@@ -1,7 +1,7 @@
 import { createBrowserRouter, Navigate } from "react-router-dom";
 import MainLayout from "@/shared/layouts/MainLayout";
 import { CreateUserPage, EditUserPage, ListUserPage } from "@/features/users";
-import { CreteBrandPage } from "@/features/brands";
+import { CreateBrandPage } from "@/features/brands";
 import { CreateLoanPage, ReturnLoan, ApproveReturnLoan } from "@/features/loans";
 import { CreateTaskPage } from "@/features/tasks";
 import { CreateConsumablePage, EditConsumablePage } from "@/features/consumable-material";
@@ -9,6 +9,8 @@ import { CreateReturnablePage, EditReturnablePage } from "@/features/returnable-
 import { ListPermissionsPage } from "@/features/permissions";
 import { LoginForm, LoginRestorePassword, LoginRestorePasswordCode, LoginRestoreNewPassword } from "@/features/auth";
 import { AuthLayout, DashboardLayout } from "@/shared/";
+import NewLoanForm from "../features/loans/components/NewLoanForm";
+import BrandRegisterForm from "../features/brands/components/BrandRegisterForm";
 
 const router = createBrowserRouter([
     {
@@ -41,6 +43,8 @@ const router = createBrowserRouter([
             { path: "consumable-material-create", element: <CreateConsumablePage /> },
             // { path: "consumable-material-list", element: <ListMaterialPage /> },
             { path: "permissions-list", element: <ListPermissionsPage /> },
+            { path: "loan-create", element: <NewLoanForm /> },
+            { path: "brand-create", element: <BrandRegisterForm /> },
         ],
     }
 ]);

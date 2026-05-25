@@ -36,7 +36,7 @@ export default function Navbar( { isOpen, onClose }){
 
                                 <DropdownContent className="right-0 w-48">
                                     <DropdownItem>
-                                        <Link to="user-create" className="block w-full">
+                                        <Link to="loan-create" className="block w-full">
                                             Crear préstamo
                                         </Link>
                                     </DropdownItem>

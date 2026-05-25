@@ -1,7 +1,7 @@
 import { Outlet } from "react-router-dom";
 // import heroBg from "@/assets/images/imagen-hero-freelancer.jpg";
 import { CreateUserPage, EditUserPage } from "@/features/users";
-import { CreteBrandPage } from "@/features/brands";
+import { CreateBrandPage } from "@/features/brands";
 import { CreateLoanPage } from "@/features/loans";
 import { CreateTaskPage } from "@/features/tasks";
 import { CreateConsumablePage, EditConsumablePage } from "@/features/consumable-material";

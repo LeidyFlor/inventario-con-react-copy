@@ -151,6 +151,11 @@ export default function Header( { onMenuToggle } ) {
                                             Gestión de Usuarios
                                         </Link>
                                     </DropdownItem>
+                                    <DropdownItem>
+                                        <Link to="brand-create" className="block w-full">
+                                            Gestión de Marcas
+                                        </Link>
+                                    </DropdownItem>
 
                                 </DropdownContent>
                             </Dropdown>
