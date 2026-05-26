@@ -15,7 +15,7 @@ import {
 
 // Componente que renderiza las acciones de cada fila de usuario
 // Recibe como prop el objeto user
-export default function BrandRowActions({ brand }) {
+export default function BrandRowAction({ brand }) {
 
 
   // const handleEdit = () => {

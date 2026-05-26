@@ -143,7 +143,7 @@ export default function Navbar( { isOpen, onClose }){
 
                                 <DropdownContent className="right-0 w-48">
                                     <DropdownItem>
-                                        <Link to="brand-create" className="block w-full">
+                                        <Link to="brand-list" className="block w-full">
                                             Gestión de marcas
                                         </Link>
                                     </DropdownItem>

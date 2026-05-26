@@ -6,7 +6,7 @@ import { Link } from "react-router-dom"
 import { ClipboardList } from "lucide-react"
 
 
-export default function ListUserPage() {
+export default function ListBrandPage() {
 
 
   return (      
@@ -17,7 +17,7 @@ export default function ListUserPage() {
               <div className=" mb-6 max-w-max">
                   <h1 className="flex gap-2 text-gradient-title text-h3 pb-0.5">
                       <ClipboardList className="text-brand" />
-                      Listar usuarios
+                      Listar marcas
                   </h1>{/*linea degradada del titulo*/}
                   <div className="h-0.5 bg-gradiant-title-line"></div>
 
@@ -34,7 +34,7 @@ export default function ListUserPage() {
                         Reporte
                     </Button>
 
-                <Link to="/dashboard">
+                <Link to="/dashboard/brand-create">
                     <Button
                         variant="primary"
                         size="sm"

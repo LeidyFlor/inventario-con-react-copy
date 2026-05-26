@@ -3,7 +3,7 @@
 import { StatusSwitch } from "@/shared/";
 
 // Componente que contiene los botones de acciones (editar y eliminar) para cada usuario
-import BrandRowActions from "../components/BrandRowActions";
+import BrandRowAction from "../components/BrandRowAction";
 
 // Definición de las columnas de la tabla de usuarios
 // Este arreglo suele usarse en librerías de tablas como TanStack Table
@@ -66,6 +66,6 @@ export const brandsColumns = [
 
 
         // Renderiza el componente de acciones pasando el usuario completo
-        cell: ({ row }) => <BrandRowActions brand={row.original} />,
+        cell: ({ row }) => <BrandRowAction brand={row.original} />,
     },
 ];
