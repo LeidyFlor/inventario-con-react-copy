@@ -4,7 +4,7 @@ import { CreateUserPage, EditUserPage, ListUserPage } from "@/features/users";
 import { CreteBrandPage } from "@/features/brands";
 import { CreateLoanPage, ReturnLoan, ApproveReturnLoan } from "@/features/loans";
 import { CreateTaskPage } from "@/features/tasks";
-import { CreateConsumablePage, EditConsumablePage } from "@/features/consumable-material";
+import { CreateConsumablePage, EditConsumablePage, ListMaterialPage } from "@/features/consumable-material";
 import { CreateReturnablePage, EditReturnablePage, ListReturnablePage } from "@/features/returnable-material";
 import { ListPermissionsPage } from "@/features/permissions";
 import { LoginForm, LoginRestorePassword, LoginRestorePasswordCode, LoginRestoreNewPassword } from "@/features/auth";
@@ -43,7 +43,7 @@ const router = createBrowserRouter([
             { path: "loan-create", element: <CreateLoanPage /> },
             { path: "returnable-material-list", element: <ListReturnablePage /> },
             { path: "returnable-material-edit", element: <EditConsumablePage /> },
-
+            { path: "consumable-material-list", element: <ListMaterialPage /> },
         ],
     }
 ]);
