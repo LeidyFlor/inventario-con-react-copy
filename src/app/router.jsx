@@ -4,9 +4,9 @@ import { CreateUserPage, EditUserPage, ListUserPage } from "@/features/users";
 import { CreateBrandPage } from "@/features/brands";
 import { CreateLoanPage, ReturnLoan, ApproveReturnLoan } from "@/features/loans";
 import { CreateTaskPage } from "@/features/tasks";
-import { CreateConsumablePage, EditConsumablePage } from "@/features/consumable-material";
-import { CreateReturnablePage, EditReturnablePage } from "@/features/returnable-material";
-
+import { CreateConsumablePage, EditConsumablePage, ListMaterialPage } from "@/features/consumable-material";
+import { CreateReturnablePage, EditReturnablePage, ListReturnablePage } from "@/features/returnable-material";
+import { ListPermissionsPage } from "@/features/permissions";
 import { LoginForm, LoginRestorePassword, LoginRestorePasswordCode, LoginRestoreNewPassword } from "@/features/auth";
 import { AuthLayout, DashboardLayout } from "@/shared/";
 
@@ -38,7 +38,12 @@ const router = createBrowserRouter([
             { path: "user-list", element: <ListUserPage /> },
             { path: "loan-return", element: <ReturnLoan /> },
             { path: "returnable-material-create", element: <CreateReturnablePage /> },
-            { path: "brand-create", element: <CreateBrandPage /> },
+            { path: "consumable-material-create", element: <CreateConsumablePage /> },
+            { path: "permissions-list", element: <ListPermissionsPage /> },
+            { path: "loan-create", element: <CreateLoanPage /> },
+            { path: "returnable-material-list", element: <ListReturnablePage /> },
+            { path: "returnable-material-edit", element: <EditConsumablePage /> },
+            { path: "consumable-material-list", element: <ListMaterialPage /> },
         ],
     }
 ]);

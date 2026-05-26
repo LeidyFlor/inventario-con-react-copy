@@ -1,7 +1,9 @@
-import { Input, Button, IconButton, Select } from "@/shared"
+import { Input, Button, IconButton, Select, FileInput, Textarea } from "@/shared"
 import React, {useState, useEffect} from "react";
 import { getMaterialState, getUserName, getBrandName } from "@/features/consumable-material/services/selectService.js";
 import { consumableMaterialShema } from "../schemas/consumableMaterialShema";
+// Para el icon
+import { Cable } from "lucide-react";
 
 export default function ConsumableRegisterForm() {
     const [formData, setFormData] = useState({
@@ -79,29 +81,45 @@ export default function ConsumableRegisterForm() {
     return (
         <div className="flex flex-col place-items-center justify-items-center relative">
             {/* contenedor verde */}
-            <div className="bg-gradient-container-green border-4 border-border-green-container p-6 rounded-4xl w-fit mt-2">
+            <div className="bg-gradient-container-green border-4 border-border-green-container p-6 rounded-4xl w-fit mt-2 h-fit">
                 {/* contenenedor del titulo y la linea */}
                 <div className="mb-6 max-w-max ">
-                    <h1 className="text-gradient-title text-h3 pb-0.5 text-center">
+                    <h1 className="flex gap-2 text-gradient-title text-h3 pb-0.5">
+                        <Cable className="text-brand"/>
                         Crear material de Consumo
                     </h1>
 
                     {/*linea degradada del titulo*/}
-                    <div className="h-0.5 bg-gradiant-title-line mb-30"></div>
+                    <div className="h-0.5 bg-gradiant-title-line"></div>
 
                 </div>
-                <form className="grid grid-flow-col-dense justify-end items-center gap-10 -mt-18 " onSubmit={handleSubmit} noValidate>
-                    <div>
-                        <h2 className="mb-6 font-bold text-body" >
-                            Agregar imagen del elemento
-                        </h2>
-                        <Input
-                            type="image"
-                            name= "img"
-                        />
+                <form className="grid md:grid-flow-col-dense items-center gap-10  " onSubmit={handleSubmit} noValidate>
+                    <div className="flex flex-col md:flex-row justify-center items-center">
+                        <div className="flex flex-col place-items-center">
+                            <h2 className="mb-6 font-bold text-body">
+                                Agregar imagen del elemento
+                            </h2>
+                            {/* Contenedor fileInput Imagen del archivo. tipo de arhcivo, cantidad y tamano */}
+                            <div className="flex flex-col gap-4 place-items-center">
+                                <h2 className="w-80">Puede subir 1 archivo, archivos permitidos: PDF, PNG, JPG. Máximo de 10MB</h2>
+                                <FileInput
+                                    value={formData.returnnableMaterialImagen}
+                                    onChange={(files) =>
+                                    setFormData((prev) => ({ ...prev, returnnableMaterialImagen: files }))
+                                    }
+                                    multiple={false}
+                                />
+                                {errors.returnnableMaterialImagen && (
+                                <span className="text-red-800 text-sm">{errors.returnnableMaterialImagen}</span>
+                                )}
+                    
+                            </div>
+                    
+                                               
+                        </div>
                     </div>
                     {/* Inputs */}
-                    <div className="grid grid-cols-2 gap-10 ">
+                    <div className="grid grid-cols-1 md:grid-cols-2 md:gap-10">
                         <div className="flex flex-col gap-4">
                             <Input
                                 placeholder="Placa Sena"
@@ -135,10 +153,11 @@ export default function ConsumableRegisterForm() {
                                 onChange={handleChange}
                                 error={errors.inventoryManger}
                             />
-                            <Input
+                            <Textarea
+                                className="mb-3 mb:mb-0"
+                                label="Descripción"
                                 placeholder="Descripción"
                                 name="materialDescription"
-                                label="Descipción"
                                 value={formData.materialDescription}
                                 onChange={handleChange}
                                 error={errors.materialDescription}
