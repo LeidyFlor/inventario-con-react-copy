@@ -7,7 +7,7 @@ export const returnableMaterial = [
     inventoryManger: "Edward Velasquez",
     returnableMaterialSerial: "A9F3-7X2B-Q1",
     returnableMaterialCategory: "Equipo y maquinaria",
-    is_active: true
+    is_active: true 
   },
   {
     materialBarcodeSena: "SENA00084729104",

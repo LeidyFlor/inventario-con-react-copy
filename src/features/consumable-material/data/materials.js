@@ -11,7 +11,6 @@ export const materials = [
         materialTotalPrice: 38000,
         materialLocation: "Almacen 3",
         is_active: true,
-
     },
     {
         materialBarcodeSena: "ADSO001",
