@@ -15,7 +15,7 @@ import {
 
 // Componente que renderiza las acciones de cada fila de usuario
 // Recibe como prop el objeto user
-export default function BrandRowAction({ brand }) {
+export default function MaterialRowActions({ material }) {
 
 
   // const handleEdit = () => {
@@ -30,7 +30,7 @@ export default function BrandRowAction({ brand }) {
   // Acción para editar el usuario
   // Redirige a la página de edición usando el id del usuario
   const handleEdit = () => {
-    navigate(`/brands/${brand.id}/edit`);
+    navigate(`/materials/${material.id}/edit`);
   };
 
 
@@ -38,7 +38,7 @@ export default function BrandRowAction({ brand }) {
   // Actualmente solo imprime en consola el id
   // En una aplicación real aquí se llamaría a la API
   const handleDelete = () => {
-    console.log("Eliminar marca", brand.id);
+    console.log("Eliminar usuario", material.id);
   };
 
 

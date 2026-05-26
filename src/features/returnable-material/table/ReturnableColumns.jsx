@@ -3,22 +3,35 @@
 import { StatusSwitch } from "@/shared/";
 
 // Componente que contiene los botones de acciones (editar y eliminar) para cada usuario
-import BrandRowAction from "../components/BrandRowAction";
+import ReturnableRowAction from "../components/ReturnableRowAction";
 
 // Definición de las columnas de la tabla de usuarios
 // Este arreglo suele usarse en librerías de tablas como TanStack Table
-export const brandsColumns = [
+export const ReturnableColumns = [
 
-
-    
-    
-    // Columna Nombre
     {
-        accessorKey: "brandName", // Campo del objeto user
-        header: "Nombre",    // Encabezado visible
+        accessorKey: "materialName",
+        header: "Nombre material",    // Encabezado visible
     },
     
+    {
+        accessorKey: "materialBarcodeSena",
+        header: "Placa",
+    },
+    
+    {
+        accessorKey: "returnableMaterialSerial", 
+        header: "Serial",      // Título de la columnas
+    },
 
+    {
+        accessorKey: "returnableMaterialCategory",
+        header: "Categoría",
+    },
+    {
+        accessorKey: "inventoryManger",
+        header: "Cuentadante",
+    },
 
     // Columna Estado (activo / inactivo)
     {
@@ -32,7 +45,7 @@ export const brandsColumns = [
 
 
             // Se obtiene el objeto completo del usuario de la fila
-            const brand = row.original;
+            const returnableMaterial = row.original;
 
 
             // Función que se ejecuta cuando cambia el switch
@@ -40,7 +53,7 @@ export const brandsColumns = [
 
 
                 // value representa el nuevo estado del switch (true o false)
-                console.log("Actualizar estado marca:", brand.brand_id, value);
+                console.log("Actualizar estado returnable:", returnableMaterial.returnable_id, value);
 
 
                 // Aquí normalmente se llamaría una API para actualizar el estado
@@ -51,7 +64,7 @@ export const brandsColumns = [
             return (
                 // Componente reutilizable para mostrar el switch
                 <StatusSwitch
-                    checked={brand.is_active} // Estado actual del usuario
+                    checked={returnableMaterial.is_active} // Estado actual del usuario
                     onChange={handleChange}  // Función que maneja el cambio
                     className="inline-flex" // OJOOOOOO para que se ponga derecho flex
                 />
@@ -66,6 +79,6 @@ export const brandsColumns = [
 
 
         // Renderiza el componente de acciones pasando el usuario completo
-        cell: ({ row }) => <BrandRowAction brand={row.original} />,
+        cell: ({ row }) => <ReturnableRowAction user={row.original} />,
     },
 ];

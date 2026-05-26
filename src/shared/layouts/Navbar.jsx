@@ -36,7 +36,7 @@ export default function Navbar( { isOpen, onClose }){
 
                                 <DropdownContent className="right-0 w-48">
                                     <DropdownItem>
-                                        <Link to="user-create" className="block w-full">
+                                <Link to="loan-create" className="block w-full">
                                             Crear préstamo
                                         </Link>
                                     </DropdownItem>
@@ -76,7 +76,7 @@ export default function Navbar( { isOpen, onClose }){
                                         </Link>
                                     </DropdownItem>
                                     <DropdownItem>
-                                        <Link to="user-edit" className="block w-full">
+                                <Link to="returnable-material-list" className="block w-full">
                                             Listar material devolutivo
                                         </Link>
                                     </DropdownItem>
@@ -86,7 +86,7 @@ export default function Navbar( { isOpen, onClose }){
                                         </Link>
                                     </DropdownItem>
                                     <DropdownItem>
-                                        <Link to="loan-return" className="block w-full">
+                                        <Link to="returnable-material-edit" className="block w-full">
                                             Editar material
                                         </Link>
                                     </DropdownItem>
@@ -110,12 +110,12 @@ export default function Navbar( { isOpen, onClose }){
 
                                 <DropdownContent className="right-0 w-48">
                                     <DropdownItem>
-                                        <Link to="user-create" className="block w-full">
+                                        <Link to="consumable-material-create" className="block w-full">
                                             Crear material de consumo
                                         </Link>
                                     </DropdownItem>
                                     <DropdownItem>
-                                        <Link to="user-edit" className="block w-full">
+                                        <Link to="consumable-material-list" className="block w-full">
                                             Listar material de consumo
                                         </Link>
                                     </DropdownItem>
@@ -143,7 +143,7 @@ export default function Navbar( { isOpen, onClose }){
 
                                 <DropdownContent className="right-0 w-48">
                                     <DropdownItem>
-                                        <Link to="brand-create" className="block w-full">
+                                        <Link to="brand-list" className="block w-full">
                                             Gestión de marcas
                                         </Link>
                                     </DropdownItem>
