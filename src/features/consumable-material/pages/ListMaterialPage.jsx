@@ -13,7 +13,7 @@ export default function ListMaterialPage() {
   return (      
     
     <div className="p-6">
-        <div className="flex justify-between "> 
+        <div className="flex flex-col md:flex-row justify-between "> 
               {/* contenenedor del titulo y la linea */}
               <div className=" mb-6 max-w-max">
                   <h1 className="flex gap-2 text-gradient-title text-h3 pb-0.5">
@@ -24,7 +24,7 @@ export default function ListMaterialPage() {
 
               </div>
 
-            <div className="flex gap-6">
+            <div className="flex mb-3 md:mb-0 gap-6">
 
 
 
