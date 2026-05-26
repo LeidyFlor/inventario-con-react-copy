@@ -6,7 +6,7 @@ import { CreateLoanPage, ReturnLoan, ApproveReturnLoan } from "@/features/loans"
 import { CreateTaskPage } from "@/features/tasks";
 import { CreateConsumablePage, EditConsumablePage } from "@/features/consumable-material";
 import { CreateReturnablePage, EditReturnablePage } from "@/features/returnable-material";
-import { ListPermissionsPage } from "@/features/permissions";
+
 import { LoginForm, LoginRestorePassword, LoginRestorePasswordCode, LoginRestoreNewPassword } from "@/features/auth";
 import { AuthLayout, DashboardLayout } from "@/shared/";
 
@@ -38,7 +38,7 @@ const router = createBrowserRouter([
             { path: "user-list", element: <ListUserPage /> },
             { path: "loan-return", element: <ReturnLoan /> },
             { path: "returnable-material-create", element: <CreateReturnablePage /> },
-
+            { path: "brand-create", element: <CreateBrandPage /> },
         ],
     }
 ]);
