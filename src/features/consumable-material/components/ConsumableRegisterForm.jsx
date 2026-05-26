@@ -2,6 +2,8 @@ import { Input, Button, IconButton, Select, FileInput, Textarea } from "@/shared
 import React, {useState, useEffect} from "react";
 import { getMaterialState, getUserName, getBrandName } from "@/features/consumable-material/services/selectService.js";
 import { consumableMaterialShema } from "../schemas/consumableMaterialShema";
+// Para el icon
+import { Cable } from "lucide-react";
 
 export default function ConsumableRegisterForm() {
     const [formData, setFormData] = useState({
@@ -83,6 +85,7 @@ export default function ConsumableRegisterForm() {
                 {/* contenenedor del titulo y la linea */}
                 <div className="mb-6 max-w-max ">
                     <h1 className="flex gap-2 text-gradient-title text-h3 pb-0.5">
+                        <Cable className="text-brand"/>
                         Crear material de Consumo
                     </h1>
 

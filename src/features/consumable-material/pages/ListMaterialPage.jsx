@@ -4,6 +4,7 @@ import { materials } from "../data/materials"
 import { Button } from "@/shared/"
 import { Link } from "react-router-dom"
 import { ClipboardList } from "lucide-react"
+import { CreateConsumablePage, EditConsumablePage } from "@/features/consumable-material";
 
 
 export default function ListMaterialPage() {
@@ -34,7 +35,7 @@ export default function ListMaterialPage() {
                         Reporte
                     </Button>
 
-                <Link to="/dashboard">
+                <Link to="/consumable-material-create">
                     <Button
                         variant="primary"
                         size="sm"
