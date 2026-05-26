@@ -1,7 +1,7 @@
 import { createBrowserRouter, Navigate } from "react-router-dom";
 import MainLayout from "@/shared/layouts/MainLayout";
 import { CreateUserPage, EditUserPage, ListUserPage } from "@/features/users";
-import { CreteBrandPage } from "@/features/brands";
+import { CreateBrandPage, ListBrandPage } from "@/features/brands";
 import { CreateLoanPage, ReturnLoan, ApproveReturnLoan } from "@/features/loans";
 import { CreateTaskPage } from "@/features/tasks";
 import { CreateConsumablePage, EditConsumablePage, ListMaterialPage } from "@/features/consumable-material";
@@ -44,6 +44,9 @@ const router = createBrowserRouter([
             { path: "returnable-material-list", element: <ListReturnablePage /> },
             { path: "returnable-material-edit", element: <EditConsumablePage /> },
             { path: "consumable-material-list", element: <ListMaterialPage /> },
+            { path: "brand-create", element: <CreateBrandPage /> },
+            { path: "brand-list", element: <ListBrandPage /> },
+
         ],
     }
 ]);
