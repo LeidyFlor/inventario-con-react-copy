@@ -35,7 +35,7 @@ export default function ListMaterialPage() {
                         Reporte
                     </Button>
 
-                <Link to="/consumable-material-create">
+                <Link to="/dashboard/consumable-material-create">
                     <Button
                         variant="primary"
                         size="sm"
