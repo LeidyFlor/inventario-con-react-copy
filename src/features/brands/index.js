@@ -1,1 +1,1 @@
-export {default as CreteBrandPage} from "./pages/CreateBrandPage";
+export {default as CreateBrandPage} from "./pages/CreateBrandPage";
