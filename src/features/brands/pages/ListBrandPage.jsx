@@ -17,7 +17,7 @@ export default function ListUserPage() {
               <div className=" mb-6 max-w-max">
                   <h1 className="flex gap-2 text-gradient-title text-h3 pb-0.5">
                       <ClipboardList className="text-brand" />
-                      Listar usuarios
+                      Listar marcas
                   </h1>{/*linea degradada del titulo*/}
                   <div className="h-0.5 bg-gradiant-title-line"></div>
 

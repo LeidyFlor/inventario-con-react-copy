@@ -1,5 +1,6 @@
 import { Input, Button, IconButton } from "@/shared"
 import { Tags } from "lucide-react";
+import { Link } from "react-router-dom"
 
 export default function BrandRegisterForm(){
     const handleBrand = (e) => {
@@ -29,9 +30,11 @@ export default function BrandRegisterForm(){
                         onChange={handleBrand}
                         name="brandName"
                     />
-                    <IconButton>
-                        Aceptar
-                    </IconButton>
+                    <Link to="brand-list">
+                        <IconButton>
+                            Aceptar
+                        </IconButton>
+                    </Link>
                 </div>
 
             </div>

@@ -1,6 +1,6 @@
 //src/features/users/table/userColumns.js
 // Componente reutilizable que muestra un switch para activar o desactivar estados
-import { StatusSwitch } from "@/shared/";
+import { StatusSwitch, Button } from "@/shared/";
 
 // Componente que contiene los botones de acciones (editar y eliminar) para cada usuario
 import BrandRowActions from "../components/BrandRowActions";
@@ -64,8 +64,9 @@ export const brandsColumns = [
     {
         id: "actions", // No usa accessorKey porque no corresponde a un campo del usuario
 
-
+        
         // Renderiza el componente de acciones pasando el usuario completo
-        cell: ({ row }) => <BrandRowActions brand={row.original} />,
+        cell: () => <Button variant="warning">Editar</Button>,
     },
+    // <Button>ASD</Button>
 ];
