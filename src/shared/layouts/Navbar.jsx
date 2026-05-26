@@ -148,7 +148,7 @@ export default function Navbar( { isOpen, onClose }){
                                         </Link>
                                     </DropdownItem>
                                     <DropdownItem>
-                                        <Link to="user-edit" className="block w-full">
+                                        <Link to="permissions-list" className="block w-full">
                                             Gestión de permisos
                                         </Link>
                                     </DropdownItem>
