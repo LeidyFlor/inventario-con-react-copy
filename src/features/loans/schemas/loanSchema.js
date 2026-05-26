@@ -9,7 +9,7 @@ const datePreprocess = (mensajeError) =>
         return isNaN(d.getTime()) ? undefined : d; // si es fecha inválida retorna null. getime lee el numero interno guardado
       }
       return null;
-    }, 
+    },
     z
       .date()
       .nullable()

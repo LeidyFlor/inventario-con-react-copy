@@ -2,6 +2,7 @@ import { Input, Button, IconButton, Select } from "@/shared"
 import React, { useState, useEffect } from "react";
 import { getUserName, getLoanTypes } from "@/features/loans/services/selectService.js";
 import { loanSchema } from "../schemas/loanSchema";
+import { FilePlus2 } from "lucide-react"
 
 export default function NewLoanForm() {
     const [formData, setFormData] = useState({
@@ -82,8 +83,8 @@ export default function NewLoanForm() {
 
                 {/* contenedor del titulo y la linea */}
                 <div className="mb-6 max-w-max">
-                    <h1 className="text-gradient-title text-h3 pb-0.5">
-                        Nuevo préstamo
+                    <h1 className="text-gradient-title text-h3 pb-0.5 flex items-center gap-3">
+                        <FilePlus2 className="size-10 text-brand"/>Nuevo préstamo
                     </h1>
                     <div className="h-0.5 bg-gradiant-title-line"></div>
                 </div>

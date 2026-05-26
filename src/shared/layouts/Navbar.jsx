@@ -41,7 +41,7 @@ export default function Navbar( { isOpen, onClose }){
                                         </Link>
                                     </DropdownItem>
                                     <DropdownItem>
-                                        <Link to="user-edit" className="block w-full">
+                                        <Link to="loan-list" className="block w-full">
                                             Listar préstamo
                                         </Link>
                                     </DropdownItem>
