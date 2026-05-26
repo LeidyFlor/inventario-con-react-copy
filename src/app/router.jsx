@@ -38,13 +38,7 @@ const router = createBrowserRouter([
             { path: "user-list", element: <ListUserPage /> },
             { path: "loan-return", element: <ReturnLoan /> },
             { path: "returnable-material-create", element: <CreateReturnablePage /> },
-<<<<<<< HEAD
-            { path: "brand-create", element: <CreateBrandPage /> },
-=======
-            { path: "consumable-material-create", element: <CreateConsumablePage /> },
 
-            { path: "permissions-list", element: <ListPermissionsPage /> },
->>>>>>> dev
         ],
     }
 ]);
