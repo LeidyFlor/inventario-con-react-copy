@@ -76,7 +76,7 @@ export default function Navbar( { isOpen, onClose }){
                                         </Link>
                                     </DropdownItem>
                                     <DropdownItem>
-                                        <Link to="user-edit" className="block w-full">
+                                <Link to="returnable-material-list" className="block w-full">
                                             Listar material devolutivo
                                         </Link>
                                     </DropdownItem>
@@ -86,7 +86,7 @@ export default function Navbar( { isOpen, onClose }){
                                         </Link>
                                     </DropdownItem>
                                     <DropdownItem>
-                                        <Link to="loan-return" className="block w-full">
+                                        <Link to="returnable-material-edit" className="block w-full">
                                             Editar material
                                         </Link>
                                     </DropdownItem>
