@@ -4,7 +4,7 @@ import { CreateUserPage, EditUserPage, ListUserPage, ViewUserPage } from "@/feat
 import { CreateBrandPage, ListBrandPage } from "@/features/brands";
 import { CreateLoanPage, ReturnLoan, ApproveReturnLoan } from "@/features/loans";
 import { CreateTaskPage } from "@/features/tasks";
-import { CreateConsumablePage, EditConsumablePage, ListMaterialPage } from "@/features/consumable-material";
+import { CreateConsumablePage, EditConsumablePage, ListMaterialPage, ViewMaterialPage } from "@/features/consumable-material";
 import { CreateReturnablePage, EditReturnablePage, ListReturnablePage } from "@/features/returnable-material";
 import { ListPermissionsPage } from "@/features/permissions";
 import { LoginForm, LoginRestorePassword, LoginRestorePasswordCode, LoginRestoreNewPassword } from "@/features/auth";
@@ -48,6 +48,7 @@ const router = createBrowserRouter([
             { path: "brand-create", element: <CreateBrandPage /> },
             { path: "brand-list", element: <ListBrandPage /> },
             { path: "users/:id/view", element: <ViewUserPage /> },
+            { path: "materials/:id/view", element: <ViewMaterialPage /> },
 
         ],
     }

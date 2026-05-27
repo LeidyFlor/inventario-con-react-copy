@@ -1,5 +1,5 @@
 // Iconos usados en los botones de acciones
-import { Pencil, EllipsisVertical, Menu } from "lucide-react";
+import { Pencil, Eye, Menu } from "lucide-react";
 
 
 // Hook de React Router para navegar programáticamente entre rutas
@@ -33,12 +33,16 @@ export default function MaterialRowActions({ material }) {
     navigate(`/materials/${material.id}/edit`);
   };
 
+   const handleView = () => {
+    navigate(`/dashboard/materials/${material.id}/view`);
+  };
+
 
   // Acción para eliminar el usuario
   // Actualmente solo imprime en consola el id
   // En una aplicación real aquí se llamaría a la API
   const handleDelete = () => {
-    console.log("Eliminar usuario", material.id);
+    console.log("Eliminar material", material.id);
   };
 
 
@@ -54,43 +58,15 @@ export default function MaterialRowActions({ material }) {
       >
         <Pencil size={16} /> {/* Icono de editar */}
       </button>
-
-
-      {/* Botón opciones */}
       <button
-        //onClick={handleDelete} // Ejecuta la acción de eliminación
+        onClick={handleView} 
         className="p-1 rounded hover:bg-focus-border"
       >
-        <div className="p-1">
-            <Dropdown>
-                <DropdownTrigger>
-                      <EllipsisVertical size={16} />
-                </DropdownTrigger>
-
-                <DropdownContent className="w-48">
-                  <DropdownItem>
-                      <Link to="" className="block">
-                        Opcion 1
-                      </Link>
-                  </DropdownItem>
-
-                  <DropdownItem>
-                      <Link to="" className="block">
-                        Opcion 2
-                      </Link>
-                  </DropdownItem>
-
-                  <DropdownItem>
-                      <Link to="" className="block">
-                        Opcion 3
-                      </Link>
-                  </DropdownItem>
-
-                </DropdownContent>
-            </Dropdown>
-         </div>
-
+        <Eye size={16} /> {/* Icono de editar */}
       </button>
+
+
+      
 
 
     </div>
