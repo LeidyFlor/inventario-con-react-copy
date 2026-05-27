@@ -17,7 +17,7 @@ export default function Navbar( { isOpen, onClose }){
         `}>
 
                     {/* Seleccion asidebar */}
-                    <div className="flex flex-col lg:h-screen place-items-center gap-4 px-4 my-4 lg:my-0 lg:justify-center">
+                    <div className="flex flex-col lg:h-full place-items-center gap-4 px-4 my-4 lg:my-0 lg:justify-center">
                         {/* sm:block cuando el tamano de pantalla sea menor a 640 se escconda el buscar */}
                         
                         {/* boton co icono de préstamo */}
@@ -162,11 +162,12 @@ export default function Navbar( { isOpen, onClose }){
                             </Dropdown>
                         </div>
                             <div className="">
-                                <IconButtonReal className="py-8 px-8" hitSize="50" label="Cerrar sesión" arialLabel="Menu de configuración" variant="primary" >
+                                <Link to="/auth">
+                                    <IconButtonReal className="py-8 px-8" hitSize="50" label="Cerrar sesión" arialLabel="Menu de configuración" variant="primary" >
+                                        <LogOut />
 
-                                    <LogOut />
-
-                                </IconButtonReal>
+                                    </IconButtonReal>
+                                </Link>
 
                             </div>
                     </div>

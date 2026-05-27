@@ -3,6 +3,7 @@ import {
     createContext, //Define un contenedor de datos
     useEffect, useRef, useState
 } from "react";
+import { createPortal } from "react-dom";
 
 export const DropdownContext = createContext(null)//contenedor empieza vacio
 
@@ -19,7 +20,7 @@ export function Dropdown({
 
     const isControlled = controlledOpen !== undefined
     const open = isControlled ? controlledOpen : uncontrolledOpen
-
+    
     //value: representa la opcion activa actual
     const setOpen = (value) => {
         if (isControlled) {
@@ -31,11 +32,14 @@ export function Dropdown({
     //useRef: Se usa oara referenciar el trigger o un menun del DropDown
     //El trigger es el elemento que abre o cierra el componente
     const containerRef = useRef(null)
+    const contentRef = useRef(null) 
 
     //Click outside o fuera de componente
     useEffect(() => {
         const handleClickOutside = (e) => {
-            if (containerRef.current && !containerRef.current.contains(e.target)) {
+            const clickedInsideContent = contentRef.current?.contains(e.target)
+            const clickedInsideTrigger = containerRef.current?.contains(e.target)
+            if (!clickedInsideTrigger && !clickedInsideContent) {
                 setOpen(false)
             }
         }
@@ -55,7 +59,7 @@ export function Dropdown({
 
     return (
         //Inyecta el estado compartido al dropdown, se exporta trigeerRef y pos con el contexto
-        <DropdownContext.Provider value={{ open, setOpen, triggerRef, pos, setPos }}>
+        <DropdownContext.Provider value={{ open, setOpen, triggerRef, pos, setPos, contentRef }}>
             <div ref={containerRef} className={`inline-block ${className}`}>
                 {children}
             </div>
@@ -73,12 +77,19 @@ export function DropdownTrigger({ children }) {
     const handleClick = (e) => {
         if (triggerRef.current) {
             const rect = triggerRef.current.getBoundingClientRect()
+            const dropdownHeight = 120
             const dropdownWidth = 192 // min-w-48 = 192px
 
+            // ¿Cabe abajo?
+            const fitsBottom = rect.bottom + dropdownHeight < window.innerHeight
             // ¿Cabe a la derecha?
             const fitsRight = rect.left + dropdownWidth < window.innerWidth
             setPos({
-                top: rect.bottom + 4,
+                
+                top: fitsBottom
+                    ? rect.bottom + 4
+                    : rect.top - dropdownHeight - 4,  // 👈 se abre hacia arriba
+
                 left: fitsRight
                     ? rect.left    // alinea a la izquierda del trigger (inicio)
                     : rect.right - dropdownWidth  // 👈 alinea a la derecha del trigger (fin)
@@ -103,13 +114,15 @@ export function DropdownTrigger({ children }) {
 }
 //Content
 export function DropdownContent({ children, className = "" }) {
-    const { open, pos } = useContext(DropdownContext);
+    const { open, pos, contentRef } = useContext(DropdownContext);
 
     if (!open) return null
-
-    return (
+    
+    //El portal saca el drop-down-context de la logica de react 
+    return createPortal(
         <div
             role="menu"
+            ref={contentRef}
             style={{
                 position: "fixed",
                 top: pos.top,    // posición calculada del trigger 🔫
@@ -135,7 +148,8 @@ export function DropdownContent({ children, className = "" }) {
         `}
         >
             {children}
-        </div>
+        </div>,
+        document.body  // 👈 se renderiza fuera del sidebar, lo hace en el body
     )
 }
 //Item
