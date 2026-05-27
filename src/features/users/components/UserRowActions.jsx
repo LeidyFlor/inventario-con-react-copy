@@ -33,6 +33,10 @@ export default function UserRowActions({ user }) {
     navigate(`/users/${user.id}/edit`);
   };
 
+  const handleView = () => {
+    navigate(`/dashboard/users/${user.id}/view`);
+  };
+
 
   // Acción para eliminar el usuario
   // Actualmente solo imprime en consola el id
@@ -57,21 +61,15 @@ export default function UserRowActions({ user }) {
 
 
       {/* Botón opciones */}
-      <button
-        //onClick={handleDelete} // Ejecuta la acción de eliminación
-        className="p-1 rounded hover:bg-focus-border"
-      >
-        <div className="p-1">
+        <div className="p-1 rounded hover:bg-focus-border">
             <Dropdown>
                 <DropdownTrigger>
                       <EllipsisVertical size={16} />
                 </DropdownTrigger>
 
                 <DropdownContent className="w-48">
-                  <DropdownItem>
-                      <Link to="" className="block">
-                        Opcion 1
-                      </Link>
+                  <DropdownItem onClick={handleView}>
+                        Visualizar usuario
                   </DropdownItem>
 
                   <DropdownItem>
@@ -89,10 +87,6 @@ export default function UserRowActions({ user }) {
                 </DropdownContent>
             </Dropdown>
          </div>
-
-      </button>
-
-
     </div>
   );
 }

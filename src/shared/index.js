@@ -7,6 +7,8 @@ export { default as Select } from "./components/Select.jsx";
 export { default as Checkbox } from "./components/Checkbox.jsx";
 export { IconButtonReal } from "./components/IconButtonReal.jsx";
 export { default as StatusSwitch } from "./components/StatusSwitch.jsx";
+export { default as ViewPageTemplate } from "./components/ViewPageTemplate.jsx";
+export { default as ViewDetailCard } from "./components/ViewDetailCard.jsx";
 export { Dropdown, DropdownContent, DropdownItem, DropdownTrigger } from "./components/Dropdown.jsx";
 export { default as Textarea } from "./components/TextArea.jsx";
 export { default as FileInput } from "./components/FileInput.jsx";

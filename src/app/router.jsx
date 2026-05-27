@@ -1,6 +1,6 @@
 import { createBrowserRouter, Navigate } from "react-router-dom";
 import MainLayout from "@/shared/layouts/MainLayout";
-import { CreateUserPage, EditUserPage, ListUserPage } from "@/features/users";
+import { CreateUserPage, EditUserPage, ListUserPage, ViewUserPage } from "@/features/users";
 import { CreateBrandPage, ListBrandPage } from "@/features/brands";
 import { CreateLoanPage, ReturnLoan, ApproveReturnLoan } from "@/features/loans";
 import { CreateTaskPage } from "@/features/tasks";
@@ -47,6 +47,7 @@ const router = createBrowserRouter([
             { path: "consumable-material-list", element: <ListMaterialPage /> },
             { path: "brand-create", element: <CreateBrandPage /> },
             { path: "brand-list", element: <ListBrandPage /> },
+            { path: "users/:id/view", element: <ViewUserPage /> },
 
         ],
     }
