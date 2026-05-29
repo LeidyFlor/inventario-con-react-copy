@@ -50,9 +50,12 @@ export const IconButtonReal = React.forwardRef(function IconButton(
             py-11
         `,
         ghost: `
-            text-neutral-600
-            hover:bg-neutral-100
-            focus-visible:ring-neutral-300
+            bg-white/20 
+            backdrop-blur-sm 
+            text-white 
+            w-9 h-9 
+            rounded-full
+            hover:bg-white/40 transition
         `,
         primary: `
             text-white

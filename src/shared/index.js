@@ -17,4 +17,5 @@ export { default as Navbar } from "./layouts/Navbar.jsx";
 export { default as Header } from "./layouts/Header.jsx";
 export { default as SearchField } from "./components/SerchField.jsx";
 export { default as DashboardLayout } from "./layouts/DashboardLayout.jsx";
+export { default as Carousel } from "./components/Carousel.jsx";
 //Exporta layout y components
