@@ -9,6 +9,7 @@ import { CreateReturnablePage, EditReturnablePage, ListReturnablePage } from "@/
 import { ListPermissionsPage } from "@/features/permissions";
 import { LoginForm, LoginRestorePassword, LoginRestorePasswordCode, LoginRestoreNewPassword } from "@/features/auth";
 import { AuthLayout, DashboardLayout } from "@/shared/";
+import { HomePage } from "@/features/home";
 
 const router = createBrowserRouter([
     {
@@ -32,7 +33,7 @@ const router = createBrowserRouter([
         element: <DashboardLayout />,
         // Nested Routes
         children: [
-            { index: true, element: <CreateUserPage /> },
+            { index: true, element: <HomePage /> },
             { path: "auth", element: <LoginForm /> },
             { path: "user-create", element: <CreateUserPage /> },
             { path: "user-edit", element: <EditUserPage /> },
