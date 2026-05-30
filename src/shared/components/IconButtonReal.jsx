@@ -62,7 +62,10 @@ export const IconButtonReal = React.forwardRef(function IconButton(
             hover:bg-brand-hover
             focus-visible:ring-blue-500
             rounded-2xl
-        `,
+        `,//Para los iconos de las tablas
+        outline: `
+            p-1 rounded hover:bg-focus-border
+        `
     };
     return (
         <Component

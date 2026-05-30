@@ -5,7 +5,7 @@ import { CreateBrandPage, ListBrandPage } from "@/features/brands";
 import { CreateLoanPage, ReturnLoan, ApproveReturnLoan } from "@/features/loans";
 import { CreateTaskPage } from "@/features/tasks";
 import { CreateConsumablePage, EditConsumablePage, ListMaterialPage } from "@/features/consumable-material";
-import { CreateReturnablePage, EditReturnablePage, ListReturnablePage } from "@/features/returnable-material";
+import { CreateReturnablePage, EditReturnablePage, ListReturnablePage, ViewReturnablePage } from "@/features/returnable-material";
 import { ListPermissionsPage } from "@/features/permissions";
 import { LoginForm, LoginRestorePassword, LoginRestorePasswordCode, LoginRestoreNewPassword } from "@/features/auth";
 import { AuthLayout, DashboardLayout } from "@/shared/";
@@ -46,7 +46,7 @@ const router = createBrowserRouter([
             { path: "materials/:id/view", element: <h1>Ver material</h1> },
             { path: "returnable-material-create", element: <CreateReturnablePage /> },
             { path: "returnable-material-list", element: <ListReturnablePage /> },
-            { path: "returnable-materials/:id/edit", element: <EditConsumablePage /> },
+            { path: "returnable-materials/:id/view", element: <ViewReturnablePage /> },
             { path: "returnable-materials/:id/edit", element: <h1>Ver material devolutivo</h1> },
             { path: "loan-create", element: <CreateLoanPage /> },
             { path: "loan-list", element: <h1>Lista de prestamos</h1> },
