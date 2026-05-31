@@ -6,29 +6,29 @@ import * as XLSX from "xlsx";
 export function generateExcelReport({
   headers, //Array de encabazados (columnas)
   rows, //Array de filas (array de arrays)
-  fileName = "user-report.xlsx", //Nombre del archivo de salida
+  fileName = "returnbable-materials-report.xlsx", //Nombre del archivo de salida
 }) {
   const currentDate = new Date().toLocaleDateString();
-  const reportTitle = `***** REPORTE DE USUARIOS - ${currentDate} *****`;
+  const reportTitle = `***** REPORTE DE MATERIALES DEVOLUTIVOS - ${currentDate} *****`;
   //Estructura final de la hoja:
   //Primera fila = headers
   //siguientes filas = datos
   // Formatea las filas antes de construir la hoja
   const formattedRows = rows.map((row) =>
-    row.map((cell) => {
-      //Formateo de fechas (detecta formato ISO 📆)
-      if (typeof cell === "string" && /^\d{4}-\d{2}-\d{2}T/.test(cell)) {
-        return new Date(cell).toLocaleString("es-CO", {
-          year: "numeric",
-          month: "2-digit",
-          day: "numeric",
-          hour: "2-digit",
-          minute: "2-digit",
-        });
+    row.map((cell, index) => {
+      //Formateo de dinero (para colocar puntos y $ 💵)
+      if (
+        (headers[index] === "Valor unitario" ||
+        headers[index] === "Valor total"
+      ) && cell !== null) {
+        return new Intl.NumberFormat("es-CO", {
+          style: "currency",
+          currency: "COP",
+        }).format(cell);
       }
       // Estado booleano
-      if (cell === true || cell === "true") return "Activo";
-      if (cell === false || cell === "false") return "Inactivo";
+      if (cell === true || cell === "true") return "Disponible";
+      if (cell === false || cell === "false") return "No disponible";
 
       return cell ?? "";
     }),
@@ -55,7 +55,7 @@ export function generateExcelReport({
 
   //Crea un nuevo libro de Excel (workbook)
   const workbook = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(workbook, worksheet, "Usuarios");
+  XLSX.utils.book_append_sheet(workbook, worksheet, "MaterialDevolutivo");
 
   //Genera y descarga el archivo Excel en el cliente
   XLSX.writeFile(workbook, fileName);
