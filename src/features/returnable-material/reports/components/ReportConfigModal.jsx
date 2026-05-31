@@ -2,10 +2,10 @@
 import { useState } from "react";
 
 // Configuración de campos disponibles para el reporte
-import { userReportFields } from "../config/userReportFields";
+import { returnableReportFields } from "../config/returnableReportFields";
 
 // Caso de uso que orquesta la generación del reporte
-import { generateUserReport } from "../services/generateUserReport";
+import { generateReturnableReport } from "../services/generateReturnableReport";
 
 // Componentes UI reutilizables (design system)
 import { Button, Input, Select, Checkbox } from "@/shared";
@@ -18,12 +18,14 @@ export function ReportConfigModal({ isOpen, onClose }) {
     // Estado del alcance del reporte
     const [scope, setScope] = useState("all");
 
-    // Estado para filtro por documento
-    const [userDocument, setuserDocument] = useState("");
+    // Estado para filtro por placa sena
+    const [materialBarcodeSena, setmaterialBarcodeSena] = useState("");
+    // Estado para filtro por nombre del material
+    const [materialName, setmaterialName] = useState("");
 
     // Estado de campos seleccionados (inicialización lazy)
     const [selectedFields, setSelectedFields] = useState(
-        () => userReportFields.filter((f) => f.default), // Solo campos marcados por defecto
+        () => returnableReportFields.filter((f) => f.default), // Solo campos marcados por defecto
     );
 
     // Control de render: si el modal no está abierto, no se monta en el DOM
@@ -46,11 +48,12 @@ export function ReportConfigModal({ isOpen, onClose }) {
     // Handler principal para generar el reporte
     const handleGenerateReport = () => {
         // Invoca el caso de uso con la configuración actual
-        generateUserReport({
+        generateReturnableReport({
             format,
             selectedFields,
             scope,
-            userDocument,
+            materialBarcodeSena,
+            materialName,
         });
 
         // Cierra el modal después de generar el reporte
@@ -86,7 +89,7 @@ export function ReportConfigModal({ isOpen, onClose }) {
 
                     {/* Grid de checkboxes */}
                     <div className="grid grid-cols-2 gap-2">
-                        {userReportFields.map((field) => {
+                        {returnableReportFields.map((field) => {
                             // Determina si el campo está seleccionado
                             const checked = selectedFields.some((f) => f.key === field.key);
 
@@ -111,20 +114,32 @@ export function ReportConfigModal({ isOpen, onClose }) {
                         value={scope}
                         onChange={(e) => setScope(e.target.value)}
                         options={[
-                            { label: "Todos los usuarios", value: "all" },
-                            { label: "Filtrar por documento", value: "document" },
+                            { label: "Todos los materiales devolutivos", value: "all" },
+                            { label: "Filtrar por placa sena", value: "barcodeSena" },
+                            { label: "Filtrar nombre del material", value: "name" },
                         ]}
                     />
                 </div>
 
-                {/* Campo condicional para filtro por documento */}
-                {scope === "document" && (
+                {/* Campo condicional para filtro por placa sena */}
+                {scope === "barcodeSena" && (
                     <div className="mb-4">
                         <Input
-                            label="Número de documento"
-                            value={userDocument}
-                            onChange={(e) => setuserDocument(e.target.value)}
-                            placeholder="Ingrese número de documento"
+                            label="Placa sena"
+                            value={materialBarcodeSena}
+                            onChange={(e) => setmaterialBarcodeSena(e.target.value)}
+                            placeholder="Ingrese placa sena"
+                        />
+                    </div>
+                )}
+                {/* Campo condicional para filtro por nombre material */}
+                {scope === "name" && (
+                    <div className="mb-4">
+                        <Input
+                            label="Nombre del elemento"
+                            value={materialName}
+                            onChange={(e) => setmaterialName(e.target.value)}
+                            placeholder="Ingrese el nombre del elemento"
                         />
                     </div>
                 )}

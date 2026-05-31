@@ -31,7 +31,7 @@ export default function ViewReturnablePage() {
     return (
 
         <ViewPageTemplate
-            title="Perfil de usuario"
+            title="Visualizar material devolutivo"
             icon={<Router className="text-brand" />}
             image={returnable.foto}
             name={returnable.materialName}

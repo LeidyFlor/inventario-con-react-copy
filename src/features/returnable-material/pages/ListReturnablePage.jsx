@@ -4,10 +4,12 @@ import { returnableMaterial } from "../data/retrunableMaterial"
 import { Button } from "@/shared/"
 import { Link } from "react-router-dom"
 import { ClipboardList } from "lucide-react"
-
+import { useState } from "react"
+import { ReportConfigModal } from "../reports/components/ReportConfigModal";
 
 export default function ListReturnablePage() {
-
+    //Estado para el boton, si se clikea o no el boton de reporte
+    const [isReportModalOpen, setIsReportModalOpen] = useState(false)
     return (
 
         <div className="p-6">
@@ -27,6 +29,7 @@ export default function ListReturnablePage() {
                     <Button
                         variant="secondary"
                         size="sm"
+                        onClick={() => setIsReportModalOpen(true)}
                     >
                         Reporte
                     </Button>
@@ -48,6 +51,10 @@ export default function ListReturnablePage() {
             <DataTable
                 data={returnableMaterial}
                 columns={ReturnableColumns}
+            />
+            <ReportConfigModal
+                isOpen={isReportModalOpen}
+                onClose={() => setIsReportModalOpen(false)}
             />
 
         </div>

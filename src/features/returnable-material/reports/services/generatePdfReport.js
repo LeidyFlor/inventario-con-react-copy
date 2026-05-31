@@ -9,33 +9,35 @@ import autoTable from "jspdf-autotable";
 export function generatePdfReport({
   headers, //Encabezados de la tabla (columnas)
   rows, //Datos (arrays de filas)
-  fileName = "user-report.pdf", //Nombre del archivo de salida
+  fileName = "returnbable-materials-report.pdf", //Nombre del archivo de salida
 }) {
   // Umbral: si hay más de 10 columnas, cambia la estrategia
   const manyColumns = headers.length > 10;
   //Inicializa el documento PDF. landscape para que el infrome se imprima horizontalmente
-  const doc = new jsPDF( "landscape" );
+  const doc = new jsPDF("landscape");
 
   //Configuracion del titulo
   doc.setFontSize(16);
-  doc.text("Reporte de usuarios", 14, 20); //Posicion ( X, Y)
+  doc.text("Reporte de materiales devolutivos", 14, 20); //Posicion ( X, Y)
 
-  // Formatear las filas antes de pasarlas a la tabla (fecha y estado)
+  // Formatear las filas antes de pasarlas a la tabla
   const formattedRows = rows.map((row) =>
-    row.map((cell) => {
-      // Formateo de fechas (detecta formato ISO 📆)
-      if (typeof cell === "string" && /^\d{4}-\d{2}-\d{2}T/.test(cell)) {
-        return new Date(cell).toLocaleString("es-CO", {
-          year: "numeric",
-          month: "2-digit",
-          day: "numeric",
-          hour: "2-digit",
-          minute: "2-digit",
-        });
+    row.map((cell, index) => {
+      //Formateo de dinero (para colocar puntos y $ 💵)
+      if (
+        (headers[index] === "Valor unitario" ||
+        headers[index] === "Valor total"
+      ) &&
+        cell !== null
+      ) {
+        return new Intl.NumberFormat("es-CO", {
+          style: "currency",
+          currency: "COP",
+        }).format(cell);
       }
-      // Formateo de estado booleano
-      if (cell === true || cell === "true") return "Activo";
-      if (cell === false || cell === "false") return "Inactivo";
+      // Estado booleano
+      if (cell === true || cell === "true") return "Disponible";
+      if (cell === false || cell === "false") return "No disponible";
 
       return cell ?? "";
     }),
@@ -66,7 +68,7 @@ export function generatePdfReport({
 
     //Estilos globales de las celdas
     styles: {
-      fontSize: manyColumns ? 7 : 9,
+      fontSize: manyColumns ? 6 : 9,
       cellPadding: manyColumns ? 2 : 3,
       overflow: "linebreak", // word-wrap en celdas de datos
     },
