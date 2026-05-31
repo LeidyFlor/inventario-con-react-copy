@@ -130,7 +130,7 @@ export function ReportConfigModal({ isOpen, onClose }) {
                 )}
 
                 {/* Acciones del modal */}
-                <div className="flex justify-end gap-2 mt-6">
+                <div className="flex justify-between gap-2 mt-6">
                     {/* Botón cancelar */}
                     <Button variant="secondary" onClick={onClose}>
                         Cancelar
