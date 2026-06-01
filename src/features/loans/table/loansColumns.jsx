@@ -1,44 +1,64 @@
-//src/features/users/table/userColumns.js
-// Componente reutilizable que muestra un switch para activar o desactivar estados
+import { useState } from "react";
 import { StatusSwitch } from "@/shared/";
-
-// Componente que contiene los botones de acciones (editar y eliminar) para cada usuario
 import LoanRowActions from "../components/LoanRowActions";
 
-// Definición de las columnas de la tabla de usuarios
-// Este arreglo suele usarse en librerías de tablas como TanStack Table
+// ==================================================
+//   Celda con texto truncado + botón expandir/colapsar
+// ==================================================
+/*
+    Cada instancia tiene su propio useState → el toggle
+    de una fila no afecta a las demás.
+    maxChars: cantidad de caracteres visibles antes del "..."
+*/
+function TruncatedCell({ value, maxChars = 30 }) {
+    const [expanded, setExpanded] = useState(false);
 
+    // Si el texto cabe completo, se muestra sin botón
+    if (!value || value.length <= maxChars) {
+        return <span className="">{value}</span>;
+    }
+
+    return (
+        <div className="flex flex-col gap-1">
+
+            {/* Texto: completo o truncado según el estado */}
+            <span className="">
+                {expanded ? value : `${value.slice(0, maxChars)}...`}
+            </span>
+
+            {/* Botón toggle — sin estilos llamativos para no competir con la tabla */}
+            <button
+                onClick={() => setExpanded(!expanded)}
+                className="text-small text-text-primary underline self-start hover:opacity-70 transition-opacity"
+            >
+                {expanded ? "Ver menos" : "Ver más"}
+            </button>
+
+        </div>
+    );
+}
+
+// ==================================================
+//   Definición de columnas
+// ==================================================
 export const loansColumns = [
 
-
-    
-    
-    // Columna ID
+    // Columna ID préstamo
     {
-        accessorKey: "idLoan", // Campo del objeto user
-        header: "ID Préstamo",    // Encabezado visible
+        accessorKey: "idLoan",
+        header: "ID Préstamo",
     },
 
-    
-    
-    // Columna loanStudentsGroup
+    // Columna grupo aprendices
     {
         accessorKey: "loanStudentsGroup",
         header: "Grupo aprendices",
     },
-    
-    // Columna loanAssocietedMaterials
-    {
-        accessorKey: "loanAssocietedMaterials", // Propiedad del objeto user que se mostrará en la columna
-        header: "Materiales asociados",      // Título de la columnas
-    },
 
-    // Columna departureDate
+    // Columna fecha entrada — convierte ISO → DD/MM/YYYY
     {
-        accessorKey: "loanDateOut",
-        header: "Fecha salida",
-        // Convierte la fecha ISO del backend → formato legible "DD/MM/YYYY"
-        // Ejemplo: "2025-08-25T08:15:23.651+00:00" → "25/08/2025"
+        accessorKey: "loanDateIn",
+        header: "Fecha entrada",
         cell: ({ getValue }) => {
             const value = getValue();
             if (!value) return "";
@@ -49,38 +69,56 @@ export const loansColumns = [
             });
         },
     },
-    // Columna requestingUser
+
+    // Columna fecha salida — convierte ISO → DD/MM/YYYY
+    {
+        accessorKey: "loanDateOut",
+        header: "Fecha salida",
+        cell: ({ getValue }) => {
+            const value = getValue();
+            if (!value) return "";
+            return new Date(value).toLocaleDateString("es-CO", {
+                day:   "2-digit",
+                month: "2-digit",
+                year:  "numeric",
+            });
+        },
+    },
+
+    // Columna usuario solicitante
     {
         accessorKey: "loanUserRequester",
         header: "Usuario solicitante",
     },
+
+    // Columna justificación — usa TruncatedCell para no romper el layout
+    {
+        accessorKey: "loanJustification",
+        header: "Justificación de uso",
+        cell: ({ getValue }) => <TruncatedCell value={getValue()} maxChars={30} />,
+    },
+
+    // Columna usuario prestador
     {
         accessorKey: "loanUserLender",
         header: "Usuario prestador",
     },
-    // Columna status
+
+    // Columna estado del préstamo
     {
         accessorKey: "loanStatus",
         header: "Estado",
     },
+
+    // Columna tipo de préstamo (Interno / Externo)
     {
         accessorKey: "loanType",
         header: "Tipo de préstamo",
     },
 
-
-    // Columna Estado (activo / inactivo)
+    // Columna acciones (Visualizar, Retornar, Aprobar)
     {
-        accessorKey: "is_active",
-        header: "",
-
+        id: "actions",
+        cell: ({ row }) => <LoanRowActions loan={row.original} />,
     },
-
-        {
-            id: "actions", // No usa accessorKey porque no corresponde a un campo del usuario
-    
-    
-            // Renderiza el componente de acciones pasando el usuario completo
-            cell: ({ row }) => <LoanRowActions loan={row.original} />,
-        },
 ];

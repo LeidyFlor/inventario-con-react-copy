@@ -13,11 +13,11 @@ export default function ListLoanPage() {
     const [isReportModalOpen, setIsReportModalOpen] = useState(false)
   return (      
     
-    <div className="p-4">
-        <div className="flex justify-between "> 
+    <div className="p-6">
+        <div className="flex flex-col md:flex-row justify-between ">
               {/* contenenedor del titulo y la linea */}
               <div className=" mb-6 max-w-max">
-                  <h1 className="flex content-center  gap-2 text-gradient-title text-h3 pb-0.5">
+                  <h1 className="flex gap-2 text-gradient-title text-h3 pb-0.5">
                       <ClipboardList className="text-brand" />
                       Listar préstamos
                   </h1>{/*linea degradada del titulo*/}
@@ -25,7 +25,7 @@ export default function ListLoanPage() {
 
               </div>
 
-            <div className="flex gap-6">
+            <div className="flex mb-3 md:mb-0 gap-6">
 
                     <Button
                         variant="secondary"
@@ -47,20 +47,16 @@ export default function ListLoanPage() {
 
         </div>
 
+        <DataTable
+            data={loans}
+            columns={loansColumns}
+        />
         <ReportConfigModal
             isOpen={isReportModalOpen}
             onClose={() => setIsReportModalOpen(false)}
         
         />
     
-
-        <DataTable
-            data={loans}
-            columns={loansColumns}
-        />
-
     </div>
-
-
   )
 }

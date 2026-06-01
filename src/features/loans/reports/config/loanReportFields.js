@@ -18,8 +18,18 @@ export const loanReportFields = [
         default: true,
     },
     {
+        key: "loanDateIn",
+        label: "Fecha de entrega",
+        default: true,
+    },
+    {
         key: "loanUserRequester",
         label: "Usuario solicitante",
+        default: true,
+    },
+    {
+        key: "loanJustification",
+        label: "Justificación de uso",
         default: true,
     },
     {
@@ -28,13 +38,13 @@ export const loanReportFields = [
         default: false,
     },
     {
-        key: "loanStatus",
-        label: "Estado",
+        key: "loanType",
+        label: "Tipo de préstamo",
         default: false,
     },
     {
-        key: "loanType",
-        label: "Tipo de préstamo",
+        key: "loanStatus",
+        label: "Estado",
         default: false,
     },
 ];
