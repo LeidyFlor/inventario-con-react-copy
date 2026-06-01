@@ -5,6 +5,7 @@ import { userShema } from "../schemas/userShema.js";
 import { useParams, useNavigate } from "react-router-dom";
 import { users } from "../data/users";
 import { fileSchema } from "@/shared";
+import { FilePenLine } from "lucide-react";
 
 export default function UserEditForm() {
     const { id } = useParams();
@@ -112,11 +113,11 @@ export default function UserEditForm() {
             <div className="bg-gradient-container-green border-4 border-border-green-container p-6 rounded-4xl w-fit md:w-full mt-2">
                 {/* contenenedor del titulo y la linea */}
                 <div className="mb-6 max-w-max">
-                    <h1 className="text-gradient-title text-h3 sm:pb-0.5">
-                        Editar perfil del usuario
+                    <h1 className="flex gap-2 text-gradient-title text-h3 pb-0.5">
+                        <FilePenLine className="text-brand" />
+                        Editar usuario
                     </h1>{/*linea degradada del titulo*/}
                     <div className="h-0.5 bg-gradiant-title-line"></div>
-
                 </div>
                 {/* contenedor princiapl */}
                 <form className="flex flex-col lg:grid lg:grid-flow-col-dense items-center gap-8" onSubmit={handleSubmit} noValidate>
@@ -188,7 +189,7 @@ export default function UserEditForm() {
                         </div>
                     </div>
                     {/* Contenedor derecho */}
-                    <div className="grid grid-cols-dense  items-center gap-10 bg-background border-2 border-border-edit-informaion p-8 rounded-xl sm:mt-4">
+                    <div className="grid grid-cols-dense  items-center gap-10 bg-background border-2 border-border-edit-informaion p-8 rounded-xl ">
                         <div className="md:grid md:grid-cols-[180px_1fr] grid auto-cols items-center gap-4">
                             <p className="parrafo-edit-style ">Tipo de documento:</p>
                             <Select
