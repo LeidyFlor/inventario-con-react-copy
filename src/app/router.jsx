@@ -33,16 +33,16 @@ const router = createBrowserRouter([
     {
         path: "/dashboard",
         element: <DashboardLayout />,
-        // Nested Routes
+        // Nested Routes 
         children: [
             { index: true, element: <HomePage /> },
             { path: "auth", element: <LoginForm /> },
             { path: "user-create", element: <CreateUserPage /> },
-            { path: "user-list", element: <ListUserPage /> },
+            { path: "user-list", element: <ListUserPage /> }, 
             { path: "users/:id/edit", element: <EditUserPage /> },
             { path: "users/:id/view", element: <ViewUserPage /> },
             { path: "materials/:id/edit", element: <h1>Editar material</h1> },
-            { path: "materials/:id/view", element: <h1>Ver material</h1> },
+            { path: "materials/:id/view", element: <h1>Ver material</h1> }, 
             { path: "returnable-material-create", element: <CreateReturnablePage /> },
             { path: "returnable-material-list", element: <ListReturnablePage /> },
             { path: "returnable-materials/:id/view", element: <ViewReturnablePage /> },
