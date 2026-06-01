@@ -1,6 +1,6 @@
 import DataTable from "@/shared/components/DataTable";
 import { loansColumnsView } from "../table/loansColumnsView";
-import { returnableMaterial } from "../../returnable-material/data/returnableMaterial";
+import { returnableMaterial } from "../../returnable-material/data/retrunableMaterial";
 import { materials } from "../../consumable-material/data/materials";
 
 // Busca por primera palabra clave del materialName dentro del nombre parseado

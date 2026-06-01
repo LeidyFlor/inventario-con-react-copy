@@ -48,7 +48,7 @@ const router = createBrowserRouter([
             { path: "returnable-materials/:id/view", element: <ViewReturnablePage /> },
             { path: "returnable-materials/:id/edit", element: <h1>Ver material devolutivo</h1> },
             { path: "loan-create", element: <CreateLoanPage /> },
-            { path: "loan-list", element: <h1>Lista de prestamos</h1> },
+            { path: "loan-list", element: <ListLoanPage /> },
             { path: "loan-editar", element: <h1>Editar prestamo</h1> },
             { path: "loan-ver", element: <h1>Ver prestamo</h1> },
             { path: "loan-return", element: <ReturnLoan /> },
