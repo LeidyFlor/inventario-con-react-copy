@@ -1,5 +1,5 @@
 // Iconos usados en los botones de acciones
-import { Pencil, EllipsisVertical, Menu } from "lucide-react";
+import { Pencil, Menu, Eye } from "lucide-react";
 
 
 // Hook de React Router para navegar programáticamente entre rutas
@@ -15,12 +15,7 @@ import {
 
 // Componente que renderiza las acciones de cada fila de usuario
 // Recibe como prop el objeto user
-export default function ReturnableRowActions({ user }) {
-
-
-    // const handleEdit = () => {
-    //   console.log("Editar usuario", user.id);
-    // };
+export default function ReturnableRowActions({ returnable }) {
 
 
     // Hook que permite redirigir a otra ruta desde código
@@ -28,70 +23,44 @@ export default function ReturnableRowActions({ user }) {
 
 
     // Acción para editar el usuario
-    // Redirige a la página de edición usando el id del usuario
+    // Redirige a la página de edición usando el id del material
     const handleEdit = () => {
-        navigate(`/returnable/${user.id}/edit`);
+        navigate(`/returnable-materials/${returnable.id}/edit`);
+    }; 
+    const handleView = () => {
+        navigate(`/dashboard/returnable-materials/${returnable.id}/view`);
     };
 
 
-    // Acción para eliminar el usuario
+    // Acción para eliminar el material
     // Actualmente solo imprime en consola el id
     // En una aplicación real aquí se llamaría a la API
-    const handleDelete = () => {
-        console.log("Eliminar material devolutivo", user.id);
-    };
-
+    // const handleDelete = () => {
+    //     console.log("Eliminar material devolutivo", returnable.id);
+    // };
 
     return (
         // Contenedor de los botones de acciones
         <div className="flex gap-2">
+            <div className="flex gap-2">
 
+                {/* Botón editar */}
+                <IconButtonReal
+                    onClick={handleEdit} // Ejecuta la navegación a la página de edición
+                    variant="outline"
+                >
+                    <Pencil size={20} /> {/* Icono de editar */}
+                </IconButtonReal>
 
-            {/* Botón editar */}
-            <button
-                onClick={handleEdit} // Ejecuta la navegación a la página de edición
-                className="p-1 rounded hover:bg-focus-border"
-            >
-                <Pencil size={16} /> {/* Icono de editar */}
-            </button>
+                {/* Botón Visualizar */}
+                <IconButtonReal
+                    onClick={handleView} // Ejecuta la navegación a la página de visualizar
+                    variant="outline"
+                >
+                    <Eye size={20} /> {/* Icono de visualizar */}
+                </IconButtonReal>
 
-
-            {/* Botón opciones NO se necesita por el momento
-            <button
-                //onClick={handleDelete} // Ejecuta la acción de eliminación
-                className="p-1 rounded hover:bg-focus-border"
-            >
-                <div className="p-1">
-                    <Dropdown>
-                        <DropdownTrigger>
-                            <EllipsisVertical size={16} />
-                        </DropdownTrigger>
-
-                        <DropdownContent className="w-48">
-                            <DropdownItem>
-                                <Link to="" className="block">
-                                    Opcion 1
-                                </Link>
-                            </DropdownItem>
-
-                            <DropdownItem>
-                                <Link to="" className="block">
-                                    Opcion 2
-                                </Link>
-                            </DropdownItem>
-
-                            <DropdownItem>
-                                <Link to="" className="block">
-                                    Opcion 3
-                                </Link>
-                            </DropdownItem>
-
-                        </DropdownContent>
-                    </Dropdown>
-                </div>
-
-            </button> */}
-
+            </div>
 
         </div>
     );

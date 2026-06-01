@@ -53,7 +53,7 @@ export const ReturnableColumns = [
 
 
                 // value representa el nuevo estado del switch (true o false)
-                console.log("Actualizar estado returnable:", returnableMaterial.returnable_id, value);
+                console.log("Actualizar estado returnable:", returnableMaterial.id, value);
 
 
                 // Aquí normalmente se llamaría una API para actualizar el estado
@@ -75,10 +75,10 @@ export const ReturnableColumns = [
 
     // Columna de acciones (editar / eliminar)
     {
-        id: "actions", // No usa accessorKey porque no corresponde a un campo del usuario
+        id: "actions", // No usa accessorKey porque no corresponde a un campo del material
 
 
         // Renderiza el componente de acciones pasando el usuario completo
-        cell: ({ row }) => <ReturnableRowAction user={row.original} />,
+        cell: ({ row }) => <ReturnableRowAction returnable={row.original} />,
     },
 ];

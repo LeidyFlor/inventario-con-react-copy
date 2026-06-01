@@ -72,7 +72,7 @@ export default function ViewPageTemplate({
 
                     {/* Descripción opcional */}
                     {description && (
-                        <p className="text-text-secondary text-sm text-center">
+                            <p className=" flex text-text-secondary text-sm max-w-95 text-left border-2 rounded-xl border-border-strong bg-background p-4">
                             {description}
                         </p>
                     )}
@@ -82,7 +82,7 @@ export default function ViewPageTemplate({
                         <div className="flex items-center gap-2">
                             <span>Estado</span>
                             <StatusSwitch
-                                checked={estado === "Activo"}
+                                checked={estado === true}
                                 onChange={onToggleEstado}
                                 className={`inline-flex`}
                             />

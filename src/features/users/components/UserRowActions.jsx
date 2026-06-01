@@ -1,5 +1,5 @@
 // Iconos usados en los botones de acciones
-import { Pencil, EllipsisVertical, Menu } from "lucide-react";
+import { Pencil, Menu, Eye } from "lucide-react";
 
 
 // Hook de React Router para navegar programáticamente entre rutas
@@ -33,65 +33,38 @@ export default function UserRowActions({ user }) {
     navigate(`/users/${user.id}/edit`);
   };
 
+  const handleView = () => {
+    navigate(`/dashboard/users/${user.id}/view`);
+  };
+
 
   // Acción para eliminar el usuario
   // Actualmente solo imprime en consola el id
   // En una aplicación real aquí se llamaría a la API
-  const handleDelete = () => {
-    console.log("Eliminar usuario", user.id);
-  };
+  // const handleDelete = () => {
+  //   console.log("Eliminar usuario", user.id);
+  // };
 
 
   return (
     // Contenedor de los botones de acciones
     <div className="flex gap-2">
 
-
       {/* Botón editar */}
-      <button
+      <IconButtonReal
         onClick={handleEdit} // Ejecuta la navegación a la página de edición
-        className="p-1 rounded hover:bg-focus-border"
+        variant="outline"
       >
-        <Pencil size={16} /> {/* Icono de editar */}
-      </button>
+        <Pencil size={20} /> {/* Icono de editar */}
+      </IconButtonReal>
 
-
-      {/* Botón opciones */}
-      <button
-        //onClick={handleDelete} // Ejecuta la acción de eliminación
-        className="p-1 rounded hover:bg-focus-border"
+      {/* Botón Visualizar */}
+      <IconButtonReal
+        onClick={handleView} // Ejecuta la navegación a la página de visualizar
+        variant="outline"
       >
-        <div className="p-1">
-            <Dropdown>
-                <DropdownTrigger>
-                      <EllipsisVertical size={16} />
-                </DropdownTrigger>
-
-                <DropdownContent className="w-48">
-                  <DropdownItem>
-                      <Link to="" className="block">
-                        Opcion 1
-                      </Link>
-                  </DropdownItem>
-
-                  <DropdownItem>
-                      <Link to="" className="block">
-                        Opcion 2
-                      </Link>
-                  </DropdownItem>
-
-                  <DropdownItem>
-                      <Link to="" className="block">
-                        Opcion 3
-                      </Link>
-                  </DropdownItem>
-
-                </DropdownContent>
-            </Dropdown>
-         </div>
-
-      </button>
-
+        <Eye size={20} /> {/* Icono de visualizar */}
+      </IconButtonReal>
 
     </div>
   );

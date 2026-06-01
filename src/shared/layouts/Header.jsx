@@ -64,13 +64,13 @@ export default function Header( { onMenuToggle } ) {
             <div className="mx-auto max-w-7xl px-4">
                 <div className="flex h-18 items-center justify-between">
                     <div className="flex items-center gap-6">
-                        <Link to={"/"} className="">
+                        <Link to={"/dashboard"} className="">
                             <img src={logoSenaBlanco} alt="Logo del sena" className="md:h-12  h-10" />
                         </Link>
                         <div className="rounded-2xl w-0.5 bg-background text-text-inverse hidden md:block">
                             .
                         </div>
-                        <Link to={"/"} className="hidden md:block">
+                        <Link to={"/dashboard"} className="hidden md:block">
                             <img src={logoSigiBlanco} alt="Logo del sistema ,Sigi" className="h-13" />
                         </Link>
 
@@ -132,6 +132,11 @@ export default function Header( { onMenuToggle } ) {
                                         </Link>
                                     </DropdownItem>
                                     <DropdownItem>
+                                        <Link to="user-list" className="block w-full">
+                                            Gestión de Usuarios
+                                        </Link>
+                                    </DropdownItem>
+                                    <DropdownItem>
                                         <Link to="user-edit" className="block w-full">
                                             Editar Usuario
                                         </Link>
@@ -141,17 +146,7 @@ export default function Header( { onMenuToggle } ) {
                                             Cerrar Sesión
                                         </Link>
                                     </DropdownItem>
-                                    <DropdownItem>
-                                        <Link to="loan-return" className="block w-full">
-                                            Retornar préstamo
-                                        </Link>
-                                    </DropdownItem>
-                                    <DropdownItem>
-                                        <Link to="user-list" className="block w-full">
-                                            Gestión de Usuarios
-                                        </Link>
-                                    </DropdownItem>
-
+                                    
                                 </DropdownContent>
                             </Dropdown>
                         </div>
