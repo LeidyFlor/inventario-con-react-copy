@@ -1,24 +1,24 @@
 export const returnableMaterial = [
-  {
-    materialBarcodeSena: "SENA00012387500",
-    brandName: "DELL",
-    returnableMaterialModel: "Optiplex",
-    materialName: "Computador All-in-One",
-    inventoryManger: "Edward Velasquez",
-    returnableMaterialSerial: "A9F3-7X2B-Q1",
+{
+    materialBarcodeSena: "SENA00011223355",
+    brandName: "MikroTik",
+    returnableMaterialModel: "hEX",
+    materialName: "Router MikroTik",
+    inventoryManger: "Leidy Marcela Flor",
+    returnableMaterialSerial: "MK-RT-98765",
     returnableMaterialCategory: "Equipo y maquinaria",
     is_active: true
-  },
-  {
-    materialBarcodeSena: "SENA00084729104",
-    brandName: "Bosch",
-    returnableMaterialModel: "GSR 18V-55",
-    materialName: "Taladro Inalámbrico Percutor",
-    inventoryManger: "Jessica Contreras",
-    returnableMaterialSerial: "B2X8-4M9K-L5",
-    returnableMaterialCategory: "Herramienta",
+},
+{
+    materialBarcodeSena: "SENA00099887711",
+    brandName: "Genérico",
+    returnableMaterialModel: "RJ45",
+    materialName: "Conector RJ45",
+    inventoryManger: "Edward Velasquez",
+    returnableMaterialSerial: "FL-SD-95365", 
+    returnableMaterialCategory: "Consumible",
     is_active: true
-  },
+},
   {
     materialBarcodeSena: "SENA00036291047",
     brandName: "Mepal",

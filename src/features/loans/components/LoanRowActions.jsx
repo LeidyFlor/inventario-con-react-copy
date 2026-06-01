@@ -1,9 +1,9 @@
 // Iconos usados en los botones de acciones
-import { Pencil, EllipsisVertical, Menu } from "lucide-react";
+import { Pencil, EllipsisVertical, Eye, Menu } from "lucide-react";
 
 
 // Hook de React Router para navegar programáticamente entre rutas
-import {  Link } from "react-router-dom";
+import {  useNavigate, Link } from "react-router-dom";
 import {
     Dropdown,
     IconButtonReal,
@@ -22,60 +22,41 @@ export default function LoanRowActions({ loan }) {
   //   console.log("Editar préstamo", user.id);
   // };
 
-  // Acción para editar el préstamo
-  // Redirige a la página de edición usando el id del préstamo
+    // Hook que permite redirigir a otra ruta desde código
+  const navigate = useNavigate();
 
 
+  // Acción para editar el usuario
+  // Redirige a la página de edición usando el id del usuario
+  const handleEdit = () => {
+    navigate(`/dashboard/loans/${loan.id}/edit`);
+  };
 
-  // Acción para eliminar el préstamo
-  // Actualmente solo imprime en consola el id
-  // En una aplicación real aquí se llamaría a la API
-  const handleDelete = () => {
-    console.log("Eliminar préstamo", loan.id);
+  const handleView = () => {
+    navigate(`/dashboard/loans/${loan.id}/view`);
   };
 
 
   return (
     // Contenedor de los botones de acciones
-    <div className="flex gap-2">
+      <div className="flex gap-2">
+        <div className="flex gap-2">
+               {/* Botón editar */}
+               <IconButtonReal
+                   onClick={handleEdit} // Ejecuta la navegación a la página de edición
+                   variant="outline"
+               >
+                   <Pencil size={20} /> {/* Icono de editar */}
+               </IconButtonReal>
+              {/* Botón Visualizar */}
+               <IconButtonReal
+                   onClick={handleView} // Ejecuta la navegación a la página de visualizar
+                   variant="outline"
+               >
+                  <Eye size={20} /> {/* Icono de visualizar */}
+              </IconButtonReal>
+          </div>
 
-      {/* Botón opciones */}
-      <button
-        //onClick={handleDelete} // Ejecuta la acción de eliminación
-        className="p-1 rounded hover:bg-focus-border"
-      >
-        <div className="p-1">
-            <Dropdown>
-                <DropdownTrigger>
-                      <EllipsisVertical size={16} />
-                </DropdownTrigger>
-
-                <DropdownContent className="w-48">
-                  <DropdownItem>
-                      <Link to="" className="block">
-                        Visualizar préstamo
-                      </Link>
-                  </DropdownItem>
-
-                  <DropdownItem>
-                      <Link to="" className="block">
-                        Retornar material
-                      </Link>
-                  </DropdownItem>
-
-                  <DropdownItem>
-                      <Link to="" className="block">
-                        Aprobar retorno
-                      </Link>
-                  </DropdownItem>
-
-                </DropdownContent>
-            </Dropdown>
-         </div>
-
-      </button>
-
-
-    </div>
+      </div>
   );
 }

@@ -2,7 +2,7 @@ import { createBrowserRouter, Navigate } from "react-router-dom";
 import MainLayout from "@/shared/layouts/MainLayout";
 import { CreateUserPage, EditUserPage, ListUserPage } from "@/features/users";
 import { CreateBrandPage, ListBrandPage } from "@/features/brands";
-import { CreateLoanPage, ReturnLoan, ApproveReturnLoan, ListLoanPage } from "@/features/loans";
+import { CreateLoanPage, ReturnLoan, ApproveReturnLoan, ListLoanPage, ViewLoanPage } from "@/features/loans";
 import { CreateTaskPage } from "@/features/tasks";
 import { CreateConsumablePage, EditConsumablePage, ListMaterialPage } from "@/features/consumable-material";
 import { CreateReturnablePage, EditReturnablePage, ListReturnablePage } from "@/features/returnable-material";
@@ -44,6 +44,7 @@ const router = createBrowserRouter([
             { path: "permissions-list", element: <ListPermissionsPage /> },
             { path: "loan-create", element: <CreateLoanPage /> },
             { path: "loan-list", element: <ListLoanPage /> },
+            { path: "loans/:id/view", element: <ViewLoanPage /> },
             { path: "returnable-material-list", element: <ListReturnablePage /> },
             { path: "returnable-material-edit", element: <EditConsumablePage /> },
             { path: "consumable-material-list", element: <ListMaterialPage /> },

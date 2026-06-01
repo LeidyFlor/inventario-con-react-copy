@@ -1,6 +1,6 @@
 import DataTable from "@/shared/components/DataTable"
 import { ReturnableColumns } from "../table/ReturnableColumns"
-import { returnableMaterial } from "../data/retrunableMaterial"
+import { returnableMaterial } from "../data/returnableMaterial"
 import { Button } from "@/shared/"
 import { Link } from "react-router-dom"
 import { ClipboardList } from "lucide-react"

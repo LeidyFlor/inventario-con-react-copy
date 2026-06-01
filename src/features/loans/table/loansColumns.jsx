@@ -15,8 +15,8 @@ export const loansColumns = [
     
     // Columna ID
     {
-        accessorKey: "id", // Campo del objeto user
-        header: "ID",    // Encabezado visible
+        accessorKey: "idLoan", // Campo del objeto user
+        header: "ID Préstamo",    // Encabezado visible
     },
 
     
@@ -37,6 +37,17 @@ export const loansColumns = [
     {
         accessorKey: "loanDateOut",
         header: "Fecha salida",
+        // Convierte la fecha ISO del backend → formato legible "DD/MM/YYYY"
+        // Ejemplo: "2025-08-25T08:15:23.651+00:00" → "25/08/2025"
+        cell: ({ getValue }) => {
+            const value = getValue();
+            if (!value) return "";
+            return new Date(value).toLocaleDateString("es-CO", {
+                day:   "2-digit",
+                month: "2-digit",
+                year:  "numeric",
+            });
+        },
     },
     // Columna requestingUser
     {
@@ -70,6 +81,6 @@ export const loansColumns = [
     
     
             // Renderiza el componente de acciones pasando el usuario completo
-            cell: ({ row }) => <LoanRowActions user={row.original} />,
+            cell: ({ row }) => <LoanRowActions loan={row.original} />,
         },
 ];
