@@ -137,11 +137,6 @@ export default function Header( { onMenuToggle } ) {
                                         </Link>
                                     </DropdownItem>
                                     <DropdownItem>
-                                        <Link to="user-edit" className="block w-full">
-                                            Editar Usuario
-                                        </Link>
-                                    </DropdownItem>
-                                    <DropdownItem>
                                         <Link to="/auth" className="block w-full">
                                             Cerrar Sesión
                                         </Link>
