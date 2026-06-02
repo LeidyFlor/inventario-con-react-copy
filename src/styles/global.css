@@ -200,8 +200,11 @@
     /* DEGRADADO PARA EL BORDE DEL INPUT EN EDITS */
     .border-gradient-input-edit {
       border-bottom: 2.5px solid transparent;
+      border-radius: 0%;
+      
       background:
-        linear-gradient(var(--white), var(--white)) padding-box, 
+        linear-gradient(var(--white), var(--white)) padding-box,
+    
         /*el fondo blanco solo cubre el área interior del botón*/
 
         linear-gradient(to right, var(--tertiary-950), var(--secundary-900)) border-box; /*el gradiente cubre toda el área incluyendo el borde*/
@@ -210,7 +213,7 @@
     }
     /* Texto para subtitulos de informacion seccion editar */
     .parrafo-edit-style{
-        font-size: var(--text-body);
+        font-size: var(--text-medium);
         font-weight: var(--font-weight-semibold);
         color: var(--color-text-primary);
     }
