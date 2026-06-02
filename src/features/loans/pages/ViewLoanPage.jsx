@@ -59,7 +59,7 @@ export default function ViewLoanPage() {
             <div className="bg-gradient-container-green border-4 border-border-green-container p-6 rounded-4xl w-fit md:w-full place-self-center">
 
                 {/* Encabezado */}
-                <div className="flex md:items-start flex-col md:flex-row md:justify-between place-items-center mb-6">
+                <div className="flex md:items-start flex-col md:flex-row md:justify-between place-items-center mb-6 gap-4 md:gap-0">
                     <div className="max-w-max">
                         <h3 className="flex gap-2 text-gradient-title text-h3 pb-0.5">
                             <ClipboardList className="text-brand" />
@@ -74,7 +74,7 @@ export default function ViewLoanPage() {
                 </div>
 
                 {/* Layout dos columnas */}
-                <div className="grid grid-cols-1 lg:grid-cols-[auto_1fr] gap-6 items-start">
+                <div className="grid grid-cols-1 lg:grid-cols-[auto_1fr] gap-6 place-items-center lg:items-start">
 
                     {/* Izquierda: detalles del préstamo */}
                     <ViewDetailCard fields={[
