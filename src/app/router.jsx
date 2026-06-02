@@ -2,9 +2,9 @@ import { createBrowserRouter, Navigate } from "react-router-dom";
 import MainLayout from "@/shared/layouts/MainLayout";
 import { CreateUserPage, EditUserPage, ListUserPage, ViewUserPage } from "@/features/users";
 import { CreateBrandPage, ListBrandPage } from "@/features/brands";
-import { CreateLoanPage, ReturnLoan, ApproveReturnLoan } from "@/features/loans";
+import { CreateLoanPage, ReturnLoan, ApproveReturnLoan, ListLoanPage, ViewLoanPage } from "@/features/loans";
 import { CreateTaskPage } from "@/features/tasks";
-import { CreateConsumablePage, EditConsumablePage, ListMaterialPage, ViewMaterialPage} from "@/features/consumable-material";
+import { CreateConsumablePage, EditConsumablePage, ListMaterialPage, ViewMaterialPage } from "@/features/consumable-material";
 import { CreateReturnablePage, EditReturnablePage, ListReturnablePage, ViewReturnablePage } from "@/features/returnable-material";
 import { ListPermissionsPage } from "@/features/permissions";
 import { LoginForm, LoginRestorePassword, LoginRestorePasswordCode, LoginRestoreNewPassword } from "@/features/auth";
@@ -32,24 +32,23 @@ const router = createBrowserRouter([
     {
         path: "/dashboard",
         element: <DashboardLayout />,
-        // Nested Routes
+        // Nested Routes 
         children: [
             { index: true, element: <HomePage /> },
             { path: "auth", element: <LoginForm /> },
             { path: "user-create", element: <CreateUserPage /> },
-            { path: "user-list", element: <ListUserPage /> },
+            { path: "user-list", element: <ListUserPage /> }, 
             { path: "users/:id/edit", element: <EditUserPage /> },
             { path: "users/:id/view", element: <ViewUserPage /> },
-            { path: "consumable-material-create", element: <CreateConsumablePage /> },
-            { path: "consumable-material-list", element: <ListMaterialPage /> },
-            // { path: "materials/:id/edit", element: <EditConsumableMaterial/> },
-            { path: "materials/:id/view", element: <ViewMaterialPage/> },
+            { path: "materials/:id/edit", element: <h1>Editar material</h1> },
+            { path: "materials/:id/view", element: <h1>Ver material</h1> }, 
             { path: "returnable-material-create", element: <CreateReturnablePage /> },
             { path: "returnable-material-list", element: <ListReturnablePage /> },
             { path: "returnable-materials/:id/view", element: <ViewReturnablePage /> },
             { path: "returnable-materials/:id/edit", element: <h1>Ver material devolutivo</h1> },
+            
             { path: "loan-create", element: <CreateLoanPage /> },
-            { path: "loan-list", element: <h1>Lista de prestamos</h1> },
+            { path: "loan-list", element: <ListLoanPage /> },
             { path: "loan-editar", element: <h1>Editar prestamo</h1> },
             { path: "loan-ver", element: <h1>Ver prestamo</h1> },
             { path: "loan-return", element: <ReturnLoan /> },
