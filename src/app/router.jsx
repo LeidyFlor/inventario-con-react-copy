@@ -39,14 +39,22 @@ const router = createBrowserRouter([
             { path: "user-create", element: <CreateUserPage /> },
             { path: "user-list", element: <ListUserPage /> }, 
             { path: "users/:id/edit", element: <EditUserPage /> },
-            { path: "users/:id/view", element: <ViewUserPage /> },
-            { path: "materials/:id/edit", element: <h1>Editar material</h1> },
-            { path: "materials/:id/view", element: <h1>Ver material</h1> }, 
+            { path: "users/:id/view", element: <ViewUserPage /> }, 
             { path: "returnable-material-create", element: <CreateReturnablePage /> },
             { path: "returnable-material-list", element: <ListReturnablePage /> },
             { path: "returnable-materials/:id/view", element: <ViewReturnablePage /> },
             { path: "returnable-materials/:id/edit", element: <h1>Ver material devolutivo</h1> },
             
+            // Material de consumo
+            { path: "consumable-material-create", element: <CreateConsumablePage /> },
+            { path: "consumable-material-list", element: <ListMaterialPage
+             /> }, 
+            { path: "materials/:id/edit", element: <EditConsumablePage/> },
+            { path: "materials/:id/view", element: <ViewMaterialPage/> },
+            
+
+
+
             { path: "loan-create", element: <CreateLoanPage /> },
             { path: "loan-list", element: <ListLoanPage /> },
             { path: "loan-editar", element: <h1>Editar prestamo</h1> },
