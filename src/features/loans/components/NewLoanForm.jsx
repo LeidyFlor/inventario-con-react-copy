@@ -79,7 +79,7 @@ export default function NewLoanForm() {
         <div className="flex flex-col place-items-center justify-items-center relative">
 
             {/* Contenedor verde */}
-            <div className="bg-gradient-container-green border-4 border-border-green-container p-6 rounded-4xl w-fit mt-10">
+            <div className="bg-gradient-container-green border-4 border-border-green-container p-6 rounded-4xl w-fit">
 
                 {/* contenedor del titulo y la linea */}
                 <div className="mb-6 max-w-max">

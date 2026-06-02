@@ -60,7 +60,8 @@ export default function Header( { onMenuToggle } ) {
     };
 
     return (
-        <header className="w-full bg-gradient-navbar border-b-2 border-border-navbar">
+        // Se agrega fixed al header para que no quede el espacio del navbar al hacer scroll, el main debe de conocer el tamano del header para dejar este espacio
+        <header className="fixed top-0 left-0 right-0 z-30 w-full bg-gradient-navbar border-b-2 border-border-navbar">
             <div className="mx-auto max-w-7xl px-4">
                 <div className="flex h-18 items-center justify-between">
                     <div className="flex items-center gap-6">
