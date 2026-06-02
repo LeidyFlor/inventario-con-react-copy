@@ -19,6 +19,7 @@ export default function UserRegisterForm() {
         userEmailConfir: "",
         userDateEnd: "",
         userDateStart: "",
+        is_active: true,
     });
     const [errors, setErrors] = useState({});
     // useState que me trae el arreglo mediante el get en servicios

@@ -6,8 +6,7 @@ export default function Navbar( { isOpen, onClose }){
     return(
         <nav className={`
             fixed 
-            lg:absolute    /* sale del flujo normal en lg para no empujar el main */  
-            lg:h-full
+            h-full
             w-fit
             z-20
             bg-gradient-side-navbar
@@ -17,9 +16,8 @@ export default function Navbar( { isOpen, onClose }){
         `}>
 
                     {/* Seleccion asidebar */}
-                    <div className="flex flex-col lg:h-screen place-items-center gap-4 px-4 my-4 lg:my-0 lg:justify-center">
-                        {/* sm:block cuando el tamano de pantalla sea menor a 640 se escconda el buscar */}
-                        
+                    <div className="flex flex-col h-full place-items-center gap-4 px-4 my-4 justify-center">
+
                         {/* boton co icono de préstamo */}
                         <div className="">
                             <Dropdown>
@@ -41,7 +39,7 @@ export default function Navbar( { isOpen, onClose }){
                                         </Link>
                                     </DropdownItem>
                                     <DropdownItem>
-                                        <Link to="user-edit" className="block w-full">
+                                        <Link to="loan-list" className="block w-full">
                                             Listar préstamo
                                         </Link>
                                     </DropdownItem>
@@ -162,11 +160,12 @@ export default function Navbar( { isOpen, onClose }){
                             </Dropdown>
                         </div>
                             <div className="">
-                                <IconButtonReal className="py-8 px-8" hitSize="50" label="Cerrar sesión" arialLabel="Menu de configuración" variant="primary" >
+                                <Link to="/auth">
+                                    <IconButtonReal className="py-8 px-8" hitSize="50" label="Cerrar sesión" arialLabel="Menu de configuración" variant="primary" >
+                                        <LogOut />
 
-                                    <LogOut />
-
-                                </IconButtonReal>
+                                    </IconButtonReal>
+                                </Link>
 
                             </div>
                     </div>

@@ -1,5 +1,5 @@
 // Iconos usados en los botones de acciones
-import { Pencil, EllipsisVertical, Menu } from "lucide-react";
+import { Pencil, Menu, Eye } from "lucide-react";
 
 
 // Hook de React Router para navegar programáticamente entre rutas
@@ -30,7 +30,7 @@ export default function UserRowActions({ user }) {
   // Acción para editar el usuario
   // Redirige a la página de edición usando el id del usuario
   const handleEdit = () => {
-    navigate(`/users/${user.id}/edit`);
+    navigate(`/dashboard/users/${user.id}/edit`);
   };
 
   const handleView = () => {
@@ -41,52 +41,31 @@ export default function UserRowActions({ user }) {
   // Acción para eliminar el usuario
   // Actualmente solo imprime en consola el id
   // En una aplicación real aquí se llamaría a la API
-  const handleDelete = () => {
-    console.log("Eliminar usuario", user.id);
-  };
+  // const handleDelete = () => {
+  //   console.log("Eliminar usuario", user.id);
+  // };
 
 
   return (
     // Contenedor de los botones de acciones
     <div className="flex gap-2">
 
-
       {/* Botón editar */}
-      <button
+      <IconButtonReal
         onClick={handleEdit} // Ejecuta la navegación a la página de edición
-        className="p-1 rounded hover:bg-focus-border"
+        variant="outline"
       >
-        <Pencil size={16} /> {/* Icono de editar */}
-      </button>
+        <Pencil size={20} /> {/* Icono de editar */}
+      </IconButtonReal>
 
+      {/* Botón Visualizar */}
+      <IconButtonReal
+        onClick={handleView} // Ejecuta la navegación a la página de visualizar
+        variant="outline"
+      >
+        <Eye size={20} /> {/* Icono de visualizar */}
+      </IconButtonReal>
 
-      {/* Botón opciones */}
-        <div className="p-1 rounded hover:bg-focus-border">
-            <Dropdown>
-                <DropdownTrigger>
-                      <EllipsisVertical size={16} />
-                </DropdownTrigger>
-
-                <DropdownContent className="w-48">
-                  <DropdownItem onClick={handleView}>
-                        Visualizar usuario
-                  </DropdownItem>
-
-                  <DropdownItem>
-                      <Link to="" className="block">
-                        Opcion 2
-                      </Link>
-                  </DropdownItem>
-
-                  <DropdownItem>
-                      <Link to="" className="block">
-                        Opcion 3
-                      </Link>
-                  </DropdownItem>
-
-                </DropdownContent>
-            </Dropdown>
-         </div>
     </div>
   );
 }

@@ -102,6 +102,7 @@ export const userShema = z
       "Fecha de fin inválida",
     ),
     userImage: fileSchema.shape.files.optional(),
+  
   })
   //para que email y confirmación sean iguales
   .refine((data) => data.userEmail === data.userEmailConfir, {
