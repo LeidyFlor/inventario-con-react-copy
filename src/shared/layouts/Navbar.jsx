@@ -6,8 +6,7 @@ export default function Navbar( { isOpen, onClose }){
     return(
         <nav className={`
             fixed 
-            lg:absolute    /* sale del flujo normal en lg para no empujar el main */  
-            lg:h-full
+            h-full
             w-fit
             z-20
             bg-gradient-side-navbar
@@ -17,9 +16,8 @@ export default function Navbar( { isOpen, onClose }){
         `}>
 
                     {/* Seleccion asidebar */}
-                    <div className="flex flex-col lg:h-full place-items-center gap-4 px-4 my-4 lg:my-0 lg:justify-center">
-                        {/* sm:block cuando el tamano de pantalla sea menor a 640 se escconda el buscar */}
-                        
+                    <div className="flex flex-col h-full place-items-center gap-4 px-4 my-4 justify-center">
+
                         {/* boton co icono de préstamo */}
                         <div className="">
                             <Dropdown>
