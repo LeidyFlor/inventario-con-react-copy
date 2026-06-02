@@ -2,9 +2,7 @@ import { useState } from "react";
 import { StatusSwitch } from "@/shared/";
 import LoanRowActions from "../components/LoanRowActions";
 
-// ==================================================
 //   Celda con texto truncado + botón expandir/colapsar
-// ==================================================
 /*
     Cada instancia tiene su propio useState → el toggle
     de una fila no afecta a las demás.
@@ -26,7 +24,7 @@ function TruncatedCell({ value, maxChars = 30 }) {
                 {expanded ? value : `${value.slice(0, maxChars)}...`}
             </span>
 
-            {/* Botón toggle — sin estilos llamativos para no competir con la tabla */}
+            {/* Botón toggle - sin estilos llamativos para no competir con la tabla */}
             <button
                 onClick={() => setExpanded(!expanded)}
                 className="text-small text-text-primary underline self-start hover:opacity-70 transition-opacity"

@@ -11,8 +11,20 @@ export const loans = [
         loanStatus: "Activo",
         loanType: "Interno",
         loanMaterials: [
-            { id: 1, name: "Switch Cisco 24p",  placaSena: "SENA-00101", serial: "SN-SW-0011", cantidad: 1,  tipo: "Devolutivo" },
-            { id: 2, name: "Cable UTP Cat6",     placaSena: null,         serial: null,          cantidad: 15, tipo: "Consumo"    },
+            { id: 1, name: "Switch Cisco 24p",  placaSena: "SENA-003201", serial: "SN-SW-0321", cantidad: 1,  tipo: "Devolutivo" },
+            { id: 2, name: "Router Cisco ISR 4331", placaSena: "SENA-03601", serial: "SN-RT-3601", cantidad: 1, tipo: "Devolutivo" },
+            { id: 3, name: "Firewall Fortinet 60F", placaSena: "SENA-03603", serial: "SN-FW-3603", cantidad: 1, tipo: "Devolutivo" },
+            { id: 4, name: "Cable UTP Cat6",     placaSena: null,         serial: null,          cantidad: 15, tipo: "Consumo"    },
+            { id: 5, name: "Conector RJ45 Cat6", placaSena: null, serial: null, cantidad: 150, tipo: "Consumo" },
+            { id: 6, name: "Cable UTP Cat6", placaSena: null, serial: null, cantidad: 50, tipo: "Consumo" },
+            { id: 7, name: "Access Point Ubiquiti U6", placaSena: "SENA-03604", serial: "SN-AP-3604", cantidad: 1, tipo: "Devolutivo" },
+            { id: 9, name: "Bridas Plasticas", placaSena: null, serial: null, cantidad: 200, tipo: "Consumo" },
+            { id: 9, name: "Servidor Dell PowerEdge R740", placaSena: "SENA-03602", serial: "SN-SV-3602", cantidad: 1, tipo: "Devolutivo" },
+            { id: 10, name: "Patch Cord Cat6 2m", placaSena: null, serial: null, cantidad: 25, tipo: "Consumo" },
+            { id: 11, name: "Switch HP Aruba 24 Puertos", placaSena: "SENA-03605", serial: "SN-SW-3605", cantidad: 1, tipo: "Devolutivo" },
+            { id: 12, name: "Tornillos para Rack", placaSena: null, serial: null, cantidad: 80, tipo: "Consumo" },
+            { id: 13, name: "UPS APC Smart 1500VA", placaSena: "SENA-03606", serial: "SN-UP-3606", cantidad: 1, tipo: "Devolutivo" },
+            
         ],
     },
     {
@@ -29,6 +41,12 @@ export const loans = [
         loanMaterials: [
             { id: 1, name: "Router MikroTik", placaSena: "SENA-00202", serial: "SN-RT-0022", cantidad: 1,  tipo: "Devolutivo" },
             { id: 2, name: "Conector RJ45",   placaSena: null,          serial: null,          cantidad: 30, tipo: "Consumo"    },
+            { id: 3, name: "Canaleta PVC 40x20", placaSena: null, serial: null, cantidad: 35, tipo: "Consumo" },
+            { id: 4, name: "Monitor Dell 24 Pulgadas", placaSena: "SENA-03607", serial: "SN-MN-3607", cantidad: 1, tipo: "Devolutivo" },
+            { id: 5, name: "Modulo SFP Gigabit", placaSena: null, serial: null, cantidad: 12, tipo: "Consumo" },
+            { id: 6, name: "Computador HP ProDesk", placaSena: "SENA-03608", serial: "SN-PC-3608", cantidad: 1, tipo: "Devolutivo" },
+            { id: 7, name: "Cable HDMI 2 Metros", placaSena: null, serial: null, cantidad: 18, tipo: "Consumo" },
+            
         ],
     },
     {
@@ -44,6 +62,14 @@ export const loans = [
         loanType: "Interno",
         loanMaterials: [
             { id: 1, name: "Patch Cord Cat6 Azul", placaSena: null, serial: null, cantidad: 10, tipo: "Consumo" },
+            { id: 2, name: "Impresora HP LaserJet", placaSena: "SENA-03609", serial: "SN-IM-3609", cantidad: 1, tipo: "Devolutivo" },
+            { id: 3, name: "Memoria RAM DDR4 8GB", placaSena: null, serial: null, cantidad: 10, tipo: "Consumo" },
+            { id: 4, name: "Tester de Red Fluke", placaSena: "SENA-03610", serial: "SN-TR-3610", cantidad: 1, tipo: "Devolutivo" },
+            { id: 5, name: "Disco SSD 480GB", placaSena: null, serial: null, cantidad: 6, tipo: "Consumo" },
+            { id: 6, name: "Switch Cisco Catalyst 2960", placaSena: "SENA-03611", serial: "SN-SW-3611", cantidad: 1, tipo: "Devolutivo" },
+            { id: 7, name: "Conector Keystone Cat6", placaSena: null, serial: null, cantidad: 40, tipo: "Consumo" },
+            { id: 8, name: "Router MikroTik RB4011", placaSena: "SENA-03612", serial: "SN-MK-3612", cantidad: 1, tipo: "Devolutivo" },
+            { id: 9, name: "Cinta Velcro para Cableado", placaSena: null, serial: null, cantidad: 60, tipo: "Consumo" },
         ],
     },
     {
@@ -75,6 +101,19 @@ export const loans = [
         loanType: "Externo",
         loanMaterials: [
             { id: 1, name: "Tester de red digital", placaSena: "SENA-00501", serial: "SN-TN-0051", cantidad: 1, tipo: "Devolutivo" },
+            { id: 13, name: "Canaleta PVC 40x20", placaSena: null, serial: null, cantidad: 35, tipo: "Consumo" },
+            { id: 14, name: "Monitor Dell 24 Pulgadas", placaSena: "SENA-03607", serial: "SN-MN-3607", cantidad: 1, tipo: "Devolutivo" },
+            { id: 15, name: "Modulo SFP Gigabit", placaSena: null, serial: null, cantidad: 12, tipo: "Consumo" },
+            { id: 16, name: "Computador HP ProDesk", placaSena: "SENA-03608", serial: "SN-PC-3608", cantidad: 1, tipo: "Devolutivo" },
+            { id: 17, name: "Cable HDMI 2 Metros", placaSena: null, serial: null, cantidad: 18, tipo: "Consumo" },
+            { id: 18, name: "Impresora HP LaserJet", placaSena: "SENA-03609", serial: "SN-IM-3609", cantidad: 1, tipo: "Devolutivo" },
+            { id: 19, name: "Memoria RAM DDR4 8GB", placaSena: null, serial: null, cantidad: 10, tipo: "Consumo" },
+            { id: 20, name: "Tester de Red Fluke", placaSena: "SENA-03610", serial: "SN-TR-3610", cantidad: 1, tipo: "Devolutivo" },
+            { id: 21, name: "Disco SSD 480GB", placaSena: null, serial: null, cantidad: 6, tipo: "Consumo" },
+            { id: 22, name: "Switch Cisco Catalyst 2960", placaSena: "SENA-03611", serial: "SN-SW-3611", cantidad: 1, tipo: "Devolutivo" },
+            { id: 23, name: "Conector Keystone Cat6", placaSena: null, serial: null, cantidad: 40, tipo: "Consumo" },
+            { id: 24, name: "Router MikroTik RB4011", placaSena: "SENA-03612", serial: "SN-MK-3612", cantidad: 1, tipo: "Devolutivo" },
+            { id: 25, name: "Cinta Velcro para Cableado", placaSena: null, serial: null, cantidad: 60, tipo: "Consumo" },
         ],
     },
     {
@@ -106,6 +145,19 @@ export const loans = [
         loanType: "Interno",
         loanMaterials: [
             { id: 1, name: "Cable HDMI 2m", placaSena: null, serial: null, cantidad: 8, tipo: "Consumo" },
+            { id: 13, name: "Canaleta PVC 40x20", placaSena: null, serial: null, cantidad: 35, tipo: "Consumo" },
+            { id: 14, name: "Monitor Dell 24 Pulgadas", placaSena: "SENA-03607", serial: "SN-MN-3607", cantidad: 1, tipo: "Devolutivo" },
+            { id: 15, name: "Modulo SFP Gigabit", placaSena: null, serial: null, cantidad: 12, tipo: "Consumo" },
+            { id: 16, name: "Computador HP ProDesk", placaSena: "SENA-03608", serial: "SN-PC-3608", cantidad: 1, tipo: "Devolutivo" },
+            { id: 17, name: "Cable HDMI 2 Metros", placaSena: null, serial: null, cantidad: 18, tipo: "Consumo" },
+            { id: 18, name: "Impresora HP LaserJet", placaSena: "SENA-03609", serial: "SN-IM-3609", cantidad: 1, tipo: "Devolutivo" },
+            { id: 19, name: "Memoria RAM DDR4 8GB", placaSena: null, serial: null, cantidad: 10, tipo: "Consumo" },
+            { id: 20, name: "Tester de Red Fluke", placaSena: "SENA-03610", serial: "SN-TR-3610", cantidad: 1, tipo: "Devolutivo" },
+            { id: 21, name: "Disco SSD 480GB", placaSena: null, serial: null, cantidad: 6, tipo: "Consumo" },
+            { id: 22, name: "Switch Cisco Catalyst 2960", placaSena: "SENA-03611", serial: "SN-SW-3611", cantidad: 1, tipo: "Devolutivo" },
+            { id: 23, name: "Conector Keystone Cat6", placaSena: null, serial: null, cantidad: 40, tipo: "Consumo" },
+            { id: 24, name: "Router MikroTik RB4011", placaSena: "SENA-03612", serial: "SN-MK-3612", cantidad: 1, tipo: "Devolutivo" },
+            { id: 25, name: "Cinta Velcro para Cableado", placaSena: null, serial: null, cantidad: 60, tipo: "Consumo" },
         ],
     },
     {
@@ -121,6 +173,19 @@ export const loans = [
         loanType: "Externo",
         loanMaterials: [
             { id: 1, name: "UPS APC 1200VA", placaSena: "SENA-00801", serial: "SN-UP-0081", cantidad: 1, tipo: "Devolutivo" },
+            { id: 13, name: "Canaleta PVC 40x20", placaSena: null, serial: null, cantidad: 35, tipo: "Consumo" },
+            { id: 14, name: "Monitor Dell 24 Pulgadas", placaSena: "SENA-03607", serial: "SN-MN-3607", cantidad: 1, tipo: "Devolutivo" },
+            { id: 15, name: "Modulo SFP Gigabit", placaSena: null, serial: null, cantidad: 12, tipo: "Consumo" },
+            { id: 16, name: "Computador HP ProDesk", placaSena: "SENA-03608", serial: "SN-PC-3608", cantidad: 1, tipo: "Devolutivo" },
+            { id: 17, name: "Cable HDMI 2 Metros", placaSena: null, serial: null, cantidad: 18, tipo: "Consumo" },
+            { id: 18, name: "Impresora HP LaserJet", placaSena: "SENA-03609", serial: "SN-IM-3609", cantidad: 1, tipo: "Devolutivo" },
+            { id: 19, name: "Memoria RAM DDR4 8GB", placaSena: null, serial: null, cantidad: 10, tipo: "Consumo" },
+            { id: 20, name: "Tester de Red Fluke", placaSena: "SENA-03610", serial: "SN-TR-3610", cantidad: 1, tipo: "Devolutivo" },
+            { id: 21, name: "Disco SSD 480GB", placaSena: null, serial: null, cantidad: 6, tipo: "Consumo" },
+            { id: 22, name: "Switch Cisco Catalyst 2960", placaSena: "SENA-03611", serial: "SN-SW-3611", cantidad: 1, tipo: "Devolutivo" },
+            { id: 23, name: "Conector Keystone Cat6", placaSena: null, serial: null, cantidad: 40, tipo: "Consumo" },
+            { id: 24, name: "Router MikroTik RB4011", placaSena: "SENA-03612", serial: "SN-MK-3612", cantidad: 1, tipo: "Devolutivo" },
+            { id: 25, name: "Cinta Velcro para Cableado", placaSena: null, serial: null, cantidad: 60, tipo: "Consumo" },
         ],
     },
     {
@@ -231,6 +296,19 @@ export const loans = [
         loanType: "Interno",
         loanMaterials: [
             { id: 1, name: "Disco duro SSD 480GB", placaSena: null, serial: null, cantidad: 3, tipo: "Consumo" },
+            { id: 13, name: "Canaleta PVC 40x20", placaSena: null, serial: null, cantidad: 35, tipo: "Consumo" },
+            { id: 14, name: "Monitor Dell 24 Pulgadas", placaSena: "SENA-03607", serial: "SN-MN-3607", cantidad: 1, tipo: "Devolutivo" },
+            { id: 15, name: "Modulo SFP Gigabit", placaSena: null, serial: null, cantidad: 12, tipo: "Consumo" },
+            { id: 16, name: "Computador HP ProDesk", placaSena: "SENA-03608", serial: "SN-PC-3608", cantidad: 1, tipo: "Devolutivo" },
+            { id: 17, name: "Cable HDMI 2 Metros", placaSena: null, serial: null, cantidad: 18, tipo: "Consumo" },
+            { id: 18, name: "Impresora HP LaserJet", placaSena: "SENA-03609", serial: "SN-IM-3609", cantidad: 1, tipo: "Devolutivo" },
+            { id: 19, name: "Memoria RAM DDR4 8GB", placaSena: null, serial: null, cantidad: 10, tipo: "Consumo" },
+            { id: 20, name: "Tester de Red Fluke", placaSena: "SENA-03610", serial: "SN-TR-3610", cantidad: 1, tipo: "Devolutivo" },
+            { id: 21, name: "Disco SSD 480GB", placaSena: null, serial: null, cantidad: 6, tipo: "Consumo" },
+            { id: 22, name: "Switch Cisco Catalyst 2960", placaSena: "SENA-03611", serial: "SN-SW-3611", cantidad: 1, tipo: "Devolutivo" },
+            { id: 23, name: "Conector Keystone Cat6", placaSena: null, serial: null, cantidad: 40, tipo: "Consumo" },
+            { id: 24, name: "Router MikroTik RB4011", placaSena: "SENA-03612", serial: "SN-MK-3612", cantidad: 1, tipo: "Devolutivo" },
+            { id: 25, name: "Cinta Velcro para Cableado", placaSena: null, serial: null, cantidad: 60, tipo: "Consumo" },
         ],
     },
     {
@@ -292,6 +370,19 @@ export const loans = [
         loanType: "Externo",
         loanMaterials: [
             { id: 1, name: "Antena Ubiquiti", placaSena: "SENA-01901", serial: "SN-AN-1901", cantidad: 2, tipo: "Devolutivo" },
+            { id: 13, name: "Canaleta PVC 40x20", placaSena: null, serial: null, cantidad: 35, tipo: "Consumo" },
+            { id: 14, name: "Monitor Dell 24 Pulgadas", placaSena: "SENA-03607", serial: "SN-MN-3607", cantidad: 1, tipo: "Devolutivo" },
+            { id: 15, name: "Modulo SFP Gigabit", placaSena: null, serial: null, cantidad: 12, tipo: "Consumo" },
+            { id: 16, name: "Computador HP ProDesk", placaSena: "SENA-03608", serial: "SN-PC-3608", cantidad: 1, tipo: "Devolutivo" },
+            { id: 17, name: "Cable HDMI 2 Metros", placaSena: null, serial: null, cantidad: 18, tipo: "Consumo" },
+            { id: 18, name: "Impresora HP LaserJet", placaSena: "SENA-03609", serial: "SN-IM-3609", cantidad: 1, tipo: "Devolutivo" },
+            { id: 19, name: "Memoria RAM DDR4 8GB", placaSena: null, serial: null, cantidad: 10, tipo: "Consumo" },
+            { id: 20, name: "Tester de Red Fluke", placaSena: "SENA-03610", serial: "SN-TR-3610", cantidad: 1, tipo: "Devolutivo" },
+            { id: 21, name: "Disco SSD 480GB", placaSena: null, serial: null, cantidad: 6, tipo: "Consumo" },
+            { id: 22, name: "Switch Cisco Catalyst 2960", placaSena: "SENA-03611", serial: "SN-SW-3611", cantidad: 1, tipo: "Devolutivo" },
+            { id: 23, name: "Conector Keystone Cat6", placaSena: null, serial: null, cantidad: 40, tipo: "Consumo" },
+            { id: 24, name: "Router MikroTik RB4011", placaSena: "SENA-03612", serial: "SN-MK-3612", cantidad: 1, tipo: "Devolutivo" },
+            { id: 25, name: "Cinta Velcro para Cableado", placaSena: null, serial: null, cantidad: 60, tipo: "Consumo" },
         ],
     },
     {
@@ -427,6 +518,7 @@ export const loans = [
         loanType: "Interno",
         loanMaterials: [
             { id: 1, name: "Servidor Lenovo", placaSena: "SENA-02801", serial: "SN-SV-2801", cantidad: 1, tipo: "Devolutivo" },
+            { id: 1, name: "Router JF834", placaSena: "SENA-02804", serial: "SN-SV-2832", cantidad: 1, tipo: "Devolutivo" },
         ],
     },
     {
@@ -532,6 +624,7 @@ export const loans = [
         loanType: "Externo",
         loanMaterials: [
             { id: 1, name: "Switch Cisco Layer 3", placaSena: "SENA-03501", serial: "SN-L3-3501", cantidad: 1, tipo: "Devolutivo" },
+            
         ],
     },
     {
@@ -547,6 +640,7 @@ export const loans = [
         loanType: "Interno",
         loanMaterials: [
             { id: 1, name: "Conector RJ45", placaSena: null, serial: null, cantidad: 100, tipo: "Consumo" },
+            
         ],
     },
 ]

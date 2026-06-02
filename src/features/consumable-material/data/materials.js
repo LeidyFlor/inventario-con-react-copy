@@ -1,5 +1,6 @@
 export const materials = [
     {
+        id: 1,
         materialBarcodeSena: "ADSO123",
         brandName: "HP",
         materialName: "Computador",
@@ -11,9 +12,9 @@ export const materials = [
         materialTotalPrice: 38000,
         materialLocation: "Almacen 3",
         is_active: true,
-
     },
     {
+        id: 2,
         materialBarcodeSena: "ADSO001",
         brandName: "HP",
         materialName: "Computador",
@@ -27,6 +28,7 @@ export const materials = [
         is_active: true,
     },
     {
+        id: 3,
         materialBarcodeSena: "ADSO002",
         brandName: "Dell",
         materialName: "Servidor",
@@ -40,6 +42,7 @@ export const materials = [
         is_active: true,
     },
     {
+        id: 4,
         materialBarcodeSena: "ADSO003",
         brandName: "Cisco",
         materialName: "Router",
@@ -53,6 +56,7 @@ export const materials = [
         is_active: true,
     },
     {
+        id: 5,
         materialBarcodeSena: "ADSO004",
         brandName: "Lenovo",
         materialName: "Laptop",
@@ -66,6 +70,7 @@ export const materials = [
         is_active: true,
     },
     {
+        id: 6,
         materialBarcodeSena: "ADSO005",
         brandName: "APC",
         materialName: "UPS",
@@ -79,6 +84,7 @@ export const materials = [
         is_active: true,
     },
     {
+        id: 7,
         materialBarcodeSena: "ADSO006",
         brandName: "Samsung",
         materialName: "Monitor",
@@ -92,6 +98,7 @@ export const materials = [
         is_active: true,
     },
     {
+        id: 8,
         materialBarcodeSena: "ADSO007",
         brandName: "Kingston",
         materialName: "Memoria RAM",
@@ -105,6 +112,7 @@ export const materials = [
         is_active: true,
     },
     {
+        id: 9,
         materialBarcodeSena: "ADSO008",
         brandName: "Seagate",
         materialName: "Disco Duro",
@@ -118,6 +126,7 @@ export const materials = [
         is_active: true,
     },
     {
+        id: 10,
         materialBarcodeSena: "ADSO009",
         brandName: "TP-Link",
         materialName: "Switch",
@@ -131,6 +140,7 @@ export const materials = [
         is_active: true,
     },
     {
+        id: 11,
         materialBarcodeSena: "ADSO010",
         brandName: "Canon",
         materialName: "Impresora",
@@ -144,6 +154,7 @@ export const materials = [
         is_active: true,
     },
     {
+        id: 12,
         materialBarcodeSena: "ADSO001",
         brandName: "HP",
         materialName: "Computador",
@@ -157,6 +168,7 @@ export const materials = [
         is_active: true,
     },
     {
+        id: 13,
         materialBarcodeSena: "ADSO002",
         brandName: "Dell",
         materialName: "Servidor",
@@ -170,6 +182,7 @@ export const materials = [
         is_active: true,
     },
     {
+        id: 14,
         materialBarcodeSena: "ADSO003",
         brandName: "Cisco",
         materialName: "Router",
@@ -183,6 +196,7 @@ export const materials = [
         is_active: true,
     },
     {
+        id: 15,
         materialBarcodeSena: "ADSO004",
         brandName: "Lenovo",
         materialName: "Laptop",
@@ -196,6 +210,7 @@ export const materials = [
         is_active: true,
     },
     {
+        id: 16,
         materialBarcodeSena: "ADSO005",
         brandName: "APC",
         materialName: "UPS",
@@ -209,6 +224,7 @@ export const materials = [
         is_active: true,
     },
     {
+        id: 17,
         materialBarcodeSena: "ADSO006",
         brandName: "Samsung",
         materialName: "Monitor",
@@ -222,6 +238,7 @@ export const materials = [
         is_active: true,
     },
     {
+        id: 18,
         materialBarcodeSena: "ADSO007",
         brandName: "Kingston",
         materialName: "Memoria RAM",
@@ -235,6 +252,7 @@ export const materials = [
         is_active: true,
     },
     {
+        id: 19,
         materialBarcodeSena: "ADSO008",
         brandName: "Seagate",
         materialName: "Disco Duro",
@@ -248,6 +266,7 @@ export const materials = [
         is_active: true,
     },
     {
+        id: 20,
         materialBarcodeSena: "ADSO009",
         brandName: "TP-Link",
         materialName: "Switch",
@@ -261,6 +280,7 @@ export const materials = [
         is_active: true,
     },
     {
+        id: 21,
         materialBarcodeSena: "ADSO010",
         brandName: "Canon",
         materialName: "Impresora",
@@ -274,6 +294,7 @@ export const materials = [
         is_active: true,
     },
     {
+        id: 22,
         materialBarcodeSena: "ADSO011",
         brandName: "LG",
         materialName: "Proyector",
@@ -287,6 +308,7 @@ export const materials = [
         is_active: true,
     },
     {
+        id: 23,
         materialBarcodeSena: "ADSO012",
         brandName: "Asus",
         materialName: "Tarjeta Madre",
@@ -300,6 +322,7 @@ export const materials = [
         is_active: true,
     },
     {
+        id: 24,
         materialBarcodeSena: "ADSO013",
         brandName: "Intel",
         materialName: "Procesador",
@@ -313,6 +336,7 @@ export const materials = [
         is_active: true,
     },
     {
+        id: 25,
         materialBarcodeSena: "ADSO014",
         brandName: "HP",
         materialName: "Plotter",
@@ -326,6 +350,7 @@ export const materials = [
         is_active: true,
     },
     {
+        id: 26,
         materialBarcodeSena: "ADSO015",
         brandName: "Epson",
         materialName: "Escáner",
@@ -339,6 +364,7 @@ export const materials = [
         is_active: true,
     },
     {
+        id: 27,
         materialBarcodeSena: "ADSO016",
         brandName: "Microsoft",
         materialName: "Licencia Office",
@@ -352,6 +378,7 @@ export const materials = [
         is_active: true,
     },
     {
+        id: 28,
         materialBarcodeSena: "ADSO017",
         brandName: "Logitech",
         materialName: "Teclado",
@@ -365,6 +392,7 @@ export const materials = [
         is_active: true,
     },
     {
+        id: 29,
         materialBarcodeSena: "ADSO018",
         brandName: "Logitech",
         materialName: "Mouse",
@@ -378,6 +406,7 @@ export const materials = [
         is_active: true,
     },
     {
+        id: 30,
         materialBarcodeSena: "ADSO019",
         brandName: "Brother",
         materialName: "Multifuncional",
@@ -391,6 +420,7 @@ export const materials = [
         is_active: true,
     },
     {
+        id: 31,
         materialBarcodeSena: "ADSO020",
         brandName: "Sony",
         materialName: "Cámara",
@@ -402,6 +432,5 @@ export const materials = [
         materialTotalPrice: 3600,
         materialLocation: "Laboratorio multimedia",
         is_active: true,
-},
-
-]
+    },
+];
