@@ -4,11 +4,14 @@ import { materials } from "../data/materials"
 import { Button } from "@/shared/"
 import { Link } from "react-router-dom"
 import { ClipboardList } from "lucide-react"
+import { useState } from "react"
 import { CreateConsumablePage, EditConsumablePage } from "@/features/consumable-material";
+import { ReportConfigModal } from "../reports/components/ReportConfigModal";
 
 
 export default function ListMaterialPage() {
-
+ //Estado para el boton, si se clikea o no el boton de reporte
+    const [isReportModalOpen, setIsReportModalOpen] = useState(false)
 
   return (      
     
@@ -27,10 +30,11 @@ export default function ListMaterialPage() {
             <div className="flex mb-3 md:mb-0 gap-6">
 
 
-
+                
                     <Button
                         variant="secondary" 
                         size="sm"
+                        onClick={() => setIsReportModalOpen(true)}
                     >
                         Reporte
                     </Button>
@@ -52,6 +56,10 @@ export default function ListMaterialPage() {
         <DataTable
             data={materials}
             columns={materialsColumns}
+        />
+        <ReportConfigModal
+            isOpen={isReportModalOpen}
+            onClose={() => setIsReportModalOpen(false)}
         />
 
     </div>

@@ -22,6 +22,7 @@ export default function ReturnableRegisterForm() {
         returnableMaterialDimensions: "",
         returnnableMaterialImagen: [],
         returnnableMaterialTechnicalSheet: [],
+        isActive : true,
     });
     const [errors, setErrors] = useState({});
     const [materialCategory, setMaterialCategory] = useState([]);

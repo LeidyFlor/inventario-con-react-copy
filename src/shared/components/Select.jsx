@@ -47,7 +47,7 @@ export default function Select({
                 {/* Se mapean el arreglo de las opciones que llegan */}
                 {options.map((opt) => (
                     // en este caso key: C.C. y Value: Cedula de ciudadania
-                    <option key={opt.id} value={opt.id}>
+                    <option key={opt.value} value={opt.value}>
                         {opt.label}
                     </option>
                 ))}

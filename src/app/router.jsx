@@ -4,11 +4,13 @@ import { CreateUserPage, EditUserPage, ListUserPage, ViewUserPage } from "@/feat
 import { CreateBrandPage, ListBrandPage } from "@/features/brands";
 import { CreateLoanPage, ReturnLoan, ApproveReturnLoan } from "@/features/loans";
 import { CreateTaskPage } from "@/features/tasks";
-import { CreateConsumablePage, EditConsumablePage, ListMaterialPage, ViewMaterialPage } from "@/features/consumable-material";
-import { CreateReturnablePage, EditReturnablePage, ListReturnablePage } from "@/features/returnable-material";
+import { CreateConsumablePage, EditConsumablePage, ListMaterialPage, ViewMaterialPage} from "@/features/consumable-material";
+import { CreateReturnablePage, EditReturnablePage, ListReturnablePage, ViewReturnablePage } from "@/features/returnable-material";
 import { ListPermissionsPage } from "@/features/permissions";
 import { LoginForm, LoginRestorePassword, LoginRestorePasswordCode, LoginRestoreNewPassword } from "@/features/auth";
 import { AuthLayout, DashboardLayout } from "@/shared/";
+import { HomePage } from "@/features/home";
+
 
 const router = createBrowserRouter([
     {
@@ -32,23 +34,37 @@ const router = createBrowserRouter([
         element: <DashboardLayout />,
         // Nested Routes
         children: [
-            { index: true, element: <CreateUserPage /> },
+            { index: true, element: <HomePage /> },
             { path: "auth", element: <LoginForm /> },
             { path: "user-create", element: <CreateUserPage /> },
-            { path: "user-edit", element: <EditUserPage /> },
             { path: "user-list", element: <ListUserPage /> },
-            { path: "loan-return", element: <ReturnLoan /> },
-            { path: "returnable-material-create", element: <CreateReturnablePage /> },
+            { path: "users/:id/edit", element: <EditUserPage /> },
+            { path: "users/:id/view", element: <ViewUserPage /> },
             { path: "consumable-material-create", element: <CreateConsumablePage /> },
-            { path: "permissions-list", element: <ListPermissionsPage /> },
-            { path: "loan-create", element: <CreateLoanPage /> },
-            { path: "returnable-material-list", element: <ListReturnablePage /> },
-            { path: "returnable-material-edit", element: <EditConsumablePage /> },
             { path: "consumable-material-list", element: <ListMaterialPage /> },
+            // { path: "materials/:id/edit", element: <EditConsumableMaterial/> },
+            { path: "materials/:id/view", element: <ViewMaterialPage/> },
+            { path: "returnable-material-create", element: <CreateReturnablePage /> },
+            { path: "returnable-material-list", element: <ListReturnablePage /> },
+            { path: "returnable-materials/:id/view", element: <ViewReturnablePage /> },
+            { path: "returnable-materials/:id/edit", element: <h1>Ver material devolutivo</h1> },
+            { path: "loan-create", element: <CreateLoanPage /> },
+            { path: "loan-list", element: <h1>Lista de prestamos</h1> },
+            { path: "loan-editar", element: <h1>Editar prestamo</h1> },
+            { path: "loan-ver", element: <h1>Ver prestamo</h1> },
+            { path: "loan-return", element: <ReturnLoan /> },
+            { path: "loan-acept-return", element: <h1>Aceptar retono loan</h1> },
+            { path: "permissions-list", element: <ListPermissionsPage /> },
             { path: "brand-create", element: <CreateBrandPage /> },
             { path: "brand-list", element: <ListBrandPage /> },
-            { path: "users/:id/view", element: <ViewUserPage /> },
-            { path: "materials/:id/view", element: <ViewMaterialPage /> },
+            { path: "brand-edit", element: <h1>Editar marca</h1> },
+            { path: "task-create", element: <h1>Crear tarea</h1> },
+            { path: "task-list", element: <h1>Listar tareas</h1> },
+            { path: "task-edit", element: <h1>Editar tarea</h1> },
+            { path: "task-view", element: <h1>Modal ver tarea</h1> },
+            { path: "group-create", element: <h1>modal Crear grupo</h1> },
+            { path: "group-select", element: <h1>Listar grupo (secciones ajenas a grupos)</h1> },
+            { path: "group-edit", element: <h1>Editar grupo</h1> },
 
         ],
     }

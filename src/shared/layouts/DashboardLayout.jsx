@@ -33,7 +33,7 @@ export default function DashboardLayout() {
             )}
             <Navbar isOpen={menuOpen} onClose={() => setMenuOpen(false)} />
             {/* Contenido dinamico de las paginas */}
-            <main className="lg:ml-[124px] items-center lg:justify-center min-h-[calc(100vh-72px)] pt-12 px-4">
+            <main className="lg:ml-31 items-center lg:justify-center min-h-[calc(100vh-72px)] pt-12 px-4">
 
                 <Outlet />
 

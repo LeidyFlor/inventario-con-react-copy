@@ -4,11 +4,12 @@ import { users } from "../data/users"
 import { Button } from "@/shared/"
 import { Link } from "react-router-dom"
 import { ClipboardList } from "lucide-react"
-
+import { ReportConfigModal } from "../reports/components/ReportConfigModal";
+import { useState } from "react"
 
 export default function ListUserPage() {
-
-
+    //Estado para el boton, si se clikea o no el boton de reporte
+    const [isReportModalOpen, setIsReportModalOpen] = useState(false)
   return (      
     
     <div className="p-6">
@@ -25,16 +26,15 @@ export default function ListUserPage() {
 
             <div className="flex gap-6">
 
-
-
                     <Button
                         variant="secondary" 
                         size="sm"
+                        onClick = {() => setIsReportModalOpen(true)}
                     >
                         Reporte
                     </Button>
 
-                <Link to="/dashboard">
+                  <Link to="/dashboard/user-create">
                     <Button
                         variant="primary"
                         size="sm"
@@ -51,6 +51,11 @@ export default function ListUserPage() {
         <DataTable
             data={users}
             columns={usersColumns}
+        />
+
+        <ReportConfigModal
+            isOpen={isReportModalOpen}
+            onClose={() => setIsReportModalOpen(false)}
         />
 
     </div>
