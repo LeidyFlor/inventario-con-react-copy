@@ -40,15 +40,14 @@ const router = createBrowserRouter([
             { path: "user-list", element: <ListUserPage /> }, 
             { path: "users/:id/edit", element: <EditUserPage /> },
             { path: "users/:id/view", element: <ViewUserPage /> }, 
+            { path: "consumable-material-create", element: <CreateConsumablePage /> },
+            { path: "consumable-material-list", element: <ListMaterialPage /> },
             { path: "returnable-material-create", element: <CreateReturnablePage /> },
             { path: "returnable-material-list", element: <ListReturnablePage /> },
             { path: "returnable-materials/:id/view", element: <ViewReturnablePage /> },
             { path: "returnable-materials/:id/edit", element: <h1>Ver material devolutivo</h1> },
-            
-            // Material de consumo
             { path: "consumable-material-create", element: <CreateConsumablePage /> },
-            { path: "consumable-material-list", element: <ListMaterialPage
-             /> }, 
+            { path: "consumable-material-list", element: <ListMaterialPage /> }, 
             { path: "materials/:id/edit", element: <EditConsumablePage/> },
             { path: "materials/:id/view", element: <ViewMaterialPage/> },
             
@@ -58,7 +57,7 @@ const router = createBrowserRouter([
             { path: "loan-create", element: <CreateLoanPage /> },
             { path: "loan-list", element: <ListLoanPage /> },
             { path: "loan-editar", element: <h1>Editar prestamo</h1> },
-            { path: "loan-ver", element: <h1>Ver prestamo</h1> },
+            { path: "loans/:id/view", element: <ViewLoanPage /> },
             { path: "loan-return", element: <ReturnLoan /> },
             { path: "loan-acept-return", element: <h1>Aceptar retono loan</h1> },
             { path: "permissions-list", element: <ListPermissionsPage /> },
