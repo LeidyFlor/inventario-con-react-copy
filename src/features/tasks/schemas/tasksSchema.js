@@ -24,22 +24,23 @@ export const tasksSchema = z
   .object({
     userType: z
     .string()
-    .max(1, "Solo se puede elegir un tipo de usuario"),
+    .min(1, "Debe seleccionar un usuario"),
 
     userName: z
     .string()
-    .max(1, "Solo se puede elegir un usuario individual"),
+    .min(1, "Debe seleccionar un tipo de usuario"),
 
     taskName: z
       .string()
       .min(5, "Nombre de la tarea muy corto")
       .max(30, "Título de la tarea muy larga"),
-    descripcionTarea: z
+
+    taskDescription: z
       .string()
       .min(5, "Es requerida una descripción de la tarea")
       .max(100, "Descripción de la tarea muy larga"),
 
-    estadoTarea: z
+    taskState: z
     .string()
     .min(1, "Debe seleccionar un estado para la tarea"),
 

@@ -142,7 +142,6 @@ export default function Header( { onMenuToggle } ) {
                                             Cerrar Sesión
                                         </Link>
                                     </DropdownItem>
-                                    
                                 </DropdownContent>
                             </Dropdown>
                         </div>

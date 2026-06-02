@@ -162,7 +162,7 @@ export default function TaskForm() {
                             type="date" 
                             name="taskDateStart" 
                             label = "Fecha inicio"
-                            className="w-[200px]"
+                            className="w-50"
                             labelInside
                             value={formData.taskDateStart}
                             onChange={handleChange}
@@ -173,7 +173,7 @@ export default function TaskForm() {
                             type="date" 
                             name="taskDateEnd"    
                             label="Fecha Fin"
-                            className="w-[200px]"
+                            className="w-50"
                             labelInside
                             value={formData.taskDateEnd}
                             onChange={handleChange}
