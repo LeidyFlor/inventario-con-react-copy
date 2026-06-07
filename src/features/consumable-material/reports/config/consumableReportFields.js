@@ -1,6 +1,6 @@
 export const consumableReportFields = [
     {
-        key: " materialBarcodeSena",
+        key: "materialBarcodeSena",
         label: "Placa sena",
         default: true,
     },

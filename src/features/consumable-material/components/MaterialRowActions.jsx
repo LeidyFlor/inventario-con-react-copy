@@ -50,24 +50,21 @@ export default function MaterialRowActions({ material }) {
     // Contenedor de los botones de acciones
     <div className="flex gap-2">
 
-
       {/* Botón editar */}
-      <button
+      <IconButtonReal
         onClick={handleEdit} // Ejecuta la navegación a la página de edición
-        className="p-1 rounded hover:bg-focus-border"
+        variant="outline"
       >
-        <Pencil size={16} /> {/* Icono de editar */}
-      </button>
-      <button
-        onClick={handleView} 
-        className="p-1 rounded hover:bg-focus-border"
+        <Pencil size={20} /> {/* Icono de editar */}
+      </IconButtonReal>
+
+      {/* Botón Visualizar */}
+      <IconButtonReal
+        onClick={handleView} // Ejecuta la navegación a la página de visualizar
+        variant="outline"
       >
-        <Eye size={16} /> {/* Icono de editar */}
-      </button>
-
-
-      
-
+        <Eye size={20} /> {/* Icono de visualizar */}
+      </IconButtonReal>
 
     </div>
   );
