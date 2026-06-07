@@ -59,7 +59,7 @@ const router = createBrowserRouter([
             { path: "brand-create", element: <CreateBrandPage /> },
             { path: "brand-list", element: <ListBrandPage /> },
             { path: "brand-edit", element: <h1>Editar marca</h1> },
-            { path: "task-create", element: <h1>Crear tarea</h1> },
+            { path: "task-create", element: <CreateTaskPage /> },
             { path: "task-list", element: <h1>Listar tareas</h1> },
             { path: "task-edit", element: <h1>Editar tarea</h1> },
             { path: "task-view", element: <h1>Modal ver tarea</h1> },

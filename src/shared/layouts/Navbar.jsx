@@ -153,7 +153,7 @@ export default function Navbar( { isOpen, onClose }){
                                         </Link>
                                     </DropdownItem>
                                     <DropdownItem>
-                                        <Link to="/auth" className="block w-full">
+                                        <Link to="task-create" className="block w-full">
                                             Gestión de tareas
                                         </Link>
                                     </DropdownItem>
