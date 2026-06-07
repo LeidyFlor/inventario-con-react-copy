@@ -5,7 +5,7 @@ import { Button } from "@/shared/"
 import { Link } from "react-router-dom"
 import { ClipboardList } from "lucide-react"
 import { useState } from "react"
-import { CreateConsumablePage, EditConsumablePage } from "@/features/consumable-material";
+import { CreateConsumablePage} from "@/features/consumable-material";
 import { ReportConfigModal } from "../reports/components/ReportConfigModal";
 
 

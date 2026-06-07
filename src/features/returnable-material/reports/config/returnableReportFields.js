@@ -1,4 +1,4 @@
-// Campos que se desean tener en el reporte
+2// Campos que se desean tener en el reporte
 export const returnableReportFields = [
   {
     key: "materialBarcodeSena",

@@ -67,7 +67,7 @@ export function ReportConfigModal({ isOpen, onClose }) {
             <div className="w-full max-w-lg rounded-xl bg-background p-6 shadow-lg">
                 {/* Título */}
                 <h2 className="mb-6 text-xl font-semibold">
-                    Generar reporte de usuarios
+                    Generar reporte de materiales
                 </h2>
 
                 {/* Selección de formato */}

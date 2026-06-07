@@ -67,7 +67,7 @@ export function ReportConfigModal({ isOpen, onClose }) {
             <div className="w-full max-w-lg rounded-xl bg-background p-6 shadow-lg">
                 {/* Título */}
                 <h2 className="mb-6 text-xl font-semibold">
-                    Generar reporte de usuarios
+                    Generar reporte de materiales
                 </h2>
 
                 {/* Selección de formato */}
@@ -114,7 +114,7 @@ export function ReportConfigModal({ isOpen, onClose }) {
                         value={scope}
                         onChange={(e) => setScope(e.target.value)}
                         options={[
-                            { label: "Todos los materiales devolutivos", value: "all" },
+                            { label: "Todos los materiales de consumo", value: "all" },
                             { label: "Filtrar por placa sena", value: "barcodeSena" },
                             { label: "Filtrar nombre del material", value: "name" },
                         ]}

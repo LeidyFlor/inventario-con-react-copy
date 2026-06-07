@@ -1,53 +1,53 @@
 export const consumableReportFields = [
     {
         key: " materialBarcodeSena",
-        label: "Nombre",
-        dafault: true,
+        label: "Placa sena",
+        default: true,
     },
     {
         key: "brandName",
-        label: "Email",
-        dafault: true,
+        label: "Marca",
+        default: true,
     },
     {
         key: "materialName",
-        label: "Tipo de Documento",
-        dafault: true,
+        label: "Nombre material",
+        default: true,
     },
     {
         key: "inventoryManger",
-        label: "Documento",
-        dafault: true,
+        label: "Cuentadante",
+        default: true,
     },
     {
         key: "materialDescription",
-        label: "Teléfono",
-        dafault: false,
+        label: "Descripción",
+        default: false,
     },
     {
         key: "materialState",
-        label: "Dirección",
-        dafault: false,
+        label: "Estado",
+        default: false,
     },
     {
         key: "materialQuantity",
-        label: "Dirección",
-        dafault: false,
+        label: "Cantidad",
+        default: false,
     },
     {
         key: "materialUnitPrice",
-        label: "Dirección",
-        dafault: false,
+        label: "Valor unitario",
+        default: false,
     },
     {
         key: "materialTotalPrice",
-        label: "Dirección",
-        dafault: false,
+        label: "Valor total",
+        default: false,
     },
     {
         key: "materialLocation",
-        label: "Dirección",
-        dafault: false,
+        label: "Ubicación",
+        default: false,
     },
    
 ];
