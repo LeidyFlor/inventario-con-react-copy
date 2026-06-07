@@ -2,10 +2,10 @@
 import { useState } from "react";
 
 // Configuración de campos disponibles para el reporte
-import { returnableReportFields } from "../config/returnableReportFields";
+import { consumableReportFields } from "../config/consumableReportFields";
 
 // Caso de uso que orquesta la generación del reporte
-import { generateReturnableReport } from "../services/generateReturnableReport";
+import { generateConsumableReport } from "../services/generateConsumableReport";
 
 // Componentes UI reutilizables (design system)
 import { Button, Input, Select, Checkbox } from "@/shared";
@@ -25,7 +25,7 @@ export function ReportConfigModal({ isOpen, onClose }) {
 
     // Estado de campos seleccionados (inicialización lazy)
     const [selectedFields, setSelectedFields] = useState(
-        () => returnableReportFields.filter((f) => f.default), // Solo campos marcados por defecto
+        () => consumableReportFields.filter((f) => f.default), // Solo campos marcados por defecto
     );
 
     // Control de render: si el modal no está abierto, no se monta en el DOM
@@ -48,7 +48,7 @@ export function ReportConfigModal({ isOpen, onClose }) {
     // Handler principal para generar el reporte
     const handleGenerateReport = () => {
         // Invoca el caso de uso con la configuración actual
-        generateReturnableReport({
+       generateConsumableReport({
             format,
             selectedFields,
             scope,
@@ -89,7 +89,7 @@ export function ReportConfigModal({ isOpen, onClose }) {
 
                     {/* Grid de checkboxes */}
                     <div className="grid grid-cols-2 gap-2">
-                        {returnableReportFields.map((field) => {
+                        {consumableReportFields.map((field) => {
                             // Determina si el campo está seleccionado
                             const checked = selectedFields.some((f) => f.key === field.key);
 
@@ -114,7 +114,7 @@ export function ReportConfigModal({ isOpen, onClose }) {
                         value={scope}
                         onChange={(e) => setScope(e.target.value)}
                         options={[
-                            { label: "Todos los materiales devolutivos", value: "all" },
+                            { label: "Todos los materiales de consumo", value: "all" },
                             { label: "Filtrar por placa sena", value: "barcodeSena" },
                             { label: "Filtrar nombre del material", value: "name" },
                         ]}

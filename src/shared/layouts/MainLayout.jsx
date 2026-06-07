@@ -4,7 +4,7 @@ import { CreateUserPage, EditUserPage } from "@/features/users";
 import { CreateBrandPage } from "@/features/brands";
 import { CreateLoanPage } from "@/features/loans";
 import { CreateTaskPage } from "@/features/tasks";
-import { CreateConsumablePage, EditConsumablePage } from "@/features/consumable-material";
+import { CreateConsumablePage } from "@/features/consumable-material";
 import { CreateReturnablePage, EditReturnablePage } from "@/features/returnable-material";
 import { LoginForm } from "@/features/auth";
 
