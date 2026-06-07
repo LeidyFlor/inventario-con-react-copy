@@ -47,13 +47,7 @@ const router = createBrowserRouter([
             { path: "returnable-materials/:id/view", element: <ViewReturnablePage /> },
             { path: "returnable-materials/:id/edit", element: <h1>Ver material devolutivo</h1> },
             { path: "consumable-material-create", element: <CreateConsumablePage /> },
-<<<<<<< HEAD
-            { path: "consumable-material-list", element: <ListMaterialPage
-             /> }, 
-=======
             { path: "consumable-material-list", element: <ListMaterialPage /> }, 
-            { path: "materials/:id/edit", element: <EditConsumablePage/> },
->>>>>>> 3336ac9f8e48e7ac1797145d4810bbc3feea0320
             { path: "materials/:id/view", element: <ViewMaterialPage/> },
             
 
