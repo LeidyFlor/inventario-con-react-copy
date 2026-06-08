@@ -1,49 +1,45 @@
 import { Input, Button, IconButton, Select } from "@/shared"
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { getUserTypes, getTaskState, getUserName } from "@/features/tasks/services/selectService";
 import { tasksSchema } from "../schemas/tasksSchema";
 import { Settings, Pencil } from "lucide-react";
 import { tasks } from "../data/tasks";
+import TaskEditModal from "./TaskEditModal";
 
 export default function TaskForm() {
     const [formData, setFormData] = useState({
+        userName: "",            
         userType: "",           
         taskName: "",            
         taskDescription: "",     
         taskState: "",           
         taskDateStart: "",       
         taskDateEnd: "",         
-        userName: "",            
     });
-
     const [errors, setErrors] = useState({});
     const [userTypes, setUserTypes] = useState([]);
     const [taskState, setTaskState] = useState([]);
     const [userName, setUserNameState] = useState([]);
-    const [displayedTasks, setDisplayedTasks] = useState(tasks);
+    const [taskList, setTaskList] = useState(tasks);
+    const [selectedTask, setSelectedTask] = useState(null);
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
+    // Carga los datos de los selects solo una vez al montar el componente.
+    // Estos datos sirven para mostrar las opciones de usuario, tipo de usuario
+    // y estado de tarea en los campos del formulario.
     useEffect(() => {
-        getUserTypes().then(setUserTypes);
-        getTaskState().then(setTaskState);
-        getUserName().then(setUserNameState);
-        // Inicializar tarjetas
-        setDisplayedTasks(tasks);
-    }, []); // [] → sin dependencias, se ejecuta solo una vez
-    
-    // Filtrar tareas según usuario o tipo de usuario seleccionado
-    useEffect(() => {
-        let filtered = tasks;
-        
-        if (formData.userName) {
-            filtered = filtered.filter(task => task.userName === formData.userName);
-        }
-        
-        if (formData.userType) {
-            filtered = filtered.filter(task => task.userType === formData.userType);
-        }
-        
-        setDisplayedTasks(filtered);
-    }, [formData.userName, formData.userType]);
+        getUserTypes().then((data) => setUserTypes(data.map((item) => ({ label: item.label, value: item.label }))));
+        getTaskState().then((data) => setTaskState(data.map((item) => ({ label: item.label, value: item.label }))));
+        getUserName().then((data) => setUserNameState(data.map((item) => ({ label: item.label, value: item.label }))));
+    }, []);
+
+    // Tareas a mostrar en pantalla según el filtro de usuario y tipo de usuario.
+    // No usamos useMemo aquí para que quede más simple y fácil de entender.
+    const displayedTasks = taskList.filter((task) => {
+        if (formData.userName && task.userName !== formData.userName) return false;
+        if (formData.userType && task.userType !== formData.userType) return false;
+        return true;
+    });
 
     const handleChange = (e) => {
         // Se obtiene el nombre del campo y su valor
@@ -97,6 +93,21 @@ export default function TaskForm() {
         console.log("Usuario valido:", result.data);
     };
 
+    const handleOpenEditModal = (task) => {
+        setSelectedTask(task);
+        setIsEditModalOpen(true);
+    };
+
+    const handleCloseEditModal = () => {
+        setSelectedTask(null);
+        setIsEditModalOpen(false);
+    };
+
+    const handleSaveTask = (updatedTask) => {
+        setTaskList((prev) => prev.map((task) => task.id === updatedTask.id ? updatedTask : task));
+        handleCloseEditModal();
+    };
+
     return (
         <div className="w-full flex justify-center relative">
 
@@ -137,7 +148,7 @@ export default function TaskForm() {
 
                     <div className="flex gap-6 flex-wrap justify-center lg:justify-start">
                         <Button variant="primary" size="sm">Nuevo grupo</Button>
-                        <Button variant="primary" size="sm">Nueva marca</Button>
+                        <Button variant="primary" size="sm">Nuevo usuario</Button>
                     </div>
 
                     {/* Sección agregar tarea */}
@@ -219,21 +230,21 @@ export default function TaskForm() {
                     {/* Título */}
                     <div className="flex flex-col items-center max-w-max mx-auto mb-2">
                         <div className="flex items-center gap-2 pb-0.5">
-                            <Settings size={30} className="text-gradient-title" />
+                            <Settings size={30} className="text-brand" />
                             <h1 className="text-gradient-title text-h2">Gestión de tareas</h1>
                         </div>
                         <div className="h-0.5 bg-gradiant-title-line w-full"></div>
                     </div>
 
                     {/* Contenedor de tarjetas con scroll */}
-                    <div className="flex flex-col gap-2 overflow-y-auto max-h-150 w-full">
+                    <div className="flex flex-col gap-2 overflow-y-auto max-h-150 w-full bg">
                         {displayedTasks && displayedTasks.length > 0 ? (
                             displayedTasks.map((task) => {
 
                                 // Color dinámico según estado
                                 const stateColor = {
                                     "Pendiente":   "text-text-muted",
-                                    "En progreso": "text-warning",
+                                    "En progreso": "text-boton-fill-color-secondary",
                                     "Completada":  "text-success",
                                     "Cancelada":   "text-error",
                                 }[task.taskState] ?? "text-color-text-primary";
@@ -247,39 +258,56 @@ export default function TaskForm() {
                                 };
 
                                 return (
-                                   <div key={task.id} className="flex flex-col md:flex-row w-full rounded-2xl overflow-hidden border-2 border-primary-300 bg-color-background min-h-40">
+                                   <div key={task.id} className="flex flex-col w-full rounded-2xl border-2 border-primary-300 bg-surface p-4 gap-4">
 
-                                        <div className="flex flex-col gap-2 p-4 bg-primary-50 md:w-[45%] w-full justify-start">
-                                            <h3 className="font-bold text-base to-background-image-text-gradient">
-                                                Tarea: {task.taskName}
-                                            </h3>
-                                            <div className="flex items-center gap-2">
-                                                <span className="text-sm text-pri">Estado:</span>
-                                                <span className={`text-sm font-medium ${stateColor}`}>
-                                                    {task.taskState}
-                                                </span>
-                                                <Pencil size={14} className="cursor-pointer" />
+                                        <div className="grid grid-cols-1 md:grid-cols-[45%_55%] gap-4 items-start">
+                                            {/* Columna izquierda: título + fechas */}
+                                            <div className="flex flex-col gap-2 bg-primary-50 w-full p-3 rounded-xl">
+                                                <h3 className="font-bold text-base to-background-image-text-gradient">
+                                                    Tarea: {task.taskName}
+                                                </h3>
+
+                                                <div className="flex items-center gap-2">
+                                                    <span className="text-sm">Usuario:</span>
+                                                    <span className="text-sm font-medium">
+                                                        {task.userType}
+                                                    </span>
+                                                </div>
+                                                <div className="flex items-center gap-2">
+                                                    <span className="text-sm text-pri">Estado:</span>
+                                                    <span className={`text-sm font-medium ${stateColor}`}>
+                                                        {task.taskState}
+                                                    </span>
+                                                </div>
+                                                <div className="flex items-center gap-2">
+                                                    <span className="text-sm text-text-color-secondary">Fecha inicio: {formatDate(task.taskDateStart)}</span>
+                                                </div>
+                                                <div className="flex items-center gap-2">
+                                                    <span className="text-sm text-color-text-secondary">Fecha Fin: {formatDate(task.taskDateEnd)}</span>
+                                                </div>
                                             </div>
-                                            <div className="flex items-center gap-2">
-                                                <span className="text-sm text-text-color-secondary">Fecha inicio: {formatDate(task.taskDateStart)}</span>
-                                                <Pencil size={14} className="cursor-pointer" />
-                                            </div>
-                                            <div className="flex items-center gap-2">
-                                                <span className="text-sm text-color-text-secondary">Fecha Fin: {formatDate(task.taskDateEnd)}</span>
-                                                <Pencil size={14} className="cursor-pointer" />
+
+                                            {/* Columna derecha: descripción */}
+                                            <div className="flex flex-col gap-2 w-full bg-color-background p-3 rounded-xl">
+                                                <div className="flex items-center gap-2">
+                                                    <span className="font-bold text-sm text-text-primary">Descripción:</span>
+                                                </div>
+                                                {(() => {
+                                                    const scroll = task.taskDescription && task.taskDescription.length > 20;
+                                                    return (
+                                                        <p className={`text-sm ${scroll ? 'overflow-y-auto max-h-24' : ''}`}>
+                                                            {task.taskDescription}
+                                                        </p>
+                                                    );
+                                                })()}
                                             </div>
                                         </div>
 
-                                        <div className="flex flex-col gap-2 p-4 md:w-[55%] w-full bg-color-background">
-                                            <div className="flex items-center gap-2">
-                                                <span className="font-bold text-sm text-text-primary">Descripción:</span>
-                                                <Pencil size={14} className="text-color-text-muted cursor-pointer" />
-                                            </div>
-                                            <p className=" text-sm overflow-y-auto max-h-20">
-                                                {task.taskDescription}
-                                            </p>
+                                        <div className="w-full flex justify-end mt-2">
+                                            <Button type="button" variant="warning" size="md" onClick={() => handleOpenEditModal(task)}>
+                                                Editar
+                                            </Button>
                                         </div>
-
                                     </div>
                                 );
                             })
@@ -295,6 +323,21 @@ export default function TaskForm() {
                     </div>
                 </div>
             </div>
+            {/*
+                El key aquí fuerza que el modal se remonte cuando cambia la tarea seleccionada
+                o cuando se abre/cierra. Así, el estado interno del formulario se inicializa
+                siempre con los datos de la tarea que se va a editar.
+            */}
+            <TaskEditModal
+                key={`${selectedTask?.id}-${isEditModalOpen}`}
+                isOpen={isEditModalOpen}
+                onClose={handleCloseEditModal}
+                task={selectedTask}
+                userTypes={userTypes}
+                userNames={userName}
+                taskStates={taskState}
+                onSave={handleSaveTask}
+            />
         </div>
     );
 }
