@@ -9,7 +9,7 @@ export default function ViewMaterialPage(){
 
     const material = materials.find(u => u.id === Number(id)); // 👈 busca el usuario, se convierte string a nummero, useParas siempre devulve string
 
-    if (!material) return <p>material no encontrado</p>;
+    if (!material) return <p>Material no encontrado</p>;
 
     const handleEdit = () => {
         navigate(`/dashboard/materials/${material.id}/edit`);
@@ -27,7 +27,7 @@ export default function ViewMaterialPage(){
     return(
 
             <ViewPageTemplate
-                title="visualizar material de consumo"
+                title="Visualizar material de consumo"
                 icon={<Cable className="text-brand"/>}
                 image={material.foto}
                 name={material.materialName}

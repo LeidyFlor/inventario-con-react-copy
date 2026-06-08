@@ -30,7 +30,7 @@ export default function MaterialRowActions({ material }) {
   // Acción para editar el usuario
   // Redirige a la página de edición usando el id del usuario
   const handleEdit = () => {
-    navigate(`/materials/${material.id}/edit`);
+    navigate(`/dashboard/consumable-materials/${material.id}/edit`);
   };
 
    const handleView = () => {

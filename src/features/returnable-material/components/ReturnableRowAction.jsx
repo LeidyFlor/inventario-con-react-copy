@@ -25,7 +25,7 @@ export default function ReturnableRowActions({ returnable }) {
     // Acción para editar el usuario
     // Redirige a la página de edición usando el id del material
     const handleEdit = () => {
-        navigate(`/returnable-materials/${returnable.id}/edit`);
+        navigate(`/dashboard/returnable-materials/${returnable.id}/edit`);
     }; 
     const handleView = () => {
         navigate(`/dashboard/returnable-materials/${returnable.id}/view`);
