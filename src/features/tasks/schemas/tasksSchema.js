@@ -38,7 +38,7 @@ export const tasksSchema = z
     taskDescription: z
       .string()
       .min(5, "Es requerida una descripción de la tarea")
-      .max(100, "Descripción de la tarea muy larga"),
+      .max(254, "Descripción de la tarea muy larga"),
 
     taskState: z
     .string()

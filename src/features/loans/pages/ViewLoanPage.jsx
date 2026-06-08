@@ -52,7 +52,7 @@ export default function ViewLoanPage() {
                 </button>
             </div>
         );
-    } 
+    }
 
     return (
         <div className="flex flex-col place-items-center justify-items-center gap-6 w-full">
@@ -67,7 +67,7 @@ export default function ViewLoanPage() {
                         </h3>
                         <div className="h-0.5 bg-gradiant-title-line"></div>
                     </div>
-
+        
                     <Button variant="warning" size="sm" onClick={handleEdit}>
                         Editar
                     </Button>

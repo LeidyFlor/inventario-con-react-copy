@@ -84,7 +84,7 @@ export default function NewLoanForm() {
                 {/* Título */}
                 <div className="mb-6 max-w-max">
                     <h1 className="text-gradient-title text-h3 pb-0.5 flex items-center gap-3">
-                        <FilePlus2 className="size-8 md:size-10 text-brand"/>
+                        <FilePlus2 className="text-brand"/>
                         Nuevo préstamo
                     </h1>
                     <div className="h-0.5 bg-gradiant-title-line"></div>
