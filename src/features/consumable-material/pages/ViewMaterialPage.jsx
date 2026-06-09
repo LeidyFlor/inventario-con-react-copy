@@ -12,7 +12,7 @@ export default function ViewMaterialPage(){
     if (!material) return <p>Material no encontrado</p>;
 
     const handleEdit = () => {
-        navigate(`/dashboard/materials/${material.id}/edit`);
+        navigate(`/dashboard/consumable-materials/${material.id}/edit`);
     };
     //Convierte fecha de formato ISO a fecha legible
     const formatDate = (dateString) => {

@@ -1,4 +1,4 @@
-import { Input, Button, IconButton, Select, StatusSwitch } from "@/shared";
+import { Input, Button, IconButton, Select, StatusSwitch, FileInput } from "@/shared";
 import React, { useState, useEffect } from "react";
 import { getMaterialCategory, getMaterialState, getUserName, getBrandName } from "@/features/returnable-material/services/selectService.js";
 import { returnableMaterialSchema } from "../schemas/returnableMaterialSchema";
@@ -26,6 +26,8 @@ export default function ReturnableEditForm() {
         returnableMaterialSerial: material?.returnableMaterialSerial ?? "",
         returnableMaterialCategory: material?.returnableMaterialCategory ?? "",
         returnableMaterialDimensions: material?.returnableMaterialDimensions ?? "",
+        //Campo implementado
+        materialImage: material?.materialImage ?? [],
     });
 
     const [isActive, setIsActive] = useState(material?.is_active ?? true);
@@ -34,6 +36,8 @@ export default function ReturnableEditForm() {
     const [materialState, setMaterialState] = useState([]);
     const [userName, setUserName] = useState([]);
     const [brandName, setBrandName] = useState([]);
+    const [imagen, setImagen] = useState(material?.materialImage ?? null);
+    const [showFileInput, setShowFileInput] = useState(false);
 
     useEffect(() => {
         getMaterialCategory().then(setMaterialCategory);
@@ -102,10 +106,51 @@ export default function ReturnableEditForm() {
                 >
                     {/* Contenedor izquierdo */}
                     <div className="flex flex-col gap-4 place-items-center">
-                        <div className="w-48 h-48 rounded-lg flex items-center justify-center bg-surface border-2 border-input-border">
-                            <span className="text-2xl font-bold">
-                                {material.materialName?.charAt(0).toUpperCase()}
-                            </span>
+
+                        {/* Para cuando haga el cambio, y agregar la imagen */}
+                        <div className="flex flex-col gap-4 place-items-center">
+                            <h2 className="w-80">Puede subir 1 archivo, archivos permitidos: PDF, PNG, JPG. Máximo de 10MB</h2>
+
+                            {imagen ? (
+                                <img
+                                    src={imagen}
+                                    alt={material.materialName}
+                                    className="w-48 h-48 object-cover rounded-lg"
+                                />
+                            ) : (
+                                <div className="w-48 h-48 rounded-lg flex items-center justify-center bg-surface border-2 border-input-border">
+                                    <span className="text-2xl font-bold">
+                                        {material.materialName?.charAt(0).toUpperCase()}
+                                    </span>
+                                </div>
+                            )}
+
+                            {!showFileInput ? (
+                                <Button
+                                    variant="primary"
+                                    size="sm"
+                                    type="button"
+                                    onClick={() => setShowFileInput(true)}
+                                >
+                                    Cambiar imagen
+                                </Button>
+                            ) : (
+                                <FileInput
+                                    value={formData.materialImage ?? []}
+                                    onChange={(files) => {
+                                        setFormData(prev => ({ ...prev, materialImage: files }));
+                                        if (files.length > 0) {
+                                            setImagen(URL.createObjectURL(files[0]));
+                                            setShowFileInput(false);
+                                        }
+                                    }}
+                                    multiple={false}
+                                />
+                            )}
+
+                            {errors.materialImage && (
+                                <span className="text-red-800 text-sm">{errors.materialImage}</span>
+                            )}
                         </div>
 
                         <Input
@@ -138,7 +183,7 @@ export default function ReturnableEditForm() {
 
                     {/* Contenedor derecho */}
                     <div className="grid grid-cols-dense items-center gap-10 bg-background border-2 border-border-edit-informaion p-8 rounded-xl">
-                        <div className="md:grid md:grid-cols-[220px_1fr] grid auto-cols items-center gap-4">
+                        <div className="md:grid md:grid-cols-[130px_1fr] grid auto-cols items-center gap-4">
 
                             <p className="parrafo-edit-style">Placa SENA:</p>
                             <Input
