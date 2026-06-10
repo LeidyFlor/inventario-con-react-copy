@@ -4,7 +4,7 @@ import { CreateUserPage, EditUserPage, ListUserPage, ViewUserPage } from "@/feat
 import { CreateBrandPage, ListBrandPage } from "@/features/brands";
 import { CreateLoanPage, ReturnLoan, ApproveReturnLoan, ListLoanPage, ViewLoanPage } from "@/features/loans";
 import { CreateTaskPage } from "@/features/tasks";
-import { CreateConsumablePage, ListMaterialPage, ViewMaterialPage } from "@/features/consumable-material";
+import { CreateConsumablePage, ListMaterialPage, ViewMaterialPage , EditConsumablePage} from "@/features/consumable-material";
 import { CreateReturnablePage, EditReturnablePage, ListReturnablePage, ViewReturnablePage } from "@/features/returnable-material";
 import { ListPermissionsPage } from "@/features/permissions";
 import { LoginForm, LoginRestorePassword, LoginRestorePasswordCode, LoginRestoreNewPassword } from "@/features/auth";
@@ -42,10 +42,11 @@ const router = createBrowserRouter([
             { path: "users/:id/view", element: <ViewUserPage /> }, 
             { path: "consumable-material-create", element: <CreateConsumablePage /> },
             { path: "consumable-material-list", element: <ListMaterialPage /> },
+            { path: "consumable-materials/:id/edit", element: <EditConsumablePage/> },
             { path: "returnable-material-create", element: <CreateReturnablePage /> },
             { path: "returnable-material-list", element: <ListReturnablePage /> },
             { path: "returnable-materials/:id/view", element: <ViewReturnablePage /> },
-            { path: "returnable-materials/:id/edit", element: <h1>Ver material devolutivo</h1> },
+            { path: "returnable-materials/:id/edit", element: <EditReturnablePage/> },
             { path: "consumable-material-create", element: <CreateConsumablePage /> },
             { path: "consumable-material-list", element: <ListMaterialPage /> }, 
             { path: "materials/:id/view", element: <ViewMaterialPage/> },

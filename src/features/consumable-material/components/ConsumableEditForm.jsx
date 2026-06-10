@@ -1,15 +1,14 @@
 import { Input, Button, IconButton, Select, StatusSwitch, FileInput } from "@/shared";
-import React, { useState, useEffect } from "react";
-import { getMaterialCategory, getMaterialState, getUserName, getBrandName } from "@/features/returnable-material/services/selectService.js";
-import { returnableMaterialSchema } from "../schemas/returnableMaterialSchema";
+import React, { useState } from "react";
+import { consumableMaterialShema } from "../schemas/consumableMaterialShema.js";
 import { useParams, useNavigate } from "react-router-dom";
-import { returnableMaterial } from "../data/retrunableMaterial";
+import { materials } from "../data/materials.js";
 import { FilePenLine } from "lucide-react";
 
-export default function ReturnableEditForm() {
+export default function ConsumableEditForm() {
     const { id } = useParams();
     const navigate = useNavigate();
-    const material = returnableMaterial.find((m) => m.id === Number(id));
+    const material = materials.find((m) => m.id === Number(id));
 
     const [formData, setFormData] = useState({
         materialBarcodeSena: material?.materialBarcodeSena ?? "",
@@ -23,28 +22,21 @@ export default function ReturnableEditForm() {
         materialUnitPrice: material?.materialUnitPrice ?? "",
         materialTotalPrice: material?.materialTotalPrice ?? "",
         materialLocation: material?.materialLocation ?? "",
-        returnableMaterialSerial: material?.returnableMaterialSerial ?? "",
-        returnableMaterialCategory: material?.returnableMaterialCategory ?? "",
-        returnableMaterialDimensions: material?.returnableMaterialDimensions ?? "",
-        //Campo implementado
         materialImage: material?.materialImage ?? [],
+        is_active: material?.is_active ?? true,
     });
 
     const [isActive, setIsActive] = useState(material?.is_active ?? true);
     const [errors, setErrors] = useState({});
-    const [materialCategory, setMaterialCategory] = useState([]);
-    const [materialState, setMaterialState] = useState([]);
-    const [userName, setUserName] = useState([]);
-    const [brandName, setBrandName] = useState([]);
     const [imagen, setImagen] = useState(material?.materialImage ?? null);
     const [showFileInput, setShowFileInput] = useState(false);
 
-    useEffect(() => {
-        getMaterialCategory().then(setMaterialCategory);
-        getMaterialState().then(setMaterialState);
-        getUserName().then(setUserName);
-        getBrandName().then(setBrandName);
-    }, []);
+    const materialStateOptions = [
+        { value: "Disponible", label: "Disponible" },
+        { value: "Agotado", label: "Agotado" },
+        { value: "En revisión", label: "En revisión" },
+        { value: "Dado de baja", label: "Dado de baja" },
+    ];
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -65,7 +57,7 @@ export default function ReturnableEditForm() {
             is_active: isActive,
         };
 
-        const result = returnableMaterialSchema.safeParse(parsedData);
+        const result = consumableMaterialShema.safeParse(parsedData);
 
         if (!result.success) {
             const fieldErrors = {};
@@ -86,15 +78,11 @@ export default function ReturnableEditForm() {
 
     return (
         <div className="flex flex-col place-items-center justify-items-center w-full">
-
-            {/* Contenedor verde */}
             <div className="bg-gradient-container-green border-4 border-border-green-container p-6 rounded-4xl w-fit md:w-full mt-2">
-
-                {/* Contenedor del título y la línea */}
                 <div className="mb-6 max-w-max">
                     <h1 className="flex gap-2 text-gradient-title text-h3 pb-0.5">
                         <FilePenLine className="text-brand" />
-                        Editar material devolutivo
+                        Editar material de consumo
                     </h1>
                     <div className="h-0.5 bg-gradiant-title-line"></div>
                 </div>
@@ -107,10 +95,11 @@ export default function ReturnableEditForm() {
                     {/* Contenedor izquierdo */}
                     <div className="flex flex-col gap-4 place-items-center">
 
-                        {/* Para cuando haga el cambio, y agregar la imagen */}
+                        {/* Contenedor imagen */}
                         <div className="flex flex-col gap-4 place-items-center">
                             <h2 className="w-80">Puede subir 1 archivo, archivos permitidos: PDF, PNG, JPG. Máximo de 10MB</h2>
 
+                            {/* Imagen actual o inicial con letra */}
                             {imagen ? (
                                 <img
                                     src={imagen}
@@ -125,6 +114,7 @@ export default function ReturnableEditForm() {
                                 </div>
                             )}
 
+                            {/* Botón OR FileInput — nunca los dos a la vez */}
                             {!showFileInput ? (
                                 <Button
                                     variant="primary"
@@ -166,7 +156,7 @@ export default function ReturnableEditForm() {
                             value={formData.materialDescription}
                             onChange={handleChange}
                             error={errors.materialDescription}
-                            variant="nameEdit"
+                            variant="isEdit"
                         />
 
                         <div className="flex items-center gap-4">
@@ -185,7 +175,7 @@ export default function ReturnableEditForm() {
                     <div className="grid grid-cols-dense items-center gap-10 bg-background border-2 border-border-edit-informaion p-8 rounded-xl">
                         <div className="md:grid md:grid-cols-[130px_1fr] grid auto-cols items-center gap-4">
 
-                            <p className="parrafo-edit-style">Placa SENA:</p>
+                            <p className="parrafo-edit-style">Placa Sena:</p>
                             <Input
                                 name="materialBarcodeSena"
                                 value={formData.materialBarcodeSena}
@@ -194,19 +184,8 @@ export default function ReturnableEditForm() {
                                 variant="isEdit"
                             />
 
-                            <p className="parrafo-edit-style">Categoría:</p>
-                            <Select
-                                options={materialCategory}
-                                name="returnableMaterialCategory"
-                                value={formData.returnableMaterialCategory}
-                                onChange={handleChange}
-                                error={errors.returnableMaterialCategory}
-                                variant="isEdit"
-                            />
-
                             <p className="parrafo-edit-style">Marca:</p>
-                            <Select
-                                options={brandName}
+                            <Input
                                 name="brandName"
                                 value={formData.brandName}
                                 onChange={handleChange}
@@ -223,18 +202,8 @@ export default function ReturnableEditForm() {
                                 variant="isEdit"
                             />
 
-                            <p className="parrafo-edit-style">Serial:</p>
-                            <Input
-                                name="returnableMaterialSerial"
-                                value={formData.returnableMaterialSerial}
-                                onChange={handleChange}
-                                error={errors.returnableMaterialSerial}
-                                variant="isEdit"
-                            />
-
                             <p className="parrafo-edit-style">Cuentadante:</p>
-                            <Select
-                                options={userName}
+                            <Input
                                 name="inventoryManger"
                                 value={formData.inventoryManger}
                                 onChange={handleChange}
@@ -252,7 +221,7 @@ export default function ReturnableEditForm() {
                                 variant="isEdit"
                             />
 
-                            <p className="parrafo-edit-style">Valor unitario:</p>
+                            <p className="parrafo-edit-style">Precio unitario:</p>
                             <Input
                                 type="number"
                                 name="materialUnitPrice"
@@ -262,7 +231,7 @@ export default function ReturnableEditForm() {
                                 variant="isEdit"
                             />
 
-                            <p className="parrafo-edit-style">Valor total:</p>
+                            <p className="parrafo-edit-style">Precio total:</p>
                             <Input
                                 type="number"
                                 name="materialTotalPrice"
@@ -272,17 +241,25 @@ export default function ReturnableEditForm() {
                                 variant="isEdit"
                             />
 
+                            <p className="parrafo-edit-style">Ubicación:</p>
+                            <Input
+                                name="materialLocation"
+                                value={formData.materialLocation}
+                                onChange={handleChange}
+                                error={errors.materialLocation}
+                                variant="isEdit"
+                            />
+
                             <p className="parrafo-edit-style">Estado:</p>
                             <Select
-                                options={materialState}
                                 name="materialState"
+                                options={materialStateOptions}
                                 value={formData.materialState}
                                 onChange={handleChange}
                                 error={errors.materialState}
                                 variant="isEdit"
                             />
 
-                            {/* Botones de acción */}
                             <div className="place-items-start">
                                 <Button
                                     variant="secondary"
