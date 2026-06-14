@@ -23,7 +23,7 @@ export default function Input({
     // cuerpo de la funcion
     return (
         //Contenedor del input que se exporta con label, cuerpo y feedback message
-        <div className={`${isDate ? "w-fit" : "w-full"} ${className}`}>
+        <div className={`w-full ${className}`}>
             {/* Label  Por fuera*/}
             {/* LABEL. JWT evalua si tal es 1, si si lo hace  */}
 
@@ -50,7 +50,7 @@ export default function Input({
                 h-12
                 flex
                 items-center
-                ${isDate ? "w-fit" : ""} 
+                w-full
             `}>
                 {/* Area interactiva invisibe de un input  48px*/}
 
@@ -79,14 +79,12 @@ export default function Input({
                     size={isDate ? 12: undefined}
                     className={`
                         relative
-                        ${isDate ? "w-auto" : "w-full"}
+                        w-full
                         h-12
                         px-4
-                        
                         transition-all duration-300
                         ${variants[variant]}
                         ${error ? "border-2 border-red-800" : "text-text-primary" }
-
                          ${labelInside && label
                             // Con label dentro: padding superior para dejar espacio al label
                             ? "px-4 pt-4 pb-1"
@@ -107,7 +105,6 @@ export default function Input({
                         top-2
                         left-4
                         text-caption
-                        text-text-primary
                         pointer-events-none
                         ${error ? "text-error" : "text-text-primary" }
                     `}>

@@ -1,8 +1,26 @@
 import { Drill, ClipboardList, Router, ToolCase, Cable, Settings, LogOut } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { IconButtonReal, Dropdown, DropdownContent, DropdownItem, DropdownTrigger, Button } from "@/shared";
+import { logout } from "@/features/auth/services/logoutService.js";
+import { Alert } from "@/shared";
 
 export default function Navbar( { isOpen, onClose }){
+    const navigate = useNavigate()
+    // handle de logout
+    const handleLogOut = async () => {
+        const result = await Alert.confirm("Cierre de sesión", "¿Está seguro que desea cerrar sesión?")
+        if (result.isConfirmed){
+            try {
+                await logout()
+                navigate("/auth")
+            } catch (error) {
+                console.error("Error al cerrar sesión:", error)
+                // Igual navegamos aunque falle el backend
+                sessionStorage.removeItem("token")
+                navigate("/auth")
+            }
+        }
+    };
     return(
         <nav className={`
             fixed 
@@ -83,11 +101,6 @@ export default function Navbar( { isOpen, onClose }){
                                             Generar reporte material devolutivo
                                         </Link>
                                     </DropdownItem>
-                                    <DropdownItem>
-                                        <Link to="returnable-material-edit" className="block w-full">
-                                            Editar material
-                                        </Link>
-                                    </DropdownItem>
 
                                 </DropdownContent>
                             </Dropdown>
@@ -159,14 +172,11 @@ export default function Navbar( { isOpen, onClose }){
                                 </DropdownContent>
                             </Dropdown>
                         </div>
-                            <div className="">
-                                <Link to="/auth">
+                            <div onClick={handleLogOut}>
                                     <IconButtonReal className="py-8 px-8" hitSize="50" label="Cerrar sesión" arialLabel="Menu de configuración" variant="primary" >
                                         <LogOut />
 
                                     </IconButtonReal>
-                                </Link>
-
                             </div>
                     </div>
 

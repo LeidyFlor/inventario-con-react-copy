@@ -112,10 +112,19 @@ export default function TaskForm() {
         <div className="w-full flex justify-center relative">
 
             {/* Layout responsivo: en móvil una columna; en lg mantiene columna fija + contenido */}
-            <div className="grid grid-cols-1 lg:grid-cols-[420px_1fr] gap-6 mt-3 w-full max-w-5xl mx-auto px-4">
+            <div className="grid grid-cols-1 lg:grid-cols-[420px_1fr] gap-6 mt-3 w-full max-w-7xl mx-auto px-4">
 
                 {/* Columna izquierda — Formulario*/}
                 <form className="flex flex-col items-center lg:items-start gap-4 w-full sm:w-80 mx-auto lg:mx-0" onSubmit={handleSubmit} noValidate>
+
+                    {/* Título */}
+                    <div className="flex flex-col max-w-max mx-auto mb-2">
+                        <div className="flex items-center gap-2 pb-0.5">
+                            <Settings size={24} className="text-brand" />
+                            <h1 className="text-gradient-title text-h2">Gestión de tareas</h1>
+                        </div>
+                        <div className="h-0.5 bg-gradiant-title-line w-full"></div>
+                    </div>
 
                     {/* Sección usuario  */}
                     <div className="flex flex-col items-center w-fit lg:self-center">
@@ -184,9 +193,6 @@ export default function TaskForm() {
                         onChange={handleChange}
                         error={errors.taskState}
                     />
-
-                    {/* Fechas: se usa type="date" para que el navegador muestre el selector de fecha */}
-                    <div className="flex flex-row gap-2 sm:gap-3 w-full justify-between sm:justify-start">
                         <Input
                             placeholder="DD/MM/AAAA"
                             type="date"
@@ -209,7 +215,7 @@ export default function TaskForm() {
                             onChange={handleChange}
                             error={errors.taskDateEnd}
                         />
-                    </div>
+
 
                     <div className="w-full flex justify-center">
                         <IconButton
@@ -225,19 +231,10 @@ export default function TaskForm() {
 
                 {/*Columna derecha — Tarjetas de tareas*/}
 
-                <div className="flex flex-col gap-4">
-
-                    {/* Título */}
-                    <div className="flex flex-col items-center max-w-max mx-auto mb-2">
-                        <div className="flex items-center gap-2 pb-0.5">
-                            <Settings size={30} className="text-brand" />
-                            <h1 className="text-gradient-title text-h2">Gestión de tareas</h1>
-                        </div>
-                        <div className="h-0.5 bg-gradiant-title-line w-full"></div>
-                    </div>
+                <div className="w-full flex flex-col gap-2 h-auto overflow-y-visible lg:h-0 lg:min-h-full">
 
                     {/* Contenedor de tarjetas con scroll */}
-                    <div className="flex flex-col gap-2 overflow-y-auto max-h-150 w-full bg">
+                    <div className="flex flex-col gap-2 overflow-y-auto w-full flex-1 min-h-0 pr-1">
                         {displayedTasks && displayedTasks.length > 0 ? (
                             displayedTasks.map((task) => {
 

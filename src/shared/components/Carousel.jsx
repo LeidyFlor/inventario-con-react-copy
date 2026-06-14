@@ -35,7 +35,7 @@ export default function Carousel() {
                         <img
                             src={slide.src}
                             alt={slide.alt}
-                            className="w-full h-75 md:h-125 object-cover "
+                            className="w-full h-75 md:h-100 object-cover "
                         />
                         <div className="absolute bottom-0 left-0 right-0 bg-linear-to-t from-black/80 to-transparent px-5 py-4">
                             <p className="text-white font-body text-h3">{slide.caption}</p>
@@ -66,7 +66,7 @@ export default function Carousel() {
                     <button
                         key={i}
                         onClick={() => goTo(i)}
-                        className={`h-3 rounded-full transition-all duration-300 ${i === current ? "w-3 bg-brand-hover" : "w-5 bg-brand-soft"
+                        className={`h-3 rounded-full transition-all duration-300 ${i === current ? "w-3 bg-brand-hover" : "w-5 bg-brand-soft cursor-pointer"
                             }`}
                         aria-label={`Ir a la imagen ${i + 1}`}
                     />

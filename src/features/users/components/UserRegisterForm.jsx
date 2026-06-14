@@ -1,4 +1,4 @@
-import { Input, Button, IconButton, Select, StatusSwitch } from "@/shared"
+import { Input, Button, IconButton, Select, StatusSwitch, FileInput } from "@/shared"
 import React, {useState, useEffect} from "react";
 import { getDocumentTypes, getUserTypes } from "@/features/users/services/selectService";
 import { userShema } from "../schemas/userShema.js";
@@ -7,7 +7,8 @@ import { UserRoundPlus } from "lucide-react";
 export default function UserRegisterForm() {
     const [formData, setFormData] = useState({
         userDocument: "",
-        userName: "",
+        First_name: "",
+        Last_name: "",
         userEmail: "",
         userEmail2: "",
         userAddres:"",
@@ -16,10 +17,11 @@ export default function UserRegisterForm() {
         userPassword: "",
         userType: "",
         userDocumentType: "",
-        userEmailConfir: "",
         userDateEnd: "",
         userDateStart: "",
         is_active: true,
+        is_accountant: false,
+        userImage: []
     });
     const [errors, setErrors] = useState({});
     // useState que me trae el arreglo mediante el get en servicios
@@ -117,7 +119,7 @@ export default function UserRegisterForm() {
                 <form className="grid grid-cols-1 w-fit items-center justify-center gap-10 " onSubmit={handleSubmit} noValidate>
                     {/* noValidate es para quitar las validaciones automaticas de html del navegador */}
                     {/* Inputs */}
-                    <div className="lg:grid lg:grid-cols-3 md:grid md:grid-cols-2 gap-4 my-0 mx-auto grid grid-cols-1">
+                    <div className="lg:grid lg:grid-cols-3 md:grid md:grid-cols-2 gap-4 my-0 mx-auto grid grid-cols-1 items-start">
                         <Select
                             label="Tipo de documento"
                             name="userDocumentType"
@@ -126,6 +128,24 @@ export default function UserRegisterForm() {
                             onChange={handleChange}
                             error={errors.userDocumentType}
                         />
+                        <div className="flex flex-col place-items-center md:row-span-3 lg:col-start-2 lg:row-start-1 lg:row-span-3">
+                            <h2 className="mb-6 font-bold text-body">
+                                Foto de perfil
+                            </h2>
+                            <div className="flex flex-col gap-4 place-items-center">
+                                <h2 className="w-70">Puede subir 1 archivo, archivos permitidos: PNG, JPG. Máximo de 10MB</h2>
+                                <FileInput
+                                    value={formData.userImage}
+                                    onChange={(files) =>
+                                        setFormData((prev) => ({ ...prev, userImage: files }))
+                                    }
+                                    multiple={false}
+                                />
+                                {errors.userImage && (
+                                    <span className="text-red-800 text-sm">{errors.userImage}</span>
+                                )}
+                            </div>
+                        </div>
                         <Input
                             placeholder="Numero de documento"
                             name= "userDocument"
@@ -143,20 +163,28 @@ export default function UserRegisterForm() {
                             error={errors.userType}
                         />
                         <Input
-                            placeholder="Ingrese su nombre completo"
-                            name="userName"
-                            label="Nombre completo"
-                            value={formData.userName}
-                            onChange={handleChange}
-                            error={errors.userName}
-                        />
-                        <Input
                             placeholder="Dirección"
                             name="userAddres"
                             label="Dirección"
                             value={formData.userAddres}
                             onChange={handleChange}
                             error={errors.userAddres}
+                        />
+                        <Input
+                            placeholder="Ingrese su nombre completo"
+                            name="First_name"
+                            label="Nombre(s)"
+                            value={formData.First_name}
+                            onChange={handleChange}
+                            error={errors.userName}
+                        />
+                        <Input
+                            placeholder="Ingrese su nombre completo"
+                            name="Last_name"
+                            label="Apellido(s)"
+                            value={formData.Last_name}
+                            onChange={handleChange}
+                            error={errors.userName}
                         />
                         <Input
                             placeholder="Número telefónico"
@@ -190,7 +218,6 @@ export default function UserRegisterForm() {
                             type="email"
                             name="userEmailConfir"
                             label="Confirmar correo electrónico"
-                            value={formData.userEmailConfir}   
                             onChange={handleChange}            
                             error={errors.userEmailConfir} 
                         />
@@ -203,16 +230,6 @@ export default function UserRegisterForm() {
                             onChange={handleChange}
                             error={errors.userEmail2}
                         />
-                        <Input
-                            placeholder="Ingrese su contraseña"
-                            type="password"
-                            name="userPassword"
-                            label="Contraseña"
-                            value={formData.userPassword}
-                            onChange={handleChange}
-                            error={errors.userPassword}
-                        />
-                        <div className="flex gap-1.5">
                             {/* Fecha inicio usuario */}
                             <Input
                                 type="date"
@@ -231,7 +248,6 @@ export default function UserRegisterForm() {
                                 onChange={handleChange}
                                 error={errors.userDateEnd}
                             />
-                        </div>
                         <div className="flex place-items-center justify-center align-middle gap-3">
                             <p className="parrafo-edit-style relative bottom-0.5">Estado:</p>
                             {/* Switch */}
@@ -241,6 +257,18 @@ export default function UserRegisterForm() {
                                 size="md"
                                 // inline-flex -> ocupa el espacio asignado
                                 className="inline-flex"
+                            />
+                        </div>
+                        <div className="flex place-items-center justify-center align-middle gap-3">
+                            <p className="parrafo-edit-style relative bottom-0.5">¿Es cuentadante?:</p>
+                            {/* Switch */}
+                            <StatusSwitch
+                                checked={isActive}
+                                onChange={handleStatusChange}
+                                size="md"
+                                // inline-flex -> ocupa el espacio asignado
+                                className="inline-flex"
+                                value={formData.is_accountant}
                             />
                         </div>
 
@@ -253,24 +281,8 @@ export default function UserRegisterForm() {
                                 Nuevo grupo
                             </Button>
                         </div>
-                        <div className="flex justify-end">
-                            <Button
-                                variant="primary"
-                                size="sm"
-                            >
-                                Agregar teléfono
-                            </Button>
-
-                        </div>
 
                         <div className="flex flex-col items-end justify-end gap-4">
-                            <Button
-                                variant="primary"
-                                size="sm"
-                            >
-                                Agregar correo
-                            </Button>
-
                             <Button
                                 variant="primary"
                                 size="sm"

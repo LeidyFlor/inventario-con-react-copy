@@ -120,18 +120,19 @@ export default function UserEditForm() {
                     <div className="h-0.5 bg-gradiant-title-line"></div>
                 </div>
                 {/* contenedor princiapl */}
-                <form className="flex flex-col lg:grid lg:grid-flow-col-dense items-center gap-8" onSubmit={handleSubmit} noValidate>
+                {/* CAMBIO GENERADO AQUÍ */}
+                <form className="flex flex-col lg:grid lg:grid-cols-[420px_1fr] lg:items-center gap-8 w-full" onSubmit={handleSubmit} noValidate>
                     {/* Contenedor izquierdo */}
-                    <div className="flex flex-col gap-4 place-items-center">
+                    {/* CAMBIO GENERADO AQUÍ */}
+                    <div className="w-full max-w-[320px] mx-auto flex flex-col items-center p-4 gap-4">
                         {/* Contenedor fileInput Imagen del archivo. tipo de arhcivo, cantidad y tamano */}
                         <div className="flex flex-col gap-4 place-items-center">
-                            <h2 className="w-80">Puede subir 1 archivo, archivos permitidos: PDF, PNG, JPG. Máximo de 10MB</h2>
                             {/* Imagen actual o inicial con letra */}
                             {imagen ? (
                                 <img
-                                    src={imagen}
-                                    alt={user.userName}
-                                    className="w-48 h-48 object-cover rounded-lg"
+                                src={imagen}
+                                alt={user.userName}
+                                className="w-48 h-48 object-cover rounded-lg"
                                 />
                             ) : (
                                 <div className="w-48 h-48 rounded-lg flex items-center justify-center bg-surface border-2 border-input-border">
@@ -139,6 +140,7 @@ export default function UserEditForm() {
                                 </div>
                             )}
 
+                            <h2 className=" w-80">Puede subir 1 archivo, archivos permitidos: PDF, PNG, JPG. Máximo de 10MB</h2>
                             {/* Botón OR FileInput — nunca los dos a la vez */}
                             {!showFileInput ? (
                                 <Button
@@ -189,25 +191,31 @@ export default function UserEditForm() {
                         </div>
                     </div>
                     {/* Contenedor derecho */}
-                    <div className="grid grid-cols-dense  items-center gap-10 bg-background border-2 border-border-edit-informaion p-8 rounded-xl ">
-                        <div className="md:grid md:grid-cols-[180px_1fr] grid auto-cols items-center gap-4">
-                            <p className="parrafo-edit-style ">Tipo de documento:</p>
-                            <Select
-                                name="userDocumentType"
-                                options={documentTypes}
-                                value={formData.userDocumentType}
-                                onChange={handleChange}
-                                error={errors.userDocumentType}
-                                variant="isEdit"
-                            />
-                            <p className="parrafo-edit-style">Número de documento:</p>
-                            <Input
-                                name="userDocument"
-                                value={formData.userDocument}
-                                onChange={handleChange}
-                                error={errors.userDocument}
-                                variant="isEdit"
-                            />
+                    <div className="w-full flex flex-col gap-4 bg-background border-2 border-border-edit-informaion p-8 rounded-xl ">
+                        {/* CAMBIO GENERADO AQUÍ */}
+                        <div className="grid grid-cols-1 md:grid-cols-2  gap-x-6 gap-y-5 items-center gap-4"> 
+                            <div>
+                                <p className="parrafo-edit-style ">Tipo de documento:</p>
+                                <Select
+                                    name="userDocumentType"
+                                    options={documentTypes}
+                                    value={formData.userDocumentType}
+                                    onChange={handleChange}
+                                    error={errors.userDocumentType}
+                                    variant="isEdit"
+                                />
+                            </div>
+                            <div>
+                                <p className="parrafo-edit-style">Número de documento:</p>
+                                <Input
+                                    name="userDocument"
+                                    value={formData.userDocument}
+                                    onChange={handleChange}
+                                    error={errors.userDocument}
+                                    variant="isEdit"
+                                />
+                            </div>
+                            <div>
                             <p className="parrafo-edit-style">Tipo de usuario:</p>
                             <Select
                                 name="userType"
@@ -217,15 +225,19 @@ export default function UserEditForm() {
                                 error={errors.userType}
                                 variant="isEdit"
                             />
-                            <p className="parrafo-edit-style">Fecha inicio:</p>
-                            <Input
-                                type="date"
-                                name="userDateStart"
-                                value={formData.userDateStart}
-                                onChange={handleChange}
-                                variant="isEdit"
-                                error={errors.userDateStart}
-                            />
+                            </div>
+                            <div>
+                                <p className="parrafo-edit-style">Fecha inicio:</p>
+                                <Input
+                                    type="date"
+                                    name="userDateStart"
+                                    value={formData.userDateStart}
+                                    onChange={handleChange}
+                                    variant="isEdit"
+                                    error={errors.userDateStart}
+                                />
+                            </div>
+                            <div>
                             <p className="parrafo-edit-style">Fecha fin:</p>
                             <Input
                                 type="date"
@@ -235,51 +247,63 @@ export default function UserEditForm() {
                                 variant="isEdit"
                                 error={errors.userDateEnd}
                             />
-                            <p className="parrafo-edit-style">Correo electrónico:</p>
-                            <Input
-                                type="email"
-                                name="userEmail"
-                                value={formData.userEmail}
-                                onChange={handleChange}
-                                error={errors.userEmail}
-                                variant="isEdit"
-                            />
-                            <p className="parrafo-edit-style">Número telefónico:</p>
-                            <Input
-                                type="tel"
-                                name="userTel"
-                                value={formData.userTel}
-                                onChange={handleChange}
-                                error={errors.userTel}
-                                variant="isEdit"
-                            />
-                            <p className="parrafo-edit-style">Dirección:</p>
-                            <Input
-                                name="userAddres"
-                                value={formData.userAddres}
-                                onChange={handleChange}
-                                error={errors.userAddres}
-                                variant="isEdit"
-                            />
-                            <p className="parrafo-edit-style">Segundo número telefónico:</p>
-                            <Input
-                                type="tel"
-                                name="userTel2"
-                                value={formData.userTel2}
-                                onChange={handleChange}
-                                error={errors.userTel2}
-                                variant="isEdit"
-                            />
-                            <p className="parrafo-edit-style">Correo institucional:</p>
-                            <Input
-                                type="email"
-                                name="userEmail2"
-                                value={formData.userEmail2}
-                                onChange={handleChange}
-                                error={errors.userEmail2}
-                                variant="isEdit"
-                            />
+                            </div>
+                            <div>
+                                <p className="parrafo-edit-style">Correo electrónico:</p>
+                                <Input
+                                    type="email"
+                                    name="userEmail"
+                                    value={formData.userEmail}
+                                    onChange={handleChange}
+                                    error={errors.userEmail}
+                                    variant="isEdit"
+                                />
+                            </div>
+                            <div>
+                                <p className="parrafo-edit-style">Número telefónico:</p>
+                                <Input
+                                    type="tel"
+                                    name="userTel"
+                                    value={formData.userTel}
+                                    onChange={handleChange}
+                                    error={errors.userTel}
+                                    variant="isEdit"
+                                />
+                            </div>
+                            <div>
+                                <p className="parrafo-edit-style">Dirección:</p>
+                                <Input
+                                    name="userAddres"
+                                    value={formData.userAddres}
+                                    onChange={handleChange}
+                                    error={errors.userAddres}
+                                    variant="isEdit"
+                                />
+                            </div>
+                            <div>
+                                <p className="parrafo-edit-style">Segundo número telefónico:</p>
+                                <Input
+                                    type="tel"
+                                    name="userTel2"
+                                    value={formData.userTel2}
+                                    onChange={handleChange}
+                                    error={errors.userTel2}
+                                    variant="isEdit"
+                                />
+                            </div>
+                            <div>
+                                <p className="parrafo-edit-style">Correo institucional:</p>
+                                <Input
+                                    type="email"
+                                    name="userEmail2"
+                                    value={formData.userEmail2}
+                                    onChange={handleChange}
+                                    error={errors.userEmail2}
+                                    variant="isEdit"
+                                />
+                            </div>
                             {/* botones de accion */}
+                            <div className="col-span-1 md:col-span-2 flex justify-between place-items-center gap-4 pt-4">
                                 <div className="place-items-start">
                                     <Button
                                         variant="secondary"
@@ -299,6 +323,8 @@ export default function UserEditForm() {
                                         Guardar
                                     </IconButton>
                                 </div>
+
+                            </div>
                             
                         </div>
 

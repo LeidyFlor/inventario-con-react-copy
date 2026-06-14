@@ -3,6 +3,8 @@ import React, {useState} from "react";
 import { loginShema } from "../schemas/loginSchema";
 import  logoSigi  from "@/assets/images/LOGO-SIGI.png";
 import { useNavigate, Link } from "react-router-dom";
+import { login } from "../services/authService";
+import { Alert } from "@/shared";
 
 export default function LoginForm() {
     const navigate = useNavigate();
@@ -40,7 +42,7 @@ export default function LoginForm() {
         Función que se ejecuta cuando se envía el formulario
     */
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
 
         e.preventDefault();
         //Se valida el objeto formData usando el esquema definido con Zod
@@ -69,8 +71,20 @@ export default function LoginForm() {
         //Si la validacion es exitosa se limpian los errores anteriores
         setErrors({});
         //result.data contiene los datos ya validados por Zod
-        console.log("Usuario valido:", result.data);
-        navigate("/dashboard")
+        try {
+            Alert.loading("Iniciando sesión", "Estamos validando su solicitud..."); //alerta de espera
+            const data = await login(result.data);
+            Alert.close(); //aleta se cierra
+            Alert.success("Inicio de sesión exitoso");
+            //console.log("LOGIN RESPONSE:", data);
+            sessionStorage.setItem("token", data.access); //clave adta. access es lo que devuelve el backend
+
+            //despues de loguear a donde me lleva
+            navigate("/dashboard");
+        } catch (error) {
+            Alert.close();
+            Alert.error("Error al iniciar sesión", error.message)
+        }
     }
 
     return (

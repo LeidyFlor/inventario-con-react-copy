@@ -132,8 +132,7 @@
         -webkit-border-image: var(--semantic-border-cian-line) 1;
         border-image: var(--semantic-border-cian-line) 1;
     }
-
-    
+  
     /* boton edit ✏️*/
     .bg-gradient-warning {
         background: linear-gradient(to bottom, var(--quinary-950), var(--quinary-300));
@@ -224,5 +223,62 @@
     .bg-gradient-side-navbar {
         background:  var(--semantic-background-side-nav);
     }
-
+    /* ESTILOS DE SWEETALERT 🍩🍭*/
+    /* en todos se aplica !important para mayor nive de importantcia a los estilos propios que a los default de sweetalert,(!important se debe evitar usar, pero para librerias de terceros es adecauado) */
+    .swal-popup {
+        background: var(--semantic-background) !important;
+        border-radius: 1rem !important;
+        font-family: var(--main-font);
+        box-shadow: 0 10px 15px -3px rgb(0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1) !important;
+    }
+    .swal-title{
+        color: var(--semantic-text-primary) !important;
+        font-size: var(--semantic-font-size-h3) !important;
+        font-weight: var(--font-weight-semibold) !important;
+    }
+    .swal-content {
+        color: var(--semantic-text-secondary) !important;
+        font-size: var(--semantic-font-size-body) !important;
+    }
+    /* Boton confirmar  */
+    .swal-btn-confirm {
+        background: var(--semantic-boton-fill-color-primary) !important;
+        color: var(--semantic-boton-text-color-primary) !important;
+        border-radius: 2rem !important;
+        padding: 0.5rem 2rem !important;
+        font-weight: var(--font-weight-regular) !important;
+        font-size: var(--semantic-font-size-body) !important;
+        cursor: pointer !important;
+        transition: all 0.2s !important;
+        border: 2px solid transparent !important;
+    }
+    .swal-btn-confirm:hover {
+        background-image: linear-gradient(var(--white), var(--white)),
+        linear-gradient(to right, var(--tertiary-950), var(--primary-200)) !important;
+        background-origin: padding-box, border-box !important;
+        background-clip: padding-box, border-box !important;
+        color: var(--semantic-boton-text-color-primary) !important;
+    }
+    /* estilos para boton cancelra de swal */
+    .swal-btn-cancel{
+        background: var(--semantic-boton-fill-color-secondary) !important;
+        color: var(--white) !important;
+        border-radius: 2rem !important;
+        padding: 0.5rem 2rem !important;
+        font-weight: var(--font-weight-regular) !important;
+        font-size: var(--semantic-font-size-body) !important;
+        cursor: pointer !important;
+        transition: all 0.2s !important;
+        border: 2px solid transparent !important;
+    }
+    .swal-btn-cancel:hover{
+        background-image: linear-gradient(var(--white), var(--white)),
+        linear-gradient(to right, var(--secundary-200), var(--secundary-950)) !important;
+        background-origin: padding-box, border-box !important;
+        background-clip: padding-box, border-box !important;
+        color: var(--secundary-900) !important;
+    }
+    .swal-actions {
+    gap: 2rem !important;
+}
 }

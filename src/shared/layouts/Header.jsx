@@ -1,13 +1,16 @@
 import { CircleUserRound, Search, Menu } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
 import { IconButtonReal, Dropdown, DropdownContent, DropdownItem, DropdownTrigger, Button, SearchField } from "@/shared";
+import { logout } from "@/features/auth/services/logoutService.js";
+import { Alert } from "@/shared";
 import logoSenaBlanco from "@/assets/images/logo-sena-blanco.png";
 import logoSigiBlanco from "@/assets/images/sigi-blanco.png";
 
 export default function Header( { onMenuToggle } ) {
     //Componente de busqueda. para detectar un cambio cuando cambie
     const [search, setSearch] = useState("");
+    const navigate = useNavigate();
 
     //UseState del icono Serch en mobil y su usestate 👀🔎
     const [searchOpen, setSearchOpen] = useState(false); //Estado si se da click en el icono 🔎 en 📱
@@ -57,6 +60,21 @@ export default function Header( { onMenuToggle } ) {
 
     const handleClear = () => {
         console.log("Campo limpiado");
+    };
+    // handle de logout
+    const handleLogOut = async () => {
+        const result = await Alert.confirm("Cierre de sesión", "¿Está seguro que desea cerrar sesión?")
+        if (result.isConfirmed) {
+            try {
+                await logout()
+                navigate("/auth")
+            } catch (error) {
+                console.error("Error al cerrar sesión:", error)
+                // Igual navegamos aunque falle el backend
+                sessionStorage.removeItem("token")
+                navigate("/auth")
+            }
+        }
     };
 
     return (
@@ -137,10 +155,8 @@ export default function Header( { onMenuToggle } ) {
                                             Gestión de Usuarios
                                         </Link>
                                     </DropdownItem>
-                                    <DropdownItem>
-                                        <Link to="/auth" className="block w-full">
+                                    <DropdownItem onClick={handleLogOut} className="block w-full">
                                             Cerrar Sesión
-                                        </Link>
                                     </DropdownItem>
                                 </DropdownContent>
                             </Dropdown>

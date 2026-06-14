@@ -8,7 +8,7 @@ import { CreateConsumablePage, ListMaterialPage, ViewMaterialPage , EditConsumab
 import { CreateReturnablePage, EditReturnablePage, ListReturnablePage, ViewReturnablePage } from "@/features/returnable-material";
 import { ListPermissionsPage } from "@/features/permissions";
 import { LoginForm, LoginRestorePassword, LoginRestorePasswordCode, LoginRestoreNewPassword } from "@/features/auth";
-import { AuthLayout, DashboardLayout } from "@/shared/";
+import { AuthLayout, DashboardLayout, ProtectedRoute } from "@/shared/";
 import { HomePage } from "@/features/home";
 
 
@@ -31,7 +31,9 @@ const router = createBrowserRouter([
     },
     {
         path: "/dashboard",
-        element: <DashboardLayout />,
+        element: (<ProtectedRoute>
+            <DashboardLayout />
+        </ProtectedRoute>) ,
         // Nested Routes 
         children: [
             { index: true, element: <HomePage /> },
