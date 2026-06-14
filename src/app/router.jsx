@@ -2,7 +2,7 @@ import { createBrowserRouter, Navigate } from "react-router-dom";
 import MainLayout from "@/shared/layouts/MainLayout";
 import { CreateUserPage, EditUserPage, ListUserPage, ViewUserPage } from "@/features/users";
 import { CreateBrandPage, ListBrandPage } from "@/features/brands";
-import { CreateLoanPage, ReturnLoan, ApproveReturnLoan, ListLoanPage, ViewLoanPage } from "@/features/loans";
+import { CreateLoanPage, ReturnLoan, ApproveReturnLoan, ListLoanPage, ViewLoanPage, LoanEditPage } from "@/features/loans";
 import { CreateTaskPage } from "@/features/tasks";
 import { CreateConsumablePage, EditConsumablePage, ListMaterialPage } from "@/features/consumable-material";
 import { CreateReturnablePage, EditReturnablePage, ListReturnablePage, ViewReturnablePage } from "@/features/returnable-material";
@@ -51,7 +51,7 @@ const router = createBrowserRouter([
             { path: "returnable-materials/:id/edit", element: <h1>Ver material devolutivo</h1> },
             { path: "loan-create", element: <CreateLoanPage /> },
             { path: "loan-list", element: <ListLoanPage /> },
-            { path: "loan-editar", element: <h1>Editar prestamo</h1> },
+            { path: "loans/:id/edit", element: <LoanEditPage /> },
             { path: "loans/:id/view", element: <ViewLoanPage /> },
             { path: "loan-return", element: <ReturnLoan /> },
             { path: "loan-acept-return", element: <h1>Aceptar retono loan</h1> },
