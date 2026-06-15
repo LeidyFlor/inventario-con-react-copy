@@ -1,5 +1,9 @@
 // Iconos usados en los botones de acciones
-import { Pencil, EllipsisVertical, Menu } from "lucide-react";
+import { Pencil, EllipsisVertical, Menu, Eye } from "lucide-react";
+// Implementamos ruta para abrir el modal
+import BrandEditForm from "../components/BrandEditForm"
+// Importamos useState para menejar estados
+import { useState } from "react"
 
 
 // Hook de React Router para navegar programáticamente entre rutas
@@ -16,21 +20,20 @@ import {
 // Componente que renderiza las acciones de cada fila de usuario
 // Recibe como prop el objeto user
 export default function BrandRowAction({ brand }) {
-
-
-  // const handleEdit = () => {
-  //   console.log("Editar usuario", user.id);
-  // };
-
+  //   Se implemento un estado
+    const [modalAbierto, setModalAbierto] = useState(false)
 
   // Hook que permite redirigir a otra ruta desde código
   const navigate = useNavigate();
 
-
-  // Acción para editar el usuario
-  // Redirige a la página de edición usando el id del usuario
+  // Manejar el estado del modal 
   const handleEdit = () => {
-    navigate(`/brands/${brand.id}/edit`);
+    setModalAbierto(true)
+  };
+
+ 
+  const handleView = () => {
+    navigate(`/dashboard/materials/${brand.id}/view`);
   };
 
 
@@ -44,55 +47,30 @@ export default function BrandRowAction({ brand }) {
 
   return (
     // Contenedor de los botones de acciones
-    <div className="flex gap-2">
-
+    <div className="flex gap-2 mx-auto">
 
       {/* Botón editar */}
-      <button
+      <IconButtonReal
         onClick={handleEdit} // Ejecuta la navegación a la página de edición
-        className="p-1 rounded hover:bg-focus-border"
+        variant="outline"
       >
-        <Pencil size={16} /> {/* Icono de editar */}
-      </button>
+        <Pencil size={20} /> {/* Icono de editar */}
+      </IconButtonReal>
 
 
-      {/* Botón opciones */}
-      <button
-        //onClick={handleDelete} // Ejecuta la acción de eliminación
-        className="p-1 rounded hover:bg-focus-border"
-      >
-        <div className="p-1">
-            <Dropdown>
-                <DropdownTrigger>
-                      <EllipsisVertical size={16} />
-                </DropdownTrigger>
-
-                <DropdownContent className="w-48">
-                  <DropdownItem>
-                      <Link to="" className="block">
-                        Opcion 1
-                      </Link>
-                  </DropdownItem>
-
-                  <DropdownItem>
-                      <Link to="" className="block">
-                        Opcion 2
-                      </Link>
-                  </DropdownItem>
-
-                  <DropdownItem>
-                      <Link to="" className="block">
-                        Opcion 3
-                      </Link>
-                  </DropdownItem>
-
-                </DropdownContent>
-            </Dropdown>
-         </div>
-
-      </button>
-
-
+      
+      {/* Modal, Siempre debe ir dentro de un return */}
+      {modalAbierto && (
+        <div
+          // Toma toda laa pantalla con fondo de opacidad negro, sii da clic por fuera se cierra el modal
+          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+          onClick={() => setModalAbierto(false)}
+        >
+          <div onClick={(e) => e.stopPropagation()}>
+            <BrandEditForm onClose={() => setModalAbierto(false)} />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

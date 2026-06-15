@@ -1,7 +1,7 @@
 import { createBrowserRouter, Navigate } from "react-router-dom";
 import MainLayout from "@/shared/layouts/MainLayout";
 import { CreateUserPage, EditUserPage, ListUserPage, ViewUserPage } from "@/features/users";
-import { CreateBrandPage, ListBrandPage } from "@/features/brands";
+import { CreateBrandPage, ListBrandPage, EditBrandPage } from "@/features/brands";
 import { CreateLoanPage, ReturnLoan, ApproveReturnLoan, ListLoanPage, ViewLoanPage } from "@/features/loans";
 import { CreateTaskPage } from "@/features/tasks";
 import { CreateConsumablePage, ListMaterialPage, ViewMaterialPage , EditConsumablePage} from "@/features/consumable-material";
@@ -63,7 +63,7 @@ const router = createBrowserRouter([
             { path: "permissions-list", element: <ListPermissionsPage /> },
             { path: "brand-create", element: <CreateBrandPage /> },
             { path: "brand-list", element: <ListBrandPage /> },
-            { path: "brand-edit", element: <h1>Editar marca</h1> },
+            { path: "brand-edit", element: <EditBrandPage/> },
             { path: "task-create", element: <CreateTaskPage /> },
             { path: "task-list", element: <h1>Listar tareas</h1> },
             { path: "task-edit", element: <h1>Editar tarea</h1> },
