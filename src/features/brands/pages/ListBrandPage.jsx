@@ -12,7 +12,8 @@ export default function ListBrandPage() {
   const [modalAbierto, setModalAbierto] = useState(false)
 
   return (      
-    <div className="p-6">
+    // Centra y pone un tamaño de ancho dependiendo el numero
+    <div className="p-6 max-w-3xl mx-auto">
         <div className="flex justify-between"> 
               <div className="mb-6 max-w-max">
                   <h1 className="flex gap-2 text-gradient-title text-h3 pb-0.5">
@@ -23,10 +24,7 @@ export default function ListBrandPage() {
               </div>
 
             <div className="flex gap-6">
-                <Button variant="secondary" size="sm">
-                    Reporte
-                </Button>
-
+                
                 {/* YA NO usa Link, ahora abre el modal */}
                 <Button
                     variant="primary"

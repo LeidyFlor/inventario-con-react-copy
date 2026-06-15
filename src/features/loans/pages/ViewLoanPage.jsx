@@ -92,9 +92,10 @@ export default function ViewLoanPage() {
                         { label: "Grupo aprendices",    value: String(loan.loanStudentsGroup) },
                     ]} />
 
-
+                    <div className="w-full max-w-full mx-auto lg:mx-0 lg:min-w-0 ">
                     {/* Derecha: tabla de materiales del préstamo */}
                     <LoanMaterialsTable materials={loan.loanMaterials} />
+                    </div>
                 </div>
             </div>
         </div>

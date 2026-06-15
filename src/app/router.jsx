@@ -1,8 +1,8 @@
 import { createBrowserRouter, Navigate } from "react-router-dom";
 import MainLayout from "@/shared/layouts/MainLayout";
 import { CreateUserPage, EditUserPage, ListUserPage, ViewUserPage } from "@/features/users";
-import { CreateBrandPage, ListBrandPage } from "@/features/brands";
-import { CreateLoanPage, ReturnLoan, ApproveReturnLoan, ListLoanPage, ViewLoanPage } from "@/features/loans";
+import { CreateBrandPage, ListBrandPage, EditBrandPage } from "@/features/brands";
+import { CreateLoanPage, ReturnLoan, ApproveReturnLoan, ListLoanPage, ViewLoanPage, LoanEditPage } from "@/features/loans";
 import { CreateTaskPage } from "@/features/tasks";
 import { CreateConsumablePage, ListMaterialPage, ViewMaterialPage , EditConsumablePage} from "@/features/consumable-material";
 import { CreateReturnablePage, EditReturnablePage, ListReturnablePage, ViewReturnablePage } from "@/features/returnable-material";
@@ -58,14 +58,14 @@ const router = createBrowserRouter([
 
             { path: "loan-create", element: <CreateLoanPage /> },
             { path: "loan-list", element: <ListLoanPage /> },
-            { path: "loan-editar", element: <h1>Editar prestamo</h1> },
+            { path: "loans/:id/edit", element: <LoanEditPage /> },
             { path: "loans/:id/view", element: <ViewLoanPage /> },
             { path: "loan-return", element: <ReturnLoan /> },
             { path: "loan-acept-return", element: <h1>Aceptar retono loan</h1> },
             { path: "permissions-list", element: <ListPermissionsPage /> },
             { path: "brand-create", element: <CreateBrandPage /> },
             { path: "brand-list", element: <ListBrandPage /> },
-            { path: "brand-edit", element: <h1>Editar marca</h1> },
+            { path: "brand-edit", element: <EditBrandPage/> },
             { path: "task-create", element: <CreateTaskPage /> },
             { path: "task-list", element: <h1>Listar tareas</h1> },
             { path: "task-edit", element: <h1>Editar tarea</h1> },
