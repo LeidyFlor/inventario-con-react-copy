@@ -63,6 +63,8 @@ export default function DataTable({ data, columns }) {
         // Función que se ejecuta cuando cambia el filtro global
         onGlobalFilterChange: setGlobalFilter,
 
+        // Row ids estables usando la propiedad id si existe
+        getRowId: (row) => (row.id != null ? String(row.id) : undefined),
 
         // Modelo base de filas
         getCoreRowModel: getCoreRowModel(),
@@ -118,7 +120,7 @@ export default function DataTable({ data, columns }) {
 
 
             {/* ================== TABLA ================== */}
-            <div className="overflow-x-auto border rounded">
+            <div className="overflow-x-auto md:overflow-x-hidden border rounded">
                 <table className="w-full">
 
 

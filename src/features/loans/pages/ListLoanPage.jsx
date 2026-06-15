@@ -1,5 +1,6 @@
 import DataTable from "@/shared/components/DataTable"
 import { loansColumns } from "../table/loansColumns"
+import LoanRowActions from "../components/LoanRowActions"
 import { loans } from "../data/loans"
 import { Button } from "@/shared/"
 import { Link } from "react-router-dom"
@@ -7,10 +8,24 @@ import { ClipboardList } from "lucide-react"
 import { useState } from "react"
 import ReportConfigModal from "../reports/components/ReportLoanModal"
 
-
 export default function ListLoanPage() {
-
+    const [loanList, setLoanList] = useState(loans)
     const [isReportModalOpen, setIsReportModalOpen] = useState(false)
+
+    const handleRemoveLoan = (loanId) => {
+        setLoanList((prev) => prev.filter((item) => item.id !== loanId))
+    }
+
+    const columns = [
+        ...loansColumns.slice(0, -1),
+        {
+            id: "actions",
+            cell: ({ row }) => (
+                <LoanRowActions loan={row.original} />
+            ),
+        },
+    ]
+
   return (      
     
     <div className="p-6">
@@ -48,8 +63,8 @@ export default function ListLoanPage() {
         </div>
 
         <DataTable
-            data={loans}
-            columns={loansColumns}
+            data={loanList}
+            columns={columns}
         />
         <ReportConfigModal
             isOpen={isReportModalOpen}

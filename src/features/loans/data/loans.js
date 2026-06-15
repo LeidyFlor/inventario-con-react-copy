@@ -11,7 +11,7 @@ export const loans = [
         loanStatus: "Activo",
         loanType: "Interno",
         loanMaterials: [
-            { id: 1, name: "Switch Cisco 24p",  placaSena: "SENA-003201", serial: "SN-SW-0321", cantidad: 1,  tipo: "Devolutivo" },
+            { id: 1, name: "Switch Cisco 24p",  placaSena: "SENA-00321", serial: "SN-SW-0321", cantidad: 1,  tipo: "Devolutivo" },
             { id: 2, name: "Router Cisco ISR 4331", placaSena: "SENA-03601", serial: "SN-RT-3601", cantidad: 1, tipo: "Devolutivo" },
             { id: 3, name: "Firewall Fortinet 60F", placaSena: "SENA-03603", serial: "SN-FW-3603", cantidad: 1, tipo: "Devolutivo" },
             { id: 4, name: "Cable UTP Cat6",     placaSena: null,         serial: null,          cantidad: 15, tipo: "Consumo"    },
@@ -19,9 +19,9 @@ export const loans = [
             { id: 6, name: "Cable UTP Cat6", placaSena: null, serial: null, cantidad: 50, tipo: "Consumo" },
             { id: 7, name: "Access Point Ubiquiti U6", placaSena: "SENA-03604", serial: "SN-AP-3604", cantidad: 1, tipo: "Devolutivo" },
             { id: 9, name: "Bridas Plasticas", placaSena: null, serial: null, cantidad: 200, tipo: "Consumo" },
-            { id: 9, name: "Servidor Dell PowerEdge R740", placaSena: "SENA-03602", serial: "SN-SV-3602", cantidad: 1, tipo: "Devolutivo" },
+            { id: 9, name: "Servidor Dell R740", placaSena: "SENA-03602", serial: "SN-SV-3602", cantidad: 1, tipo: "Devolutivo" },
             { id: 10, name: "Patch Cord Cat6 2m", placaSena: null, serial: null, cantidad: 25, tipo: "Consumo" },
-            { id: 11, name: "Switch HP Aruba 24 Puertos", placaSena: "SENA-03605", serial: "SN-SW-3605", cantidad: 1, tipo: "Devolutivo" },
+            { id: 11, name: "Switch HP 24 Puertos", placaSena: "SENA-03605", serial: "SN-SW-3605", cantidad: 1, tipo: "Devolutivo" },
             { id: 12, name: "Tornillos para Rack", placaSena: null, serial: null, cantidad: 80, tipo: "Consumo" },
             { id: 13, name: "UPS APC Smart 1500VA", placaSena: "SENA-03606", serial: "SN-UP-3606", cantidad: 1, tipo: "Devolutivo" },
             
