@@ -1,0 +1,284 @@
+@import "tailwindcss";
+@import "./tokens.css";
+@import "./semantic.css";
+
+/* Esta linea debe quedar al final para que funcione  */
+
+@theme default {
+  /* =====BRAND===== */
+  --color-brand: var(--semantic-brand);
+  --color-brand-hover: var(--semantic-brand-hover);
+  --color-brand-soft: var(--semantic-brand-soft);
+
+  /* ===BACKGROUND===== */
+
+  --color-background: var(--semantic-background);
+  --color-surface: var(--semantic-surface);
+  --color-background-login-coontainer: var(--semantic-login-container);
+  --color-surface-muted: var(--semantic-surface-muted);
+  --color-background-inverse: var(--semantic-background-inverse);
+  --color-background-side-navbar: var(--semantic-background-side-nav);
+  --color-background-dropdown: var(--semantic-background-dropdown);
+
+  /* ===TEXT ===== */
+
+  --color-text-primary: var(--semantic-text-primary);
+  --color-text-secondary: var(--semantic-text-secundary);
+  --color-text-muted: var(--semantic-text-muted);
+  --color-text-inverse: var(--semantic-text-inverse);
+  --color-background-image-text-gradient: var(--semantic-text-title-gradient);/* se utiliza mas abajo */
+  /* ==BORDER=== */
+
+  --color-border: var(--semantic-border);
+  --color-border-edit-informaion: var(--semantic-border-edit-information);
+  --color-border-strong: var(--semantic-border-strong);
+  --color-border-green-container: var(--semantic-border-green-container);
+  --color-border-login-container: var(--semantic-border-login-container);
+  --color-border-default-button: var(--semantic-border-default-button);
+  --color-border-line-subtitle: var(--semantic-border-line-subtitle); /*para las lineas verdes de algunos subtítulos*/
+  --color-border-navbar: var(--semantic-border-navbar-line);
+  /* ==FOCUS=== */
+
+  --color-focus-ring: var(--semantic-focus-ring);
+  --color-focus-border: var(--semantic-focus-border);
+
+  /* == STAGE === */
+
+  --color-success: var(--semantic-success);
+  --color-warning: var(--semantic-warning);
+  --color-error: var(--semantic-error);
+
+  /* ====== TYPOGRAPHY ===== */
+
+    --text-display: var(--semantic-font-size-display);
+    --text-h1: var(--semantic-font-size-h1);
+    --text-h2: var(--semantic-font-size-h2);
+    --text-h3: var(--semantic-font-size-h3);
+    --text-body: var(--semantic-font-size-body);
+    --text-medium: var(--semantic-font-size-medium);
+    --text-small: var(--semantic-font-size-small);
+    --text-caption: var(--semantic-font-size-caption);
+
+  /*==== FONT WEIGHT ======*/
+
+  --font-weight-heading: var(--semantic-font-weigt-heading);
+  --font-weight-body: var(--semantic-font-weigt-body);
+  --font-weight-label: var(--semantic-font-weigt-label);
+
+  /*==== INPUT ======*/
+  --color-input-fill: var(--semantic-input-fill-color);
+  --color-input-border: var(--semantic-input-border);
+
+  /* ====== BUTTONS  ======= */
+  /* boton primary add */
+  --color-boton-fill-color-primary: var(--semantic-boton-fill-color-primary);
+  --color-boton-text-color-primary: var(--semantic-boton-text-color-primary);
+
+  /* boton secundary atras back */
+  --color-boton-fill-color-secondary: var(--semantic-boton-fill-color-secondary);
+
+  /* ====== ICONOS SIDEBAR  ======= */
+  --color-icon-fill-sidebar: var(--semantic-icon-fill-sidebar);
+  --color-border-icon-sidebar: var(--semantic-border-icon-sidebar);
+  --color-icon-fill-hover: var(--semantic-icon-fill-hover);
+}
+
+@layer utilities {
+    /* degradado fill contenedor verde */
+    .bg-gradient-container-green { 
+        background: linear-gradient(to bottom, var(--primary-300), var(--primary-50));
+    }
+    /* degradado boton primario ✅*/
+    .bg-gradient-primary { 
+        background: linear-gradient(to right, var(--primary-950), var(--sextario-950));
+    }
+    /* para las transiciones del icono de ICON-PRIMARY-BUTTON  */
+    .btn-primary-icon {
+        transition: width 0.3s ease;
+        width: 2.2rem; /* tamaño inicial del círculo */
+        height: 2.2rem;
+        border-radius: 0.5rem;
+        flex-shrink: 0;
+    }
+
+    .group:hover .btn-primary-icon {
+        width: calc(100% - 1rem); /* 1rem = padding izquierdo + derecho */
+        border-radius: 0.75rem; 
+    }
+
+    .group:hover .btn-primary-label {
+        opacity: 0;
+        transition: opacity 0.15s ease;
+    }
+
+    /* DEGRADADO DE LAS SECCIONES DE LOS TITULOS : usuarios, materiales */
+    .text-gradient-title {
+        background: var(--semantic-text-title-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        font-weight: var(--font-weight-heading);
+        
+    }
+    .bg-gradiant-title-line{
+        /* Línea degradada */
+        border-bottom: 3px solid transparent;
+        -webkit-border-image: var(--semantic-text-title-gradient) 1;
+        border-image: var(--semantic-text-title-gradient) 1;
+    }
+
+    .bg-gradiant-cian-purple-line{
+        /* Línea degradada */
+        -webkit-border-image: var(--semantic-border-cian-line) 1;
+        border-image: var(--semantic-border-cian-line) 1;
+    }
+  
+    /* boton edit ✏️*/
+    .bg-gradient-warning {
+        background: linear-gradient(to bottom, var(--quinary-950), var(--quinary-300));
+    }
+    /* boton autenticacion y retorno material  outline 🆔*/
+    .bg-gradient-outline {
+        background: linear-gradient(to right, var(--sextario-950), var(--secundary-950));
+    }
+
+    /* boton previsualizacion ghost 👻*/
+    .border-gradient-outline {
+      border: 2px solid transparent;
+      background:
+        linear-gradient(var(--white), var(--white)) padding-box, 
+        /*el fondo blanco solo cubre el área interior del botón*/
+
+        linear-gradient(to right, var(--quaternary-950), var(--sextario-950)) border-box; /*el gradiente cubre toda el área incluyendo el borde*/
+
+        color: var(--quaternary-950); /*para el color del texto*/
+    }
+
+    /* boton primary add  HOVER =========*/
+    .hover\:border-gradient-primary:hover {
+      border: 2px solid transparent;
+      background:
+        linear-gradient(var(--white), var(--white)) padding-box, 
+        /*el fondo blanco solo cubre el área interior del botón*/
+
+        linear-gradient(to right, var(--tertiary-950), var(--primary-200)) border-box; /*el gradiente cubre toda el área incluyendo el borde*/
+
+        color: var(--tertiary-950); /*para el color del texto*/
+    }
+    
+    /* boton secundary atras borde back  HOVER =========*/
+
+    .hover\:border-gradient-back:hover {
+      border: 2px solid transparent;
+      background:
+        linear-gradient(var(--white), var(--white)) padding-box, 
+        /*el fondo blanco solo cubre el área interior del botón*/
+
+        linear-gradient(to right, var(--secundary-200), var(--secundary-950)) border-box; /*el gradiente cubre toda el área incluyendo el borde*/
+
+        color: var(--secundary-900); /*para el color del texto*/
+    }
+
+    /* boton edit warning  HOVER =========*/
+    .hover\:border-gradient-warning:hover {
+      border: 2px solid transparent;
+      background:
+        linear-gradient(var(--white), var(--white)) padding-box, 
+        /*el fondo blanco solo cubre el área interior del botón*/
+
+        linear-gradient(to bottom, var(--quinary-950), var(--quinary-300)) border-box; /*el gradiente cubre toda el área incluyendo el borde*/
+
+        color: var(--color-black); /*para el color del texto*/
+    }
+
+    /* boton previsualizar ghost  HOVER =========*/
+    .hover\:bg-gradient-ghost:hover{
+      background: linear-gradient(to right, var(--quaternary-950), var(--sextario-950));
+      color: var(--white);
+    }
+    /* DEGRADADO PARA EL BORDE DEL INPUT EN EDITS */
+    .border-gradient-input-edit {
+      border-bottom: 2.5px solid transparent;
+      border-radius: 0%;
+      
+      background:
+        linear-gradient(var(--white), var(--white)) padding-box,
+    
+        /*el fondo blanco solo cubre el área interior del botón*/
+
+        linear-gradient(to right, var(--tertiary-950), var(--secundary-900)) border-box; /*el gradiente cubre toda el área incluyendo el borde*/
+
+        color: var(--quaternary-950); /*para el color del texto*/
+    }
+    /* Texto para subtitulos de informacion seccion editar */
+    .parrafo-edit-style{
+        font-size: var(--text-medium);
+        font-weight: var(--font-weight-semibold);
+        color: var(--color-text-primary);
+    }
+    /* NAVBAR FONDO DEGRADADADO  🧭*/
+    .bg-gradient-navbar {
+        background:  var(--semantic-background-nav-bar);
+    }
+    .bg-gradient-side-navbar {
+        background:  var(--semantic-background-side-nav);
+    }
+    /* ESTILOS DE SWEETALERT 🍩🍭*/
+    /* en todos se aplica !important para mayor nive de importantcia a los estilos propios que a los default de sweetalert,(!important se debe evitar usar, pero para librerias de terceros es adecauado) */
+    .swal-popup {
+        background: var(--semantic-background) !important;
+        border-radius: 1rem !important;
+        font-family: var(--main-font);
+        box-shadow: 0 10px 15px -3px rgb(0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1) !important;
+    }
+    .swal-title{
+        color: var(--semantic-text-primary) !important;
+        font-size: var(--semantic-font-size-h3) !important;
+        font-weight: var(--font-weight-semibold) !important;
+    }
+    .swal-content {
+        color: var(--semantic-text-secondary) !important;
+        font-size: var(--semantic-font-size-body) !important;
+    }
+    /* Boton confirmar  */
+    .swal-btn-confirm {
+        background: var(--semantic-boton-fill-color-primary) !important;
+        color: var(--semantic-boton-text-color-primary) !important;
+        border-radius: 2rem !important;
+        padding: 0.5rem 2rem !important;
+        font-weight: var(--font-weight-regular) !important;
+        font-size: var(--semantic-font-size-body) !important;
+        cursor: pointer !important;
+        transition: all 0.2s !important;
+        border: 2px solid transparent !important;
+    }
+    .swal-btn-confirm:hover {
+        background-image: linear-gradient(var(--white), var(--white)),
+        linear-gradient(to right, var(--tertiary-950), var(--primary-200)) !important;
+        background-origin: padding-box, border-box !important;
+        background-clip: padding-box, border-box !important;
+        color: var(--semantic-boton-text-color-primary) !important;
+    }
+    /* estilos para boton cancelra de swal */
+    .swal-btn-cancel{
+        background: var(--semantic-boton-fill-color-secondary) !important;
+        color: var(--white) !important;
+        border-radius: 2rem !important;
+        padding: 0.5rem 2rem !important;
+        font-weight: var(--font-weight-regular) !important;
+        font-size: var(--semantic-font-size-body) !important;
+        cursor: pointer !important;
+        transition: all 0.2s !important;
+        border: 2px solid transparent !important;
+    }
+    .swal-btn-cancel:hover{
+        background-image: linear-gradient(var(--white), var(--white)),
+        linear-gradient(to right, var(--secundary-200), var(--secundary-950)) !important;
+        background-origin: padding-box, border-box !important;
+        background-clip: padding-box, border-box !important;
+        color: var(--secundary-900) !important;
+    }
+    .swal-actions {
+    gap: 2rem !important;
+}
+}
