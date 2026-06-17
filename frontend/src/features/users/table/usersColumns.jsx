@@ -77,7 +77,10 @@ export const getUsersColumns = (setUsers) => [
                         "¿Desactivar usuario?",
                         `${user.first_name} ${user.last_name} no podrá iniciar sesión.`
                     )
-                    if (!result.isConfirmed) return
+                    if (!result.isConfirmed) {
+                        setUsers(prev => [...prev])
+                        return
+                    }
                 }
 
                 try {

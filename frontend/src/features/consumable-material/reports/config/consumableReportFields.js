@@ -15,7 +15,7 @@ export const consumableReportFields = [
         default: true,
     },
     {
-        key: "inventoryManger",
+        key: "inventoryManager",
         label: "Cuentadante",
         default: true,
     },

@@ -10,7 +10,7 @@ export default function ReturnableRegisterForm() {
         brandName: "",
         returnableMaterialModel: "",
         materialName: "",
-        inventoryManger: "",
+        inventoryManager: "",
         materialDescription: "",
         materialState: "",
         materialQuantity: "",
@@ -189,10 +189,10 @@ export default function ReturnableRegisterForm() {
                             <Select
                                 label="Seleccione cuentadante"
                                 options={userName}
-                                name="inventoryManger"
-                                value={formData.inventoryManger}
+                                name="inventoryManager"
+                                value={formData.inventoryManager}
                                 onChange={handleChange}
-                                error={errors.inventoryManger}
+                                error={errors.inventoryManager}
                             />
                             <Textarea
                                 className="mb-3 mb:mb-0"

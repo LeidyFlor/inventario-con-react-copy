@@ -1,119 +1,163 @@
-//src/features/users/table/userColumns.js
-// Componente reutilizable que muestra un switch para activar o desactivar estados
-import { StatusSwitch } from "@/shared/";
+import { useState } from "react"
+import { StatusSwitch, Alert } from "@/shared/"
+import MaterialRowActions from "../components/MaterialRowActions"
+import { toggleMaterialStatus } from "../services/materialService"
+import { getMaterialStates } from "../services/selectService"
+import Swal from "sweetalert2"
 
-// Componente que contiene los botones de acciones (editar y eliminar) para cada usuario
-import MaterialRowActions from "../components/MaterialRowActions";
+// Muestra el estado del material solo cuando está inactivo
+function MaterialStateTag({ isActive, state }) {
+    if (isActive) return <span className="text-success text-small font-semibold">Disponible</span>
 
-// Definición de las columnas de la tabla de usuarios
-// Este arreglo suele usarse en librerías de tablas como TanStack Table
-export const materialsColumns = [
+    const labels = {
+        no_disponible: "No disponible",
+        prestado: "Prestado",
+        traslado: "Traslado",
+        baja: "Baja",
+    }
+    return <span className="text-text-primary text-small font-semibold">{labels[state] ?? state}</span>
+}
 
+export const getMaterialsColumns = (setMaterials) => [
 
-    
-    
-    // Columna Placa Sena
-    // {
-    //     accessorKey: " materialBarcodeSena", // Campo del objeto user
-    //     header: "Placa Sena",    // Encabezado visible
-    // },
-    
-    
-    // Columna brandName
-    // {
-    //     accessorKey: "brandName",
-    //     header: "Marca",
-    // },
-    
-    // Columna materialName
+    // Nombre del material
     {
-        accessorKey: "materialName", // Propiedad del objeto user que se mostrará en la columna
-        header: "Nombre del Material",      // Título de la columnas
+        accessorKey: "material_name",
+        header: "Nombre",
     },
 
-    // Columna inventoryManger
+    // Marca
     {
-        accessorKey: "inventoryManger",
+        accessorKey: "brand_name",
+        header: "Marca",
+    },
+
+    // Cuentadante
+    {
+        accessorKey: "inventory_manager_name",
         header: "Cuentadante",
     },
-    // Columna materialDescription
-    // {
-    //     accessorKey: "materialDescription",
-    //     header: "Descripción",
-    // },
-    // Columna materialState
+
+    // Cantidad disponible (calculada en el backend)
     {
-        accessorKey: "materialState",
-        header: "Estado",
+        accessorKey: "material_quantity_available",
+        header: "Cantidad disponible",
     },
-    // Columna materialQuantity
+
+    // Ubicación
     {
-        accessorKey: "materialQuantity",
-        header: "Cantidad",
-    },
-    // Columna materialUnitPrice
-    // {
-    //     accessorKey: "materialUnitPrice",
-    //     header: "Valor Unitario",
-    // },
-    //  Columna materialtTotalPrice
-    // {
-    //     accessorKey: "materialTotalPrice",
-    //     header: "Valor Total",
-    // },
-    // Columna materialLocation
-    {
-        accessorKey: "materialLocation",
+        accessorKey: "material_location",
         header: "Ubicación",
     },
 
-
-    // Columna Estado (activo / inactivo)
+    // Estado — muestra "Disponible" si activo, o el motivo si inactivo
     {
-        accessorKey: "is_active",
+        id: "estado",
         header: "Estado",
+        cell: ({ row }) => (
+            <MaterialStateTag
+                isActive={row.original.is_active}
+                state={row.original.material_state}
+            />
+        ),
+    },
 
-
-        // Render personalizado de la celda
-        // Permite mostrar un componente en lugar de solo texto
+    // Switch activo/inactivo — pide motivo al desactivar
+    {
+        id: "is_active",
+        header: "Activo",
         cell: ({ row }) => {
+            const material = row.original
 
+            const handleChange = async (newValue) => {
+                if (!newValue) {
+                    // Pedir confirmación y motivo al desactivar
+                    const states = getMaterialStates()
+                    const options = states.map(s => `<option value="${s.value}">${s.label}</option>`).join("")
 
-            // Se obtiene el objeto completo del usuario de la fila
-            const material = row.original;
+                    const { value: reason, isConfirmed } = await Swal.fire({
+                        title: "¿Desactivar material?",
+                        html: `
+                            <p class="swal-content pb-2">Selecciona el motivo:</p>
+                            <select id="swal-reason" class="swal2-input">
+                                <option value="">Seleccione una opción</option>
+                                ${options}
+                            </select>
+                        `,
+                        confirmButtonText: "Confirmar",
+                        cancelButtonText: "Cancelar",
+                        showCancelButton: true,
+                        customClass: {
+                            confirmButton: "swal-btn-confirm",
+                            cancelButton: "swal-btn-cancel",
+                            actions: "swal-actions",
+                        },
+                        buttonsStyling: false,
+                        preConfirm: () => {
+                            const val = document.getElementById("swal-reason").value
+                            if (!val) {
+                                Swal.showValidationMessage("Debes seleccionar un motivo")
+                            }
+                            return val
+                        }
+                    })
 
+                    if (!isConfirmed) {
+                        // Revierte la animación del switch al cancelar
+                        setMaterials(prev => [...prev])
+                        return
+                    }
 
-            // Función que se ejecuta cuando cambia el switch
-            const handleChange = (value) => {
+                    try {
+                        await toggleMaterialStatus(material.id, false, reason)
+                        setMaterials(prev =>
+                            prev.map(m => m.id === material.id
+                                ? { ...m, is_active: false, material_state: reason }
+                                : m
+                            )
+                        )
+                    } catch {
+                        Alert.error("Error", "No se pudo desactivar el material")
+                    }
+                } else {
+                    // Reactivar sin motivo — confirmar simplemente
+                    const result = await Alert.confirm(
+                        "¿Reactivar material?",
+                        `${material.material_name} volverá a estar disponible.`
+                    )
+                    if (!result.isConfirmed) {
+                        // Revierte la animación del switch al cancelar
+                        setMaterials(prev => [...prev])
+                        return
+                    }
 
-
-                // value representa el nuevo estado del switch (true o false)
-                console.log("Actualizar estado usuario:", material.material_id, value);
-
-
-                // Aquí normalmente se llamaría una API para actualizar el estado
-                // updateUserStatus(user.user_id, value)
-            };
-
+                    try {
+                        await toggleMaterialStatus(material.id, true)
+                        setMaterials(prev =>
+                            prev.map(m => m.id === material.id
+                                ? { ...m, is_active: true, material_state: null }
+                                : m
+                            )
+                        )
+                    } catch {
+                        Alert.error("Error", "No se pudo reactivar el material")
+                    }
+                }
+            }
 
             return (
-                // Componente reutilizable para mostrar el switch
                 <StatusSwitch
-                    checked={material.is_active} // Estado actual del usuario
-                    onChange={handleChange}  // Función que maneja el cambio
-                    className="inline-flex" // OJOOOOOO para que se ponga derecho flex
+                    checked={material.is_active}
+                    onChange={handleChange}
+                    className="inline-flex"
                 />
-            );
+            )
         },
     },
 
-
-    // Columna de acciones (editar / eliminar)
+    // Acciones (editar, ver detalle)
     {
-        id: "actions", // No usa accessorKey porque no corresponde a un campo del usuario
-
-
-        // Renderiza el componente de acciones pasando el material completo
+        id: "actions",
         cell: ({ row }) => <MaterialRowActions material={row.original} />,
     },
-];
+]

@@ -43,7 +43,7 @@ export default function ViewMaterialPage(){
                     { label: "Nombre del elemento", value: material.materialName },
                     { label: "Marca", value: formatDate(material.brandName) },
                     { label: "Modelo", value: formatDate(material.materialBarcodeSena ) },
-                    { label: "Cuentadante", value: material.inventoryManger },
+                    { label: "Cuentadante", value: material.inventoryManager },
                     { label: "Cantidad", value: material.materialQuantity },
                     { label: "Valor unitario", value: material. materialUnitPrice },
                     { label: "Valor total", value: material.materialTotalPrice },

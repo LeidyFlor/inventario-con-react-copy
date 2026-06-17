@@ -29,7 +29,7 @@ export const ReturnableColumns = [
         header: "Categoría",
     },
     {
-        accessorKey: "inventoryManger",
+        accessorKey: "inventoryManager",
         header: "Cuentadante",
     },
 

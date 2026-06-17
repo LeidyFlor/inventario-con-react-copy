@@ -64,7 +64,7 @@ class Material(models.Model):
 
     material_unit_price = models.DecimalField(max_digits=12, decimal_places=2)
 
-    material_location = models.CharField(max_length=200)
+    material_location = models.CharField(max_length=200, blank=True, default='')
 
     # URL de la imagen guardada en Supabase Storage (igual que en usuarios)
     material_image = models.URLField(null=True, blank=True)

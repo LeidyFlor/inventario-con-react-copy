@@ -16,7 +16,7 @@ export default function ReturnableEditForm() {
         brandName: material?.brandName ?? "",
         returnableMaterialModel: material?.returnableMaterialModel ?? "",
         materialName: material?.materialName ?? "",
-        inventoryManger: material?.inventoryManger ?? "",
+        inventoryManager: material?.inventoryManager ?? "",
         materialDescription: material?.materialDescription ?? "",
         materialState: material?.materialState ?? "",
         materialQuantity: material?.materialQuantity ?? "",
@@ -235,10 +235,10 @@ export default function ReturnableEditForm() {
                             <p className="parrafo-edit-style">Cuentadante:</p>
                             <Select
                                 options={userName}
-                                name="inventoryManger"
-                                value={formData.inventoryManger}
+                                name="inventoryManager"
+                                value={formData.inventoryManager}
                                 onChange={handleChange}
-                                error={errors.inventoryManger}
+                                error={errors.inventoryManager}
                                 variant="isEdit"
                             />
 

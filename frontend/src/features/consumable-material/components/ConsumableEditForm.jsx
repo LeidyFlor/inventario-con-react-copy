@@ -15,7 +15,7 @@ export default function ConsumableEditForm() {
         brandName: material?.brandName ?? "",
         returnableMaterialModel: material?.returnableMaterialModel ?? "",
         materialName: material?.materialName ?? "",
-        inventoryManger: material?.inventoryManger ?? "",
+        inventoryManager: material?.inventoryManager ?? "",
         materialDescription: material?.materialDescription ?? "",
         materialState: material?.materialState ?? "",
         materialQuantity: material?.materialQuantity ?? "",
@@ -204,10 +204,10 @@ export default function ConsumableEditForm() {
 
                             <p className="parrafo-edit-style">Cuentadante:</p>
                             <Input
-                                name="inventoryManger"
-                                value={formData.inventoryManger}
+                                name="inventoryManager"
+                                value={formData.inventoryManager}
                                 onChange={handleChange}
-                                error={errors.inventoryManger}
+                                error={errors.inventoryManager}
                                 variant="isEdit"
                             />
 
