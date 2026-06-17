@@ -3,8 +3,12 @@ import React, {useState, useEffect} from "react";
 import { getDocumentTypes, getUserTypes } from "@/features/users/services/selectService";
 import { userShema } from "../schemas/userShema.js";
 import { UserRoundPlus } from "lucide-react";
+import { Alert } from "@/shared";
+import { createUser } from "../services/userService.js";
+import { useNavigate } from "react-router-dom";
 
 export default function UserRegisterForm() {
+    const navigate = useNavigate();
     const [formData, setFormData] = useState({
         userDocument: "",
         First_name: "",
@@ -19,7 +23,6 @@ export default function UserRegisterForm() {
         userDocumentType: "",
         userDateEnd: "",
         userDateStart: "",
-        is_active: true,
         is_accountant: false,
         userImage: []
     });
@@ -69,14 +72,15 @@ export default function UserRegisterForm() {
     /*
         Función que se ejecuta cuando se envía el formulario
     */
-
-    const handleSubmit = (e) => {
-
-        e.preventDefault();
+   
+   const handleSubmit = async (e) => {
+       
+       e.preventDefault();
+       console.log("handleSubmit ejecutado") //
         //Se valida el objeto formData usando el esquema definido con Zod
         // safeParse devuelve un objeto indicando si la validacion fue exitosa o no
         const result = userShema.safeParse(formData);
-
+       console.log("Resultado Zod:", result)
         //Si la validacion falla
         if (!result.success) {
             const fieldErrors = {};
@@ -84,11 +88,9 @@ export default function UserRegisterForm() {
             //Zod devuelve los errores en un arreglo llamado issues
             //se recorren para asociar cada error a su campo correspondiente
             result.error.issues.forEach((issue) => {
-                const field = issue.path[0]
-
 
                 //Se guarda el mensaje de error en el objeto fieldErrors
-                fieldErrors[field] = issue.message;
+                fieldErrors[issue.path[0]] = issue.message
             });
 
             //Se actualiza el estado de errores para mostrarlos en el formulario
@@ -97,9 +99,19 @@ export default function UserRegisterForm() {
             return;
         }
         //Si la validacion es exitosa se limpian los errores anteriores
-        setErrors({});
-        //result.data contiene los datos ya validados por Zod
-        console.log("Usuario valido:", result.data);
+        setErrors({})
+
+        try {
+            Alert.loading("Creando usuario...")
+            await createUser(result.data)
+            Alert.close()
+            await Alert.success("Usuario creado", "La contraseña fue enviada al correo del usuario")
+            navigate("/dashboard/user-list")
+            
+    } catch (error) {
+        Alert.close()
+        Alert.error("Error al crear usuario", error.message)
+    }
     }
 
     return (
@@ -171,7 +183,7 @@ export default function UserRegisterForm() {
                             error={errors.userAddres}
                         />
                         <Input
-                            placeholder="Ingrese su nombre completo"
+                            placeholder="Nombre(s)"
                             name="First_name"
                             label="Nombre(s)"
                             value={formData.First_name}
@@ -179,7 +191,7 @@ export default function UserRegisterForm() {
                             error={errors.userName}
                         />
                         <Input
-                            placeholder="Ingrese su nombre completo"
+                            placeholder="Apellido(s)"
                             name="Last_name"
                             label="Apellido(s)"
                             value={formData.Last_name}
@@ -248,23 +260,13 @@ export default function UserRegisterForm() {
                                 onChange={handleChange}
                                 error={errors.userDateEnd}
                             />
-                        <div className="flex place-items-center justify-center align-middle gap-3">
-                            <p className="parrafo-edit-style relative bottom-0.5">Estado:</p>
+                        
+                        <div className="flex place-self-center -items-center justify-center align-middle gap-3">
+                            <p className="parrafo-edit-style relative bottom-0.5 items-">¿Es cuentadante?:</p>
                             {/* Switch */}
                             <StatusSwitch
                                 checked={isActive}
-                                onChange={handleStatusChange}
-                                size="md"
-                                // inline-flex -> ocupa el espacio asignado
-                                className="inline-flex"
-                            />
-                        </div>
-                        <div className="flex place-items-center justify-center align-middle gap-3">
-                            <p className="parrafo-edit-style relative bottom-0.5">¿Es cuentadante?:</p>
-                            {/* Switch */}
-                            <StatusSwitch
-                                checked={isActive}
-                                onChange={handleStatusChange}
+                                onChange={handleChange}
                                 size="md"
                                 // inline-flex -> ocupa el espacio asignado
                                 className="inline-flex"
@@ -277,6 +279,7 @@ export default function UserRegisterForm() {
                             <Button
                                 variant="primary"
                                 size="sm"
+                                type="button"
                             >
                                 Nuevo grupo
                             </Button>
@@ -286,6 +289,7 @@ export default function UserRegisterForm() {
                             <Button
                                 variant="primary"
                                 size="sm"
+                                type="button"
                             >
                                 Agregar tarea
                             </Button>

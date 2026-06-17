@@ -27,10 +27,15 @@ const datePreprocess = (mensajeError) =>
 
 export const userShema = z
   .object({
-    userName: z
+    First_name: z
       .string()
       .min(3, "El nombre debe de tener mínimo 3 caracteres")
       .max(60, "El nombre es demasiado largo"),
+
+    Last_name: z
+      .string()
+      .min(3, "El apellido debe de tener mínimo 3 caracteres")
+      .max(60, "El apellido es demasiado largo"),
 
     userEmail: z
       .string()
@@ -85,14 +90,6 @@ export const userShema = z
         "La dirección contiene caracteres no válidos",
       ),
 
-    userPassword: z
-      .string()
-      .min(8, "Contraseña debe de tener mínimo 8 caracteres")
-      .regex(/[A-Z]/, "Debe contener al menos una mayúscula")
-      .regex(/[a-z]/, "Debe contener al menos una minúscula")
-      .regex(/[0-9]/, "Debe contener al menos un número")
-      .regex(/[^A-Za-z0-9]/, "Debe contener al menos un caractér especial"),
-
     userDateStart: datePreprocess(
       "La fecha de inicio es obligatoria",
       "Fecha de inicio inválida",
@@ -102,7 +99,6 @@ export const userShema = z
       "Fecha de fin inválida",
     ),
     userImage: fileSchema.shape.files.optional(),
-  
   })
   //para que email y confirmación sean iguales
   .refine((data) => data.userEmail === data.userEmailConfir, {
@@ -110,7 +106,7 @@ export const userShema = z
     path: ["userEmailConfir"], //donde se muestra el error
   })
   //para que los teléfonos no sean iguales
-  .refine((data) => data.userTel === data.userTel2, {
+  .refine((data) => !data.userTel || data.userTel !== data.userTel2, {
     message: "Los teléfonos no pueden ser iguales",
     path: ["userTel2"],
   })
