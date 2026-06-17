@@ -63,7 +63,7 @@ export default function FileInput({
     };
 
     return (
-        <div className="flex items-center gap-2">
+        <div className="grid grid-cols-3 gap-2">
             {value.map((file, i) => (
                 <div
                     key={i}

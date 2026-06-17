@@ -144,7 +144,7 @@ export default function UserRegisterForm() {
                             <h2 className="mb-6 font-bold text-body">
                                 Foto de perfil
                             </h2>
-                            <div className="flex flex-col gap-4 place-items-center">
+                            <div className="flex flex-col gap-4 place-items-center text-center">
                                 <h2 className="w-70">Puede subir 1 archivo, archivos permitidos: PNG, JPG. Máximo de 10MB</h2>
                                 <FileInput
                                     value={formData.userImage}

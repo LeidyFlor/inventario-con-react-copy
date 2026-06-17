@@ -96,7 +96,7 @@ export default function ConsumableEditForm() {
                     <div className="flex flex-col gap-4 place-items-center">
 
                         {/* Contenedor imagen */}
-                        <div className="flex flex-col gap-4 place-items-center">
+                        <div className="flex flex-col gap-4 place-items-center text-center">
                             <h2 className="w-80">Puede subir 1 archivo, archivos permitidos: PDF, PNG, JPG. Máximo de 10MB</h2>
 
                             {/* Imagen actual o inicial con letra */}

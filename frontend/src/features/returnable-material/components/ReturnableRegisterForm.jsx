@@ -1,290 +1,253 @@
-import { Input, Button, IconButton, Select, FileInput, Textarea } from "@/shared"
-import React, {useState, useEffect} from "react";
-import { getMaterialCategory, getMaterialState, getUserName, getBrandName } from "@/features/returnable-material/services/selectService.js";
-import { returnableMaterialSchema } from "../schemas/returnableMaterialSchema";
-import { Router } from "lucide-react";
+// src/features/returnable-material/components/ReturnableRegisterForm.jsx
+import { useState, useEffect } from "react"
+import { useNavigate } from "react-router-dom"
+import { Router } from "lucide-react"
+import { Input, Button, Select, FileInput, Textarea, Alert, IconButton } from "@/shared"
+import { getBrands, getInventoryManagers, getMaterialCategories } from "../services/selectService"
+import { createReturnable } from "../services/returnableService"
+import { returnableMaterialSchema } from "../schemas/returnableMaterialSchema"
 
 export default function ReturnableRegisterForm() {
+    const navigate = useNavigate()
+
+    // ── Estado del formulario 
     const [formData, setFormData] = useState({
         materialBarcodeSena: "",
         brandName: "",
-        returnableMaterialModel: "",
-        materialName: "",
-        inventoryManager: "",
-        materialDescription: "",
-        materialState: "",
-        materialQuantity: "",
-        materialUnitPrice: "",
-        materialTotalPrice: "",
-        materialLocation: "",
-        returnableMaterialSerial: "",
-        returnableMaterialCategory: "",
-        returnableMaterialDimensions: "",
-        returnnableMaterialImagen: [],
-        returnnableMaterialTechnicalSheet: [],
-        isActive : true,
-    });
-    const [errors, setErrors] = useState({});
-    const [materialCategory, setMaterialCategory] = useState([]);
-    const [materialState, setMaterialState] = useState([]);
-    const [userName, setUserName] = useState([]);
-    const [brandName, setBrandName] = useState([]);
+        returnableMaterialModel:"",
+        materialName:"",
+        inventoryManager:"",
+        materialDescription:  "",
+        materialUnitPrice:"",
+        materialLocation:"",
+        returnableMaterialSerial:"",
+        returnableMaterialCategory:"",
+        returnableMaterialDimensions:  "",
+        materialImage: [],
+        materialTechnicalSheet: [],   // null → FileInput espera null para modo múltiple
+    })
+    const [errors, setErrors]   = useState({})
+    const [loading, setLoading] = useState(false)
+
+    //  Opciones de selects 
+    const [brands,     setBrands]     = useState([])
+    const [managers,   setManagers]   = useState([])
+    // Las categorías son constantes — se inicializan directamente
+    const categories = getMaterialCategories()
 
     useEffect(() => {
-        getMaterialCategory().then(setMaterialCategory);
-        getMaterialState().then(setMaterialState);
-        getUserName().then(setUserName);
-        getBrandName().then(setBrandName);
+        getBrands().then(setBrands)
+        getInventoryManagers().then(setManagers)
     }, [])
-    const handleChange = (e) => {
-                // Se obtiene el nombre del campo y su valor
-        const { name, value, type, checked } = e.target; //target es lo que viene cuando se escribe
-        
-                setFormData((prev) => ({
-                    //Se copian todos los valores anteriores del estado
-                    ...prev,
-        
-                    //Se actualiza unicamente lo que cambió
-                    [name]: type === "checkbox" ? checked : value,
-                }));
-            };
-            // ==================================================
-            //              Handle Submit
-            // ==================================================
-            /*
-                Función que se ejecuta cuando se envía el formulario
-            */
-        
-            const handleSubmit = (e) => {
-        
-                e.preventDefault();
-                //Se valida el objeto formData usando el esquema definido con Zod
-                // safeParse devuelve un objeto indicando si la validacion fue exitosa o no
-                const result = returnableMaterialSchema.safeParse(formData);
-        
-                //Si la validacion falla
-                if (!result.success) {
-                    const fieldErrors = {};
-        
-                    //Zod devuelve los errores en un arreglo llamado issues
-                    //se recorren para asociar cada error a su campo correspondiente
-                    result.error.issues.forEach((issue) => {
-                        const field = issue.path[0]
 
-                        //Se guarda el mensaje de error en el objeto fieldErrors
-                        fieldErrors[field] = issue.message;
-                    });
-        
-                    //Se actualiza el estado de errores para mostrarlos en el formulario
-                    setErrors(fieldErrors);
-                    //Se detiene la ejecucion porque el formulario tiene errores
-                    return;
-                }
-                //Si la validacion es exitosa se limpian los errores anteriores
-                setErrors({});
-                //result.data contiene los datos ya validados por Zod
-                console.log("Material devolutivo valido:", result.data);
-            }
+    //  Handlers 
+    const handleChange = (e) => {
+        const { name, value } = e.target
+        setFormData(prev => ({ ...prev, [name]: value }))
+    }
+
+    const handleSubmit = async (e) => {
+        e.preventDefault()
+
+        // Validación Zod
+        const result = returnableMaterialSchema.safeParse(formData)
+        if (!result.success) {
+            const fieldErrors = {}
+            result.error.issues.forEach(issue => {
+                fieldErrors[issue.path[0]] = issue.message
+            })
+            setErrors(fieldErrors)
+            return
+        }
+        setErrors({})
+
+        try {
+            setLoading(true)
+            await createReturnable(result.data)
+            Alert.success("Material creado", "El material devolutivo fue registrado correctamente")
+            navigate("/dashboard/returnable-material-list")
+        } catch (err) {
+            // Muestra el error real del backend para facilitar el diagnóstico
+            Alert.error("Error al crear el material", err.message || "No se pudo crear el material.")
+            console.error("Error backend:", err)
+        } finally {
+            setLoading(false)
+        }
+    }
 
     return (
         <div className="flex flex-col place-items-center justify-items-center relative">
-            {/* contenedor verde */}
-            <div className="bg-gradient-container-green border-4 border-border-green-container p-6 rounded-4xl  w-fit mt-2 h-fit">
-                {/* contenenedor del titulo y la linea */}
-                <div className="mb-6 max-w-max ">
+            <div className="bg-gradient-container-green border-4 border-border-green-container p-6 rounded-4xl w-fit mt-2 h-fit">
+
+                {/* Título */}
+                <div className="mb-6 max-w-max">
                     <h1 className="flex gap-2 text-gradient-title text-h3 pb-0.5">
                         <Router className="text-brand" />
                         Crear material devolutivo
-                    </h1>{/*linea degradada del titulo*/}
+                    </h1>
                     <div className="h-0.5 bg-gradiant-title-line"></div>
-
                 </div>
-                {/* grid-flow-col-dense para ajustar el ancho de las columanas al contenido */}
-                <form className="grid md:grid-flow-col-dense items-center gap-10 " onSubmit={handleSubmit} noValidate>
-                    <div className="flex flex-col md:flex-row justify-center items-center">
-                        <div className="flex flex-col place-items-center">
-                            <h2 className="mb-6 font-bold text-body">
-                                Agregar imagen del elemento
-                            </h2>
-                            {/* Contenedor fileInput Imagen del archivo. tipo de arhcivo, cantidad y tamano */}
-                            <div className="flex flex-col gap-4 place-items-center">
-                                <h2 className="w-80">Puede subir 1 archivo, archivos permitidos: PDF, PNG, JPG. Máximo de 10MB</h2>
-                                <FileInput
-                                    value={formData.returnnableMaterialImagen}
-                                    onChange={(files) =>
-                                        setFormData((prev) => ({ ...prev, returnnableMaterialImagen: files }))
-                                    }
-                                    multiple={false}
-                                />
-                                {errors.returnnableMaterialImagen && (
-                                    <span className="text-red-800 text-sm">{errors.returnnableMaterialImagen}</span>
-                                )}
 
-                            </div>
+                <form
+                    className="grid md:grid-flow-col-dense items-center gap-10"
+                    onSubmit={handleSubmit}
+                    noValidate
+                >
+                    {/*  Columna de archivos  */}
+                    <div className="flex flex-col items-center gap-6">
 
-                            <h2 className="my-6 font-bold text-body">
-                            Agregar ficha técnica
-                            </h2>
+                        {/* Imagen principal */}
+                        <div className="flex flex-col gap-4 items-center text-center">
+                            <h2 className="font-bold text-body">Imagen del elemento</h2>
+                            <h2 className="w-80">Puede subir 1 archivo, archivos permitidos: PDF, PNG, JPG. Máximo de 10MB</h2>
+                            <FileInput
+                                value={formData.materialImage ?? []}
+                                onChange={(files) =>
+                                    setFormData(prev => ({ ...prev, materialImage: files }))
+                                }
+                                multiple={false}
+                            />
+                            {errors.materialImage && (
+                                <span className="text-red-800 text-sm">{errors.materialImage}</span>
+                            )}
+                        </div>
 
-                            {/* Contenedor fileInput Ficha técnica. tipo de arhcivo, cantidad y tamano */}
-                            <div className="flex flex-col gap-4 place-items-center">
-                                <h2 className="w-80">Máximo puede subir 12 archivos, archivos permitidos: PDF, PNG, JPG. Máximo de 10MB</h2>
-                                <FileInput
-                                    value={formData.returnnableMaterialTechnicalSheet}
-                                    onChange={(files) =>
-                                        setFormData((prev) => ({ ...prev, returnnableMaterialTechnicalSheet: files }))
-                                    }
-                                    multiple={true}
-                                />
-                                {errors.returnnableMaterialTechnicalSheet && (
-                                    <span className="text-red-800 text-sm">{errors.returnnableMaterialTechnicalSheet}</span>
-                                )}
-
-                            </div>
+                        {/* Fichas técnicas */}
+                        <div className="flex flex-col gap-4 items-center text-center">
+                            <h2 className="font-bold text-body">Imagen del elemento</h2>
+                            <h2 className="w-80">Puede subir 12 archivos, archivos permitidos: PDF, PNG, JPG. Máximo de 10MB c/u</h2>
+                            <FileInput
+                                value={formData.materialTechnicalSheet ?? []}
+                                onChange={(files) =>
+                                    setFormData(prev => ({ ...prev, materialTechnicalSheet: files }))
+                                }
+                                multiple={true}
+                            />
+                            {errors.materialTechnicalSheet && (
+                                <span className="text-red-800 text-sm">{errors.materialTechnicalSheet}</span>
+                            )}
                         </div>
                     </div>
-                    {/* Inputs */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 md:gap-10 ">
+
+                    {/*  Columna de campos  */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-10">
+
+                        {/* Columna izquierda */}
                         <div className="flex flex-col gap-4">
                             <Input
-                                placeholder="Placa Sena"
-                                name= "materialBarcodeSena"
-                                label= "Placa Sena"
+                                label="Placa SENA"
+                                placeholder="Placa SENA"
+                                name="materialBarcodeSena"
                                 value={formData.materialBarcodeSena}
                                 onChange={handleChange}
                                 error={errors.materialBarcodeSena}
                             />
                             <Input
-                                placeholder="Serial"
-                                name="returnableMaterialSerial"
                                 label="Serial"
+                                placeholder="Serial del elemento"
+                                name="returnableMaterialSerial"
                                 value={formData.returnableMaterialSerial}
                                 onChange={handleChange}
                                 error={errors.returnableMaterialSerial}
                             />
-                            <Select
-                                label="Marca"
-                                options={brandName}
-                                name="brandName"
-                                value={formData.brandName}
-                                onChange={handleChange}
-                                error={errors.brandName}
-                            />
+                            
                             <Input
-                                placeholder="Modelo"
-                                name="returnableMaterialModel"
-                                label="Modelo"
-                                value={formData.returnableMaterialModel}
-                                onChange={handleChange}
-                                error={errors.returnableMaterialModel}
-                            />
-                            <Input
+                                label="Nombre del elemento"
                                 placeholder="Nombre del elemento"
                                 name="materialName"
-                                label="Nombre del elemento"
                                 value={formData.materialName}
                                 onChange={handleChange}
                                 error={errors.materialName}
                             />
                             <Select
-                                label="Seleccione cuentadante"
-                                options={userName}
+                                label="Cuentadante"
+                                options={managers}
                                 name="inventoryManager"
                                 value={formData.inventoryManager}
                                 onChange={handleChange}
                                 error={errors.inventoryManager}
                             />
                             <Textarea
-                                className="mb-3 mb:mb-0"
                                 label="Descripción"
-                                placeholder="Descripción"
+                                placeholder="Descripción del elemento"
                                 name="materialDescription"
                                 value={formData.materialDescription}
                                 onChange={handleChange}
                                 error={errors.materialDescription}
                             />
-
                         </div>
-                        
+
+                        {/* Columna derecha */}
                         <div className="flex flex-col gap-4">
                             <Select
                                 label="Categoría"
-                                options={materialCategory}
+                                options={categories}
                                 name="returnableMaterialCategory"
                                 value={formData.returnableMaterialCategory}
                                 onChange={handleChange}
                                 error={errors.returnableMaterialCategory}
                             />
                             <Select
-                                label="Estado"
-                                options={materialState}
-                                name="materialState"
-                                value={formData.materialState}
+                                label="Marca"
+                                options={brands}
+                                name="brandName"
+                                value={formData.brandName}
                                 onChange={handleChange}
-                                error={errors.materialState}
-                            />      
-                            <Input
-                                placeholder="Cantidad"
-                                type="number"
-                                name="materialQuantity"
-                                label="Cantidad"
-                                value={formData.materialQuantity}
-                                onChange={handleChange}
-                                error={errors.materialQuantity}
+                                error={errors.brandName}
                             />
                             <Input
+                                label="Modelo"
+                                placeholder="Modelo del elemento"
+                                name="returnableMaterialModel"
+                                value={formData.returnableMaterialModel}
+                                onChange={handleChange}
+                                error={errors.returnableMaterialModel}
+                            />
+                            <Input
+                                label="Valor unitario"
                                 placeholder="Valor unitario"
                                 type="number"
                                 name="materialUnitPrice"
-                                label="Valor unitario"
                                 value={formData.materialUnitPrice}
                                 onChange={handleChange}
                                 error={errors.materialUnitPrice}
                             />
                             <Input
-                                placeholder="Valor total"
-                                type="number"
-                                name="materialTotalPrice"
-                                label="Valor total"
-                                value={formData.materialTotalPrice}
-                                onChange={handleChange}
-                                error={errors.materialTotalPrice}
-                            />
-                            <Input
-                                placeholder="Ubicacion"
-                                name="materialLocation"
                                 label="Ubicación"
+                                placeholder="Ubicación del elemento"
+                                name="materialLocation"
                                 value={formData.materialLocation}
                                 onChange={handleChange}
                                 error={errors.materialLocation}
                             />
+                            {/* Dimensiones solo aparece si la categoría es muebles_enseres */}
+                            {formData.returnableMaterialCategory === "muebles_enseres" && (
+                                <Input
+                                    label="Dimensiones"
+                                    placeholder="Ej: 120x75x20cm"
+                                    name="returnableMaterialDimensions"
+                                    value={formData.returnableMaterialDimensions}
+                                    onChange={handleChange}
+                                    error={errors.returnableMaterialDimensions}
+                                />
+                            )}
 
-                            <Input
-                                placeholder="Dimensiones"
-                                name="returnableMaterialDimensions"
-                                label="Dimensiones"
-                                value={formData.returnableMaterialDimensions}
-                                onChange={handleChange}
-                                error={errors.returnableMaterialDimensions}
-                            />
+                            {/* Boton */}
 
-                            {/* Acciones */}
-                            <div className="flex justify-end mt-22">
-                                <IconButton
-                                    variant="primary"
-                                    size="md"
-                                    type="submit"
-                                >
-                                    Crear
-                                </IconButton>
-                            </div>
-
+                                <div className="mt-1 flex items-end justify-end">
+                                    <IconButton
+                                        variant="primary"
+                                        size="md"
+                                        type="submit"
+                                        disabled={loading}
+                                    >
+                                        {loading ? "Guardando..." : "Crear"}
+                                    </IconButton>
+                                </div>
                         </div>
-                        
                     </div>
                 </form>
             </div>
-
         </div>
     )
-};
+}

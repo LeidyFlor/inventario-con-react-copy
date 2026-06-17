@@ -108,3 +108,48 @@ class ConsumableMaterial(Material):
 
     def __str__(self):
         return self.material_name
+
+class ReturnableMaterial(Material):
+    """
+    Hereda todos los campos de Material y agrega los específicos
+    de materiales devolutivos (se espera que sean retornados).
+    """
+
+    CATEGORIES = [
+        ('herramienta', 'Herramienta'),
+        ('maquinaria_equipos', 'Maquinaria y equipos'),
+        ('muebles_enseres', 'Muebles y enseres'),
+    ]
+
+    material_model = models.CharField(max_length=150)
+    material_serial = models.CharField(max_length=150)
+    material_category = models.CharField(max_length=20, choices=CATEGORIES)
+
+    # Solo si categoría es 'muebles_enseres' — formato: "120x75x20cm"
+    material_dimensions = models.CharField(max_length=50, null=True, blank=True)
+
+    class Meta:
+        db_table = 'returnable_material'
+
+    def __str__(self):
+        return self.material_name
+
+class TechnicalSheetFile(models.Model):
+    """
+    Tabla separada para los archivos de ficha técnica.
+    Un material devolutivo puede tener varios archivos.
+    """
+    material = models.ForeignKey(
+        ReturnableMaterial,
+        on_delete=models.CASCADE,  # Si se borra el material, se borran sus archivos
+        related_name='technical_files'
+    )
+    file_url = models.URLField()
+    file_name = models.CharField(max_length=255)  # nombre original del archivo
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'technical_sheet_file'
+
+    def __str__(self):
+        return f"{self.material.material_name} - {self.file_name}"

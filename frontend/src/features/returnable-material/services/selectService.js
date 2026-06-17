@@ -1,31 +1,49 @@
-export async function getMaterialCategory() {
-  // ubicacion de los datos a llamar, en este casp la categoría
-  const response = await fetch("/../../data/selects/materialCategory.json");
+// src/features/returnable-material/services/selectService.js
+// Mismo patrón que consumable-material — marca e inventoryManager vienen del backend,
+// categorías y estados son constantes que no necesitan request.
 
-  // Se recuperon los datos y se responde con su envio
-  return response.json();
+const API_URL = "/api"
+
+// Marcas activas para el select del formulario
+export async function getBrands() {
+    const token = sessionStorage.getItem("token")
+    const response = await fetch(`${API_URL}/brands/`, {
+        headers: { "Authorization": `Bearer ${token}` }
+    })
+    const brands = await response.json()
+    return brands
+        .filter(b => b.is_active)
+        .map(b => ({ value: b.id, label: b.name }))
 }
-// Estado del material
-export async function getMaterialState() {
-  // ubicacion de los datos a llamar
-  const response = await fetch("/../../data/selects/materialState.json");
 
-  // Se recuperon los datos y se responde con su envio
-  return response.json();
+// Cuentadantes (usuarios con is_accountant=True) para el select
+export async function getInventoryManagers() {
+    const token = sessionStorage.getItem("token")
+    const response = await fetch(`${API_URL}/inventory-managers/`, {
+        headers: { "Authorization": `Bearer ${token}` }
+    })
+    const managers = await response.json()
+    return managers.map(m => ({
+        value: m.id,
+        label: `${m.first_name} ${m.last_name}`
+    }))
 }
-//Para el nombre del cuentadante
-export async function getUserName() {
-  // ubicacion de los datos a llamar
-  const response = await fetch("/../../data/selects/usersName.json");
 
-  // Se recuperon los datos y se responde con su envio
-  return response.json();
+// Categorías del material devolutivo — constantes del modelo, no necesitan backend
+export function getMaterialCategories() {
+    return [
+        { value: "herramienta",          label: "Herramienta" },
+        { value: "maquinaria_equipos",   label: "Maquinaria y equipos" },
+        { value: "muebles_enseres",      label: "Muebles y enseres" },
+    ]
 }
-// para los nombres de la marca
-export async function getBrandName() {
-  // ubicacion de los datos a llamar
-  const response = await fetch("/../../data/selects/brandList.json");
 
-  // Se recuperon los datos y se responde con su envio
-  return response.json();
+// Motivos de inactividad — también constantes
+export function getMaterialStates() {
+    return [
+        { value: "no_disponible", label: "No disponible" },
+        { value: "prestado",      label: "Prestado" },
+        { value: "traslado",      label: "Traslado" },
+        { value: "baja",          label: "Baja" },
+    ]
 }
