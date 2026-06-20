@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'backend_sigi.modules.users',
+    'backend_sigi.modules.materials',
     'corsheaders',
 ]
 AUTH_USER_MODEL = 'users.Users' #Para usar el models de users propio

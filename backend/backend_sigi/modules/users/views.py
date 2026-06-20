@@ -8,6 +8,8 @@ from django.conf import settings
 from supabase import create_client
 from django.utils import timezone
 import requests as http_requests
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
 
 class UserViewSet(viewsets.ViewSet):
     """
@@ -28,9 +30,12 @@ class UserViewSet(viewsets.ViewSet):
     def create(self, request):
         """POST /api/users/ — crear nuevo usuario"""
         serializer = UserCreateSerializer(data=request.data)
-        if serializer.is_valid():
-            user = serializer.save() #aqui se crea el usuario
-        # Si viene imagen, subirla a Supabase Storage, si no se guarda normal el usuario
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        user = serializer.save()
+
+        # Si viene imagen, subirla a Supabase Storage
         file = request.FILES.get('user_image')
         if file:
             file_name = f"{user.id}/{timezone.now().strftime('%Y%m%d_%H%M%S')}_{file.name}"
@@ -49,9 +54,9 @@ class UserViewSet(viewsets.ViewSet):
             if response.status_code in (200, 201):
                 url = f"{settings.SUPABASE_URL}/storage/v1/object/public/user-images/{file_name}"
                 user.user_image = url
-                user.save() # si todo ok, se le agrega la img al usuario
-            return Response(UserSerializer(user).data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                user.save()
+
+        return Response(UserSerializer(user).data, status=status.HTTP_201_CREATED)
 
     def retrieve(self, request, pk=None):
         """GET /api/users/{id}/ — ver detalle de un usuario"""
@@ -73,6 +78,10 @@ class UserViewSet(viewsets.ViewSet):
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def partial_update(self, request, pk=None):
+        """PATCH /api/users/{id}/ — editar campos parciales (ej: is_active)"""
+        return self.update(request, pk)
 
     def destroy(self, request, pk=None):
         """DELETE /api/users/{id}/ — desactivar usuario (no elimina de la BD)"""
@@ -232,3 +241,15 @@ class GroupViewSet(viewsets.ViewSet):
         permissions = Permission.objects.filter(id__in=permission_ids)
         group.permissions.set(permissions)  # reemplaza todos los permisos del grupo. (borra los viejpos permisos y asigna los id de permisos enviados)
         return Response({'message': 'Permisos asignados correctamente', 'permissions': list(permissions.values('id', 'codename'))})
+
+
+# Para mostrar los userDocumentType — debe estar FUERA de cualquier clase
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def document_types(request):
+    """GET /api/document-types/ — retorna los tipos de documento disponibles"""
+    types = [
+        {'value': code, 'label': label}
+        for code, label in Users.USER_DOCUMENT_TYPES
+    ]
+    return Response(types)

@@ -1,17 +1,17 @@
 import DataTable from "@/shared/components/DataTable"
-import { materialsColumns } from "../table/materialsColumns"
-import { materials } from "../data/materials"
+import { getMaterialsColumns } from "../table/materialsColumns"
 import { Button } from "@/shared/"
 import { Link } from "react-router-dom"
 import { ClipboardList } from "lucide-react"
 import { useState } from "react"
-import { CreateConsumablePage} from "@/features/consumable-material";
-import { ReportConfigModal } from "../reports/components/ReportConfigModal";
-
+import { ReportConfigModal } from "../reports/components/ReportConfigModal"
+import { useMaterials } from "../hooks/useMaterials"
+import { Ping } from 'ldrs/react'
+import 'ldrs/react/Ping.css'
 
 export default function ListMaterialPage() {
- //Estado para el boton, si se clikea o no el boton de reporte
     const [isReportModalOpen, setIsReportModalOpen] = useState(false)
+    const { materials, setMaterials, loading } = useMaterials()
 
   return (      
     
@@ -28,8 +28,6 @@ export default function ListMaterialPage() {
               </div>
 
             <div className="flex mb-3 md:mb-0 gap-6">
-
-
                 
                     <Button
                         variant="secondary" 
@@ -53,10 +51,22 @@ export default function ListMaterialPage() {
         </div>
     
 
-        <DataTable
-            data={materials}
-            columns={materialsColumns}
-        />
+        {loading ? (
+            <div className="flex flex-col place-items-center gap-2">
+                <Ping
+                    size="45"
+                    speed="1.5"
+                    color="#56B526"
+                />
+                <p className="text-text-muted text-center">Cargando materiales</p>
+
+            </div>
+        ) : (
+            <DataTable
+                data={materials}
+                columns={getMaterialsColumns(setMaterials)}
+            />
+        )}
         <ReportConfigModal
             isOpen={isReportModalOpen}
             onClose={() => setIsReportModalOpen(false)}

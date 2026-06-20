@@ -26,7 +26,7 @@ export const returnableReportFields = [
     default: true,
   },
   {
-    key: "inventoryManger",
+    key: "inventoryManager",
     label: "Cuntadante",
     default: true,
   },

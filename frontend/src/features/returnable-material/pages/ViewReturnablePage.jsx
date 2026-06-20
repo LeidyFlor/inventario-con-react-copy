@@ -46,7 +46,7 @@ export default function ViewReturnablePage() {
                 { label: "Marca", value: returnable.brandName },
                 { label: "Modelo", value: returnable.returnableMaterialModel },
                 { label: "Serial", value: returnable.returnableMaterialSerial },
-                { label: "Cuentadante", value: returnable.inventoryManger },
+                { label: "Cuentadante", value: returnable.inventoryManager },
                 { label: "Cantidad", value: returnable.materialQuantity },
                 { label: "Valor unitario", value: formatMoney(returnable.materialUnitPrice) },
                 { label: "Valor total", value: formatMoney(returnable.materialTotalPrice) },

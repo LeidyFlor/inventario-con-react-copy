@@ -15,7 +15,7 @@ export default function ConsumableEditForm() {
         brandName: material?.brandName ?? "",
         returnableMaterialModel: material?.returnableMaterialModel ?? "",
         materialName: material?.materialName ?? "",
-        inventoryManger: material?.inventoryManger ?? "",
+        inventoryManager: material?.inventoryManager ?? "",
         materialDescription: material?.materialDescription ?? "",
         materialState: material?.materialState ?? "",
         materialQuantity: material?.materialQuantity ?? "",
@@ -96,7 +96,7 @@ export default function ConsumableEditForm() {
                     <div className="flex flex-col gap-4 place-items-center">
 
                         {/* Contenedor imagen */}
-                        <div className="flex flex-col gap-4 place-items-center">
+                        <div className="flex flex-col gap-4 place-items-center text-center">
                             <h2 className="w-80">Puede subir 1 archivo, archivos permitidos: PDF, PNG, JPG. Máximo de 10MB</h2>
 
                             {/* Imagen actual o inicial con letra */}
@@ -204,10 +204,10 @@ export default function ConsumableEditForm() {
 
                             <p className="parrafo-edit-style">Cuentadante:</p>
                             <Input
-                                name="inventoryManger"
-                                value={formData.inventoryManger}
+                                name="inventoryManager"
+                                value={formData.inventoryManager}
                                 onChange={handleChange}
-                                error={errors.inventoryManger}
+                                error={errors.inventoryManager}
                                 variant="isEdit"
                             />
 

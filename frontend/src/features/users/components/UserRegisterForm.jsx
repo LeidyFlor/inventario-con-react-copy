@@ -3,8 +3,13 @@ import React, {useState, useEffect} from "react";
 import { getDocumentTypes, getUserTypes } from "@/features/users/services/selectService";
 import { userShema } from "../schemas/userShema.js";
 import { UserRoundPlus } from "lucide-react";
+import { Alert } from "@/shared";
+import { createUser } from "../services/userService.js";
+import { useNavigate } from "react-router-dom";
+import { GroupCreateModalPage } from "@/features/groups";
 
 export default function UserRegisterForm() {
+    const navigate = useNavigate();
     const [formData, setFormData] = useState({
         userDocument: "",
         First_name: "",
@@ -19,7 +24,6 @@ export default function UserRegisterForm() {
         userDocumentType: "",
         userDateEnd: "",
         userDateStart: "",
-        is_active: true,
         is_accountant: false,
         userImage: []
     });
@@ -27,6 +31,8 @@ export default function UserRegisterForm() {
     // useState que me trae el arreglo mediante el get en servicios
     const [documentTypes, setDocumentTypes] = useState([]);
     const [userTypes, setUserTypes] = useState([]);
+    // Modal para crear grupo al vuelo
+    const [groupModalOpen, setGroupModalOpen] = useState(false);
 
     useEffect(() => {
         getDocumentTypes().then(setDocumentTypes);
@@ -43,8 +49,7 @@ export default function UserRegisterForm() {
         console.log("Nuevo estado", value)
     }
     
-    // Handle eventos. onChange cada vez que se escribe. onBlur toma el valor cuando uno sale del campo
-
+    // Handle eventos. 
     // ==================================================
     //              Handle Genérico
     // ==================================================
@@ -69,14 +74,15 @@ export default function UserRegisterForm() {
     /*
         Función que se ejecuta cuando se envía el formulario
     */
-
-    const handleSubmit = (e) => {
-
-        e.preventDefault();
+   
+   const handleSubmit = async (e) => {
+       
+       e.preventDefault();
+       console.log("handleSubmit ejecutado") //
         //Se valida el objeto formData usando el esquema definido con Zod
         // safeParse devuelve un objeto indicando si la validacion fue exitosa o no
         const result = userShema.safeParse(formData);
-
+       console.log("Resultado Zod:", result)
         //Si la validacion falla
         if (!result.success) {
             const fieldErrors = {};
@@ -84,11 +90,9 @@ export default function UserRegisterForm() {
             //Zod devuelve los errores en un arreglo llamado issues
             //se recorren para asociar cada error a su campo correspondiente
             result.error.issues.forEach((issue) => {
-                const field = issue.path[0]
-
 
                 //Se guarda el mensaje de error en el objeto fieldErrors
-                fieldErrors[field] = issue.message;
+                fieldErrors[issue.path[0]] = issue.message
             });
 
             //Se actualiza el estado de errores para mostrarlos en el formulario
@@ -97,9 +101,19 @@ export default function UserRegisterForm() {
             return;
         }
         //Si la validacion es exitosa se limpian los errores anteriores
-        setErrors({});
-        //result.data contiene los datos ya validados por Zod
-        console.log("Usuario valido:", result.data);
+        setErrors({})
+
+        try {
+            Alert.loading("Creando usuario...")
+            await createUser(result.data)
+            Alert.close()
+            await Alert.success("Usuario creado", "La contraseña fue enviada al correo del usuario")
+            navigate("/dashboard/user-list")
+            
+    } catch (error) {
+        Alert.close()
+        Alert.error("Error al crear usuario", error.message)
+    }
     }
 
     return (
@@ -116,10 +130,10 @@ export default function UserRegisterForm() {
                     <div className="h-0.5 bg-gradiant-title-line"></div>
 
                 </div>
-                <form className="grid grid-cols-1 w-fit items-center justify-center gap-10 " onSubmit={handleSubmit} noValidate>
+                <form className="grid grid-cols-1 w-fit items-center justify-center gap-2 " onSubmit={handleSubmit} noValidate>
                     {/* noValidate es para quitar las validaciones automaticas de html del navegador */}
                     {/* Inputs */}
-                    <div className="lg:grid lg:grid-cols-3 md:grid md:grid-cols-2 gap-4 my-0 mx-auto grid grid-cols-1 items-start">
+                    <div className="lg:grid lg:grid-cols-3 md:grid md:grid-cols-2 gap-x-6 gap-y-2 my-0 mx-auto grid grid-cols-1 items-start">
                         <Select
                             label="Tipo de documento"
                             name="userDocumentType"
@@ -128,12 +142,12 @@ export default function UserRegisterForm() {
                             onChange={handleChange}
                             error={errors.userDocumentType}
                         />
-                        <div className="flex flex-col place-items-center md:row-span-3 lg:col-start-2 lg:row-start-1 lg:row-span-3">
-                            <h2 className="mb-6 font-bold text-body">
+                        <div className="flex flex-col place-items-center md:row-span-2 lg:col-start-2 lg:row-start-1 lg:row-span-2">
+                            <h2 className="font-bold text-medium">
                                 Foto de perfil
                             </h2>
-                            <div className="flex flex-col gap-4 place-items-center">
-                                <h2 className="w-70">Puede subir 1 archivo, archivos permitidos: PNG, JPG. Máximo de 10MB</h2>
+                            <div className="flex flex-col gap-2 place-items-center text-center">
+                                <h2 className="w-70 text-text-muted text-small text-center">1 archivo: PDF, PNG, JPG. Máx 10MB.</h2>
                                 <FileInput
                                     value={formData.userImage}
                                     onChange={(files) =>
@@ -154,14 +168,34 @@ export default function UserRegisterForm() {
                             onChange={handleChange}
                             error={errors.userDocument}
                         />
-                        <Select
-                            label="Tipo de usuario"
-                            name="userType"
-                            options={userTypes}
-                            value={formData.userType}
-                            onChange={handleChange}
-                            error={errors.userType}
-                        />
+                        {/* Grupo: select + botón crear al lado */}
+                        <div className="flex flex-col gap-1 w-80">
+                            <div className="flex items-end gap-1">
+                                <Select
+                                    label="Grupo"
+                                    name="userType"
+                                    options={userTypes}
+                                    value={formData.userType}
+                                    onChange={handleChange}
+                                    error={errors.userType}
+                                />
+                                <div className="min-w-35">
+                                    <Button
+                                        variant="primary"
+                                        size="sm"
+                                        type="button"
+                                        
+                                        onClick={() => setGroupModalOpen(true)}
+                                    >
+                                        Crear grupo
+                                    </Button>
+
+                                </div>
+                            </div>
+                            {errors.userType && (
+                                <span className="text-red-800 text-sm">{errors.userType}</span>
+                            )}
+                        </div>
                         <Input
                             placeholder="Dirección"
                             name="userAddres"
@@ -171,7 +205,7 @@ export default function UserRegisterForm() {
                             error={errors.userAddres}
                         />
                         <Input
-                            placeholder="Ingrese su nombre completo"
+                            placeholder="Nombre(s)"
                             name="First_name"
                             label="Nombre(s)"
                             value={formData.First_name}
@@ -179,7 +213,7 @@ export default function UserRegisterForm() {
                             error={errors.userName}
                         />
                         <Input
-                            placeholder="Ingrese su nombre completo"
+                            placeholder="Apellido(s)"
                             name="Last_name"
                             label="Apellido(s)"
                             value={formData.Last_name}
@@ -248,23 +282,13 @@ export default function UserRegisterForm() {
                                 onChange={handleChange}
                                 error={errors.userDateEnd}
                             />
-                        <div className="flex place-items-center justify-center align-middle gap-3">
-                            <p className="parrafo-edit-style relative bottom-0.5">Estado:</p>
+                        
+                        <div className="flex place-self-center -items-center justify-center align-middle gap-3">
+                            <p className="parrafo-edit-style relative bottom-0.5 items-">¿Es cuentadante?:</p>
                             {/* Switch */}
                             <StatusSwitch
                                 checked={isActive}
-                                onChange={handleStatusChange}
-                                size="md"
-                                // inline-flex -> ocupa el espacio asignado
-                                className="inline-flex"
-                            />
-                        </div>
-                        <div className="flex place-items-center justify-center align-middle gap-3">
-                            <p className="parrafo-edit-style relative bottom-0.5">¿Es cuentadante?:</p>
-                            {/* Switch */}
-                            <StatusSwitch
-                                checked={isActive}
-                                onChange={handleStatusChange}
+                                onChange={handleChange}
                                 size="md"
                                 // inline-flex -> ocupa el espacio asignado
                                 className="inline-flex"
@@ -272,20 +296,11 @@ export default function UserRegisterForm() {
                             />
                         </div>
 
-                        {/* Acciones */}
-                        <div className="flex justify-end">
-                            <Button
-                                variant="primary"
-                                size="sm"
-                            >
-                                Nuevo grupo
-                            </Button>
-                        </div>
-
                         <div className="flex flex-col items-end justify-end gap-4">
                             <Button
                                 variant="primary"
                                 size="sm"
+                                type="button"
                             >
                                 Agregar tarea
                             </Button>
@@ -304,6 +319,25 @@ export default function UserRegisterForm() {
             </form>
             </div>
 
+            {groupModalOpen && (
+                <div
+                    className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+                    onClick={() => setGroupModalOpen(false)}
+                >
+                    <div onClick={(e) => e.stopPropagation()}>
+                        <GroupRegisterModal
+                            onClose={() => setGroupModalOpen(false)}
+                            onGroupCreated={(newGroup) => {
+                                // Agrega el nuevo grupo al select y lo deja seleccionado
+                                setUserTypes(prev => [...prev, newGroup])
+                                setFormData(prev => ({ ...prev, userType: String(newGroup.value) }))
+                                setGroupModalOpen(false)
+                            }}
+                        />
+                    </div>
+                </div>
+            )}
         </div>
+
     )
 };

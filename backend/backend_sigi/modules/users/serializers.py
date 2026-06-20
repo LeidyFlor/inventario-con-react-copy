@@ -7,6 +7,10 @@ from .models import Users, GroupProfile
 
 class UserSerializer(serializers.ModelSerializer):
     """Serializer para listar y ver detalle de usuarios"""
+    groups = serializers.SerializerMethodField()
+
+    def get_groups(self, obj):
+        return [{'id': g.id, 'name': g.name} for g in obj.groups.all()]
 
     class Meta:
         model = Users
@@ -27,6 +31,7 @@ class UserSerializer(serializers.ModelSerializer):
             'is_staff',
             'is_accountant',
             'user_image',
+            'groups',
             'date_joined',
         ]
         read_only_fields = ['id', 'date_joined']

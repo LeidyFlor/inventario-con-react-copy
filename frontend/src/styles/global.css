@@ -84,6 +84,8 @@
 }
 
 @layer utilities {
+    *{
+    }
     /* degradado fill contenedor verde */
     .bg-gradient-container-green { 
         background: linear-gradient(to bottom, var(--primary-300), var(--primary-50));
@@ -280,5 +282,16 @@
     }
     .swal-actions {
     gap: 2rem !important;
-}
+    }
+    /* Select Swal */
+    .swal2-input, .swal2-select {
+        border: 1px solid var(--semantic-border) !important;
+        border-radius: 0.5rem !important;
+        font-family: var(--main-font) !important;
+        font-size: var(--semantic-font-size-body) !important;
+        color: var(--semantic-text-primary) !important;
+        background: var(--semantic-input-fill-color) !important;
+        padding: 0.5rem !important;
+        width: 80% !important;
+    }
 }

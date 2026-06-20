@@ -26,7 +26,7 @@ export default function IconButton({
     return (
         <button 
             type={type}
-            className={`group relative overflow-hidden inline-flex items-center rounded-xl bg-gradient-primary
+            className={`group relative overflow-hidden inline-flex items-center rounded-xl bg-gradient-primary cursor-pointer
             ${sizes[size]}
 
             `

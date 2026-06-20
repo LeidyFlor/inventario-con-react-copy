@@ -5,7 +5,7 @@ export const returnableMaterial = [
     brandName: "DELL",
     returnableMaterialModel: "Optiplex",
     materialName: "Computador All-in-One",
-    inventoryManger: "Edward Velasquez",
+    inventoryManager: "Edward Velasquez",
     returnableMaterialSerial: "A9F3-7X2B-Q1",
     returnableMaterialCategory: "Equipo y maquinaria",
     materialDescription:
@@ -24,7 +24,7 @@ export const returnableMaterial = [
     brandName: "Bosch",
     returnableMaterialModel: "GSR 18V-55",
     materialName: "Taladro Inalámbrico Percutor",
-    inventoryManger: "Carlos Mendoza",
+    inventoryManager: "Carlos Mendoza",
     returnableMaterialSerial: "B2X8-4M9K-L5",
     returnableMaterialCategory: "Herramienta",
     materialDescription:
@@ -43,7 +43,7 @@ export const returnableMaterial = [
     brandName: "Mepal",
     returnableMaterialModel: "ErgoComfort 200",
     materialName: "Silla Ergonómica de Oficina",
-    inventoryManger: "Ana María Restrepo",
+    inventoryManager: "Ana María Restrepo",
     returnableMaterialSerial: "S4K1-9P6T-V3",
     returnableMaterialCategory: "Muebles y enseres",
     materialDescription:
@@ -62,7 +62,7 @@ export const returnableMaterial = [
     brandName: "Stanley",
     returnableMaterialModel: "STMT74377",
     materialName: "Juego de Llaves Expansivas x37",
-    inventoryManger: "Luis Fernando Gómez",
+    inventoryManager: "Luis Fernando Gómez",
     returnableMaterialSerial: "H7N2-5L1W-R8",
     returnableMaterialCategory: "Herramienta",
     materialDescription:
@@ -81,7 +81,7 @@ export const returnableMaterial = [
     brandName: "Caterpillar",
     returnableMaterialModel: "CAT-320D",
     materialName: "Planta Eléctrica Diésel",
-    inventoryManger: "Diana Marcela Pérez",
+    inventoryManager: "Diana Marcela Pérez",
     returnableMaterialSerial: "P0M3-8X7G-K4",
     returnableMaterialCategory: "Equipo y maquinaria",
     materialDescription:
@@ -100,7 +100,7 @@ export const returnableMaterial = [
     brandName: "Rimax",
     returnableMaterialModel: "Modular 4 Estantes",
     materialName: "Estantería Plástica Pesada",
-    inventoryManger: "Jorge Eliecer Torres",
+    inventoryManager: "Jorge Eliecer Torres",
     returnableMaterialSerial: "E5J9-2C6V-X1",
     returnableMaterialCategory: "Muebles y enseres",
     materialDescription:
@@ -119,7 +119,7 @@ export const returnableMaterial = [
     brandName: "HP",
     returnableMaterialModel: "LaserJet Pro",
     materialName: "Impresora Láser Multifuncional",
-    inventoryManger: "Martha Lucía Castro",
+    inventoryManager: "Martha Lucía Castro",
     returnableMaterialSerial: "F3K8-1N9M-P2",
     returnableMaterialCategory: "Equipo y maquinaria",
     materialDescription:
@@ -138,7 +138,7 @@ export const returnableMaterial = [
     brandName: "Makita",
     returnableMaterialModel: "GA4530",
     materialName: "Esmeriladora Angular 4-1/2",
-    inventoryManger: "Ricardo Antonio Silva",
+    inventoryManager: "Ricardo Antonio Silva",
     returnableMaterialSerial: "W6M2-7V4X-L9",
     returnableMaterialCategory: "Herramienta",
     materialDescription:
@@ -157,7 +157,7 @@ export const returnableMaterial = [
     brandName: "Moduart",
     returnableMaterialModel: "Genova L-Shape",
     materialName: "Escritorio en L Tipo Isla",
-    inventoryManger: "Sandra Milena Ortiz",
+    inventoryManager: "Sandra Milena Ortiz",
     returnableMaterialSerial: "Z1P9-5T3B-Q8",
     returnableMaterialCategory: "Muebles y enseres",
     materialDescription:
@@ -176,7 +176,7 @@ export const returnableMaterial = [
     brandName: "Epson",
     returnableMaterialModel: "PowerLite E20",
     materialName: "Video Proyector HDMI",
-    inventoryManger: "Gustavo Adolfo Marín",
+    inventoryManager: "Gustavo Adolfo Marín",
     returnableMaterialSerial: "R4X7-9K2M-V5",
     returnableMaterialCategory: "Equipo y maquinaria",
     materialDescription:
@@ -195,7 +195,7 @@ export const returnableMaterial = [
     brandName: "Truper",
     returnableMaterialModel: "SOCO-15",
     materialName: "Cautín para Soldar de 15W",
-    inventoryManger: "Patricia Elena Rojas",
+    inventoryManager: "Patricia Elena Rojas",
     returnableMaterialSerial: "Y3B8-2C7N-H1",
     returnableMaterialCategory: "Herramienta",
     materialDescription:
@@ -214,7 +214,7 @@ export const returnableMaterial = [
     brandName: "Socoda",
     returnableMaterialModel: "Inox-Pro 120",
     materialName: "Mesón de Trabajo en Acero Inoxidable",
-    inventoryManger: "Mauricio Andrés Ríos",
+    inventoryManager: "Mauricio Andrés Ríos",
     returnableMaterialSerial: "D9K4-6L2W-X7",
     returnableMaterialCategory: "Muebles y enseres",
     materialDescription:
@@ -233,7 +233,7 @@ export const returnableMaterial = [
     brandName: "Cisco",
     returnableMaterialModel: "Catalyst 2960",
     materialName: "Switch de Red 24 Puertos",
-    inventoryManger: "Claudia Patricia Jaramillo",
+    inventoryManager: "Claudia Patricia Jaramillo",
     returnableMaterialSerial: "J5M1-3P8T-G6",
     returnableMaterialCategory: "Equipo y maquinaria",
     materialDescription:
@@ -252,7 +252,7 @@ export const returnableMaterial = [
     brandName: "Fluke",
     returnableMaterialModel: "Fluke 115",
     materialName: "Multímetro Digital de Precisión",
-    inventoryManger: "Álvaro José Benítez",
+    inventoryManager: "Álvaro José Benítez",
     returnableMaterialSerial: "K2N8-7F4W-L3",
     returnableMaterialCategory: "Herramienta",
     materialDescription:
@@ -271,7 +271,7 @@ export const returnableMaterial = [
     brandName: "Industrias Cruz",
     returnableMaterialModel: "Lock-4P",
     materialName: "Locker Metálico de 4 Puestos",
-    inventoryManger: "Gloria Inés Herrera",
+    inventoryManager: "Gloria Inés Herrera",
     returnableMaterialSerial: "V8T3-9C1M-X5",
     returnableMaterialCategory: "Muebles y enseres",
     materialDescription:
@@ -290,7 +290,7 @@ export const returnableMaterial = [
     brandName: "Sony",
     returnableMaterialModel: "MDR-ZX110",
     materialName: "Diademas con Micrófono para Call Center",
-    inventoryManger: "Héctor Fabio Valencia",
+    inventoryManager: "Héctor Fabio Valencia",
     returnableMaterialSerial: "Q6B2-4P9R-Z1",
     returnableMaterialCategory: "Equipo y maquinaria",
     materialDescription:
@@ -309,7 +309,7 @@ export const returnableMaterial = [
     brandName: "DeWalt",
     returnableMaterialModel: "DWE4010",
     materialName: "Pulidora Angular de 4 Pulgadas",
-    inventoryManger: "Javier de Jesús Muñoz",
+    inventoryManager: "Javier de Jesús Muñoz",
     returnableMaterialSerial: "L7W1-5K3M-P9",
     returnableMaterialCategory: "Herramienta",
     materialDescription:
@@ -328,7 +328,7 @@ export const returnableMaterial = [
     brandName: "Maderkit",
     returnableMaterialModel: "Biblioteca Alta",
     materialName: "Estante Archivador de Madera",
-    inventoryManger: "Liliana María Villa",
+    inventoryManager: "Liliana María Villa",
     returnableMaterialSerial: "U3X8-9N4T-C2",
     returnableMaterialCategory: "Muebles y enseres",
     materialDescription:
@@ -347,7 +347,7 @@ export const returnableMaterial = [
     brandName: "Logitech",
     returnableMaterialModel: "K120",
     materialName: "Teclado USB Institucional",
-    inventoryManger: "César Augusto Salazar",
+    inventoryManager: "César Augusto Salazar",
     returnableMaterialSerial: "H4M9-1B6V-Q7",
     returnableMaterialCategory: "Equipo y maquinaria",
     materialDescription:
@@ -366,7 +366,7 @@ export const returnableMaterial = [
     brandName: "3M",
     returnableMaterialModel: "SecureFit 400",
     materialName: "Gafas de Protección Transparentes",
-    inventoryManger: "Olga Lucía Bermúdez",
+    inventoryManager: "Olga Lucía Bermúdez",
     returnableMaterialSerial: "X2V7-6L5K-M3",
     returnableMaterialCategory: "Herramienta",
     materialDescription:

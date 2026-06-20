@@ -1,44 +1,71 @@
 //src/features/users/table/userColumns.js
-// Componente reutilizable que muestra un switch para activar o desactivar estados
+import { useState } from "react"
 import { StatusSwitch } from "@/shared/";
-
-// Componente que contiene los botones de acciones (editar y eliminar) para cada usuario
 import UserRowActions from "../components/UserRowActions";
+import { Alert } from "@/shared"
+import { toggleUserStatus } from "../services/userService"
 
-// Definición de las columnas de la tabla de usuarios
-// Este arreglo suele usarse en librerías de tablas como TanStack Table
-export const usersColumns = [
+// Muestra los grupos como tags; si hay más de 1 los colapsa
+function GroupsTags({ groups }) {
+    const [expanded, setExpanded] = useState(false)
+    if (!groups || groups.length === 0) return <span className="text-text-muted text-small">Sin grupo</span>
+    if (groups.length !== 0) return <span className="bg-brand-soft text-brand text-small px-2 py-0.5 rounded-full">{groups[0].name}</span>
 
+    const visible = expanded ? groups : [groups[0]]
+    return (
+        <div className="flex flex-wrap gap-1">
+            {visible.map(g => (
+                <span key={g.id} className="bg-brand-soft text-brand text-small px-2 py-0.5 rounded-full">{g.name}</span>
+            ))}
+            <button
+                onClick={() => setExpanded(prev => !prev)}
+                className="text-small text-text-muted underline cursor-pointer"
+            >
+                {expanded ? "ver menos" : `+${groups.length - 1} más`}
+            </button>
+        </div>
+    )
+}
 
-    
-    
-    // Columna Nombre
+// Recibe setUsers para actualizar la lista localmente sin recargar. navigate viene del padre
+export const getUsersColumns = (setUsers, navigate) => [
+    // Columna Nombre (combina first_name + last_name del backend)
     {
-        accessorKey: "userName", // Campo del objeto user
-        header: "Nombre",    // Encabezado visible
+        id: "userName",
+        accessorFn: (row) => `${row.first_name} ${row.last_name}`,
+        header: "Nombre",
+        cell: ({ row }) => (
+            <span
+                onClick={() => navigate(`/dashboard/users/${row.original.id}/view`)}
+                className="cursor-pointer hover:underline"
+            >
+                {row.original.first_name} {row.original.last_name}
+            </span>
+        )
     },
-    
-    
-    // Columna userType
+
+    // Columna Tipo de usuario — muestra todos los grupos con expand
     {
-        accessorKey: "userType",
+        id: "userType",
         header: "Tipo de usuario",
-    },
-    
-    // Columna userDocument
-    {
-        accessorKey: "userDocument", // Propiedad del objeto user que se mostrará en la columna
-        header: "Número de documento",      // Título de la columnas
+        cell: ({ row }) => <GroupsTags groups={row.original.groups} />,
     },
 
-    // Columna userEmail
+    // Columna Número de documento
     {
-        accessorKey: "userEmail",
+        accessorKey: "user_document",
+        header: "Número de documento",
+    },
+
+    // Columna Email
+    {
+        accessorKey: "email",
         header: "Email",
     },
-    // Columna userTel
+
+    // Columna Teléfono
     {
-        accessorKey: "userTel",
+        accessorKey: "user_tel",
         header: "Teléfono",
     },
 
@@ -47,38 +74,40 @@ export const usersColumns = [
     {
         accessorKey: "is_active",
         header: "Estado",
-
-
-        // Render personalizado de la celda
-        // Permite mostrar un componente en lugar de solo texto
         cell: ({ row }) => {
-
-
-            // Se obtiene el objeto completo del usuario de la fila
             const user = row.original;
 
+            const handleChange = async (newValue) => {
+                // Si va a desactivar, pedir confirmación
+                if (!newValue) {
+                    const result = await Alert.confirm(
+                        "¿Desactivar usuario?",
+                        `${user.first_name} ${user.last_name} no podrá iniciar sesión.`
+                    )
+                    if (!result.isConfirmed) {
+                        setUsers(prev => [...prev])
+                        return
+                    }
+                }
 
-            // Función que se ejecuta cuando cambia el switch
-            const handleChange = (value) => {
-
-
-                // value representa el nuevo estado del switch (true o false)
-                console.log("Actualizar estado usuario:", user.user_id, value);
-
-
-                // Aquí normalmente se llamaría una API para actualizar el estado
-                // updateUserStatus(user.user_id, value)
-            };
-
+                try {
+                    await toggleUserStatus(user.id, newValue)
+                    // Actualiza el estado local sin recargar toda la lista
+                    setUsers(prev =>
+                        prev.map(u => u.id === user.id ? { ...u, is_active: newValue } : u)
+                    )
+                } catch {
+                    Alert.error("Error", "No se pudo actualizar el estado del usuario")
+                }
+            }
 
             return (
-                // Componente reutilizable para mostrar el switch
                 <StatusSwitch
-                    checked={user.is_active} // Estado actual del usuario
-                    onChange={handleChange}  // Función que maneja el cambio
-                    className="inline-flex" // OJOOOOOO para que se ponga derecho flex
+                    checked={user.is_active}
+                    onChange={handleChange}
+                    className="inline-flex"
                 />
-            );
+            )
         },
     },
 

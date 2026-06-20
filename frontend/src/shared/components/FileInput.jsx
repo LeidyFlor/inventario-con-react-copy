@@ -63,7 +63,7 @@ export default function FileInput({
     };
 
     return (
-        <div className="flex items-center gap-2">
+        <div className={multiple ? "grid grid-cols-3 gap-2" : "flex items-center gap-2"}>
             {value.map((file, i) => (
                 <div
                     key={i}
@@ -71,20 +71,20 @@ export default function FileInput({
                     onDragStart={() => setDragIndex(i)}
                     onDragOver={(e) => e.preventDefault()}
                     onDrop={() => reorder(dragIndex, i)}
-                    className="relative w-24 h-24 border rounded overflow-hidden group"
+                    className="relative w-16 h-16 border rounded overflow-hidden group"
                 >
                     {/* Render condicional: imagen vs archivo genérico */}
                     {isImage(file) ? (
                         <img src={previews[i]} className="w-full h-full object-cover" />
                     ) : (
-                        <div className="w-full h-full flex flex-col items-center justify-center bg-gray-100 text-[10px] px-1">
+                        <div className="w-full h-full flex items-center justify-center bg-gray-100 text-[10px] px-1">
                             <span className="font-semibold">PDF</span>
                             <span className="truncate w-full text-center">{file.name}</span>
                         </div>
                     )}
 
                     {/* Acciones hover: reorder visual + eliminar */}
-                    <div className="absolute top-1 right-1 flex flex-col gap-1 opacity-0 group-hover:opacity-100">
+                    <div className=" flex gap-1 opacity-0 group-hover:opacity-100">
                         <button className="w-7 h-7 bg-white rounded-full text-black text-xs">
                             ↔️
                         </button>
@@ -101,11 +101,11 @@ export default function FileInput({
             {/* Trigger de input oculto + loader */}
             <div
                 onClick={() => !isLoading && inputRef.current.click()}
-                className="w-24 h-24 border-2 border-dashed rounded flex items-center justify-center cursor-pointer bg-background"
+                className="w-16 h-16 border-2 border-dashed rounded flex items-center justify-center cursor-pointer bg-background"
             >
                 {isLoading ? (
                     <InfinityLoader
-                        size="55"
+                        size="28"
                         stroke="4"
                         strokeLength="0.15"
                         bgOpacity="0.1"
@@ -113,8 +113,8 @@ export default function FileInput({
                         color="black"
                     />
                 ) : (
-                    <span className="text-text-primary text-sm font-bold ">Seleccionar
-                            <CloudUpload className="place-self-center" />
+                    <span className="text-text-primary text-medium font-semibold ">Subir
+                            <CloudUpload className="place-self-center size-5" />
                     </span>
                 )}
             </div>
