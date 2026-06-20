@@ -3,6 +3,7 @@ import { getUsers } from "../services/userService"
 
 export function useUsers() {
     const [users, setUsers] = useState([])
+    const [user, setUser] = useState([null])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(null)
 

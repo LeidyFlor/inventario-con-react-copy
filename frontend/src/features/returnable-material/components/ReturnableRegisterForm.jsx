@@ -77,7 +77,7 @@ export default function ReturnableRegisterForm() {
 
     return (
         <div className="flex flex-col place-items-center justify-items-center relative">
-            <div className="bg-gradient-container-green border-4 border-border-green-container p-6 rounded-4xl w-fit mt-2 h-fit">
+            <div className="bg-gradient-container-green border-4 border-border-green-container p-6 rounded-4xl w-fit h-fit">
 
                 {/* Título */}
                 <div className="mb-6 max-w-max">

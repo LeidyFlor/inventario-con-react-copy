@@ -12,11 +12,11 @@ export default function Input({
 }) {
     const variants ={
         //Variante normal de formularios (fondo amarillo borde gris)
-        default: "rounded-2xl border-2 border-input-border text-medium text-text-primary bg-input-fill placeholder-text-primary hover:border-2 hover:border-focus-border focus:outline-none focus:ring-1 focus:ring-focus-ring",
+        default: "rounded-2xl border-2 border-input-border text-medium text-text-primary bg-input-fill placeholder-text-muted hover:border-2 hover:border-focus-border focus:outline-none focus:ring-1 focus:ring-focus-ring",
         //Variante cuando se edita un campo común (borde botton multicolor)
-        isEdit: "border-gradient-input-edit rounded-t-xl text-medium text-text-secundary placeholder-text-primary hover:rounded-2xl hover:border-2 hover:border-focus-border transition-all-duration-10 focus:outline-none focus:ring-1 focus:ring-focus-ring",
+        isEdit: "border-gradient-input-edit rounded-t-xl text-medium text-text-secundary placeholder-text-muted hover:rounded-2xl hover:border-2 hover:border-focus-border transition-all-duration-10 focus:outline-none focus:ring-1 focus:ring-focus-ring",
         //Variante cunaod se edita el nombre de elementos (border botton verde)
-        nameEdit: "border-b-2 border-border rounded-t-xl text-body font-semibold text-text-secundary text-center placeholder-text-primary hover:rounded-2xl hover:border-2 hover:border-focus-border transition-all-duration-10 focus:outline-none focus:ring-1 focus:ring-focus-ring",
+        nameEdit: "border-b-2 border-border rounded-t-xl text-body font-semibold text-text-secundary text-center placeholder-text-muted hover:rounded-2xl hover:border-2 hover:border-focus-border transition-all-duration-10 focus:outline-none focus:ring-1 focus:ring-focus-ring",
     }
     const isDate = type === "date";
     
@@ -47,7 +47,7 @@ export default function Input({
             {/* este classname permite escribir en todos los campos */}
             <div className={`
                 relative
-                h-12
+                h-10
                 flex
                 items-center
                 w-full
@@ -80,7 +80,7 @@ export default function Input({
                     className={`
                         relative
                         w-full
-                        h-12
+                        h-10
                         px-4
                         transition-all duration-300
                         ${variants[variant]}

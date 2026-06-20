@@ -9,7 +9,7 @@ import { toggleUserStatus } from "../services/userService"
 function GroupsTags({ groups }) {
     const [expanded, setExpanded] = useState(false)
     if (!groups || groups.length === 0) return <span className="text-text-muted text-small">Sin grupo</span>
-    if (groups.length === 1) return <span className="bg-brand-soft text-brand text-small px-2 py-0.5 rounded-full">{groups[0].name}</span>
+    if (groups.length !== 0) return <span className="bg-brand-soft text-brand text-small px-2 py-0.5 rounded-full">{groups[0].name}</span>
 
     const visible = expanded ? groups : [groups[0]]
     return (
@@ -27,14 +27,21 @@ function GroupsTags({ groups }) {
     )
 }
 
-// Recibe setUsers para actualizar la lista localmente sin recargar
-export const getUsersColumns = (setUsers) => [
-
+// Recibe setUsers para actualizar la lista localmente sin recargar. navigate viene del padre
+export const getUsersColumns = (setUsers, navigate) => [
     // Columna Nombre (combina first_name + last_name del backend)
     {
         id: "userName",
         accessorFn: (row) => `${row.first_name} ${row.last_name}`,
         header: "Nombre",
+        cell: ({ row }) => (
+            <span
+                onClick={() => navigate(`/dashboard/users/${row.original.id}/view`)}
+                className="cursor-pointer hover:underline"
+            >
+                {row.original.first_name} {row.original.last_name}
+            </span>
+        )
     },
 
     // Columna Tipo de usuario — muestra todos los grupos con expand

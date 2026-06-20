@@ -110,21 +110,21 @@ export default function UserEditForm() {
         <div className="flex flex-col place-items-center justify-items-center w-full">
 
             {/* contenedor verde */}
-            <div className="bg-gradient-container-green border-4 border-border-green-container p-6 rounded-4xl w-fit md:w-full mt-2">
+            <div className="bg-gradient-container-green border-4 border-border-green-container p-6 rounded-4xl w-fit md:w-full">
+                {/* contenedor princiapl */}
+                {/* CAMBIO GENERADO AQUÍ */}
+                <form className="flex flex-col lg:grid lg:grid-cols-[420px_1fr] lg:items-center 6 w-full" onSubmit={handleSubmit} noValidate>
+                    {/* Contenedor izquierdo */}
+                    {/* CAMBIO GENERADO AQUÍ */}
+                    <div className="w-full max-w-[320px] mx-auto flex flex-col items-center p-4 gap-4">
                 {/* contenenedor del titulo y la linea */}
-                <div className="mb-6 max-w-max">
-                    <h1 className="flex gap-2 text-gradient-title text-h3 pb-0.5">
+                <div className="mb-2 max-w-max">
+                    <h1 className="flex place-self-start gap-2 text-gradient-title text-h3 pb-0.5">
                         <FilePenLine className="text-brand" />
                         Editar usuario
                     </h1>{/*linea degradada del titulo*/}
                     <div className="h-0.5 bg-gradiant-title-line"></div>
                 </div>
-                {/* contenedor princiapl */}
-                {/* CAMBIO GENERADO AQUÍ */}
-                <form className="flex flex-col lg:grid lg:grid-cols-[420px_1fr] lg:items-center gap-8 w-full" onSubmit={handleSubmit} noValidate>
-                    {/* Contenedor izquierdo */}
-                    {/* CAMBIO GENERADO AQUÍ */}
-                    <div className="w-full max-w-[320px] mx-auto flex flex-col items-center p-4 gap-4">
                         {/* Contenedor fileInput Imagen del archivo. tipo de arhcivo, cantidad y tamano */}
                         <div className="flex flex-col gap-4 place-items-center">
                             {/* Imagen actual o inicial con letra */}
@@ -140,7 +140,7 @@ export default function UserEditForm() {
                                 </div>
                             )}
 
-                            <h2 className=" w-80">Puede subir 1 archivo, archivos permitidos: PDF, PNG, JPG. Máximo de 10MB</h2>
+                            <h2 className="w-70 text-text-muted text-small text-center">1 archivo: PDF, PNG, JPG. Máx 10MB.</h2>
                             {/* Botón OR FileInput — nunca los dos a la vez */}
                             {!showFileInput ? (
                                 <Button
@@ -191,9 +191,9 @@ export default function UserEditForm() {
                         </div>
                     </div>
                     {/* Contenedor derecho */}
-                    <div className="w-full flex flex-col gap-4 bg-background border-2 border-border-edit-informaion p-8 rounded-xl ">
+                    <div className="w-full flex flex-col gap-4 bg-background border-2 border-border-edit-informaion p-4 rounded-xl ">
                         {/* CAMBIO GENERADO AQUÍ */}
-                        <div className="grid grid-cols-1 md:grid-cols-2  gap-x-6 gap-y-5 items-center gap-4"> 
+                        <div className="grid grid-cols-1 md:grid-cols-2  gap-x-4 gap-y-3 items-center gap-4"> 
                             <div>
                                 <p className="parrafo-edit-style ">Tipo de documento:</p>
                                 <Select
@@ -303,7 +303,7 @@ export default function UserEditForm() {
                                 />
                             </div>
                             {/* botones de accion */}
-                            <div className="col-span-1 md:col-span-2 flex justify-between place-items-center gap-4 pt-4">
+                            <div className="col-span-1 md:col-span-2 flex justify-between place-items-center ">
                                 <div className="place-items-start">
                                     <Button
                                         variant="secondary"

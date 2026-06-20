@@ -98,7 +98,7 @@ export const IconButtonReal = React.forwardRef(function IconButton(
             </span>
             {/* Solo aparece si se pasa label */}
             {label && (
-                <span className="text-small mt-1 text-center leading-tight ">
+                <span className="text-medium mt-1 text-center leading-tight ">
                     {label}
                 </span>
             )}

@@ -1,0 +1,1 @@
+export { default as GroupCreateModalPage } from "./pages/GroupCreateModalPage.jsx";

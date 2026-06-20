@@ -1,7 +1,7 @@
 import DataTable from "@/shared/components/DataTable"
 import { getUsersColumns } from "../table/usersColumns"
 import { Button } from "@/shared/"
-import { Link } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom"
 import { ClipboardList } from "lucide-react"
 import { ReportConfigModal } from "../reports/components/ReportConfigModal";
 import { useState } from "react"
@@ -10,12 +10,13 @@ import { Ping } from 'ldrs/react'
 import 'ldrs/react/Ping.css'
 
 export default function ListUserPage() {
+    const navigate = useNavigate();
     const [isReportModalOpen, setIsReportModalOpen] = useState(false)
     const { users, setUsers, loading } = useUsers()
 
   return (      
     
-    <div className="p-6">
+    <div className="p-2">
         <div className="flex justify-between "> 
               {/* contenenedor del titulo y la linea */}
               <div className=" mb-6 max-w-max">
@@ -63,7 +64,7 @@ export default function ListUserPage() {
         ) : (
             <DataTable
                 data={users}
-                columns={getUsersColumns(setUsers)}
+                columns={getUsersColumns(setUsers, navigate)} //es pasado al hijo
             />
         )}
 

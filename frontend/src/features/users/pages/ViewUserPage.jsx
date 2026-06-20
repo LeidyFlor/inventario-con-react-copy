@@ -1,13 +1,36 @@
 import { ViewPageTemplate, ViewDetailCard, Button } from "@/shared/";
 import { UserRound } from "lucide-react";
-import { users } from "../data/users";
 import { useNavigate, useParams } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Ping } from 'ldrs/react'
+import 'ldrs/react/Ping.css'
 
 export default function ViewUserPage(){
     const navigate = useNavigate();
     const { id } = useParams(); // 👈 obtiene el id de la URL. usa String
+    const [user, setUser] = useState(null);
+    const [loading, setLoading] = useState(true);
 
-    const user = users.find(u => u.id === Number(id)); // 👈 busca el usuario, se convierte string a nummero, useParas siempre devulve string
+    useEffect(() => {
+        const token = sessionStorage.getItem("token");
+        fetch(`/api/users/${id}/`, {
+            headers: { "Authorization": `Bearer ${token}` }
+        })
+            .then(res => res.json())
+            .then(data => { setUser(data); setLoading(false); })
+            .catch(() => setLoading(false));
+    }, [id]);
+    if (loading) return (
+            <div className="flex flex-col place-items-center gap-2">
+                <Ping
+                    size="45"
+                    speed="1.5"
+                    color="#56B526"
+                />
+                <p className="text-text-muted text-center">Cargando usuarios</p>
+
+            </div>
+        );
 
     if (!user) return <p>Usuario no encontrado</p>;
 
@@ -25,12 +48,12 @@ export default function ViewUserPage(){
     };
 
     return(
-
+            // se deben colocar los nombres de los campos del backend
             <ViewPageTemplate
                 title="Perfil de usuario"
                 icon={<UserRound className="text-brand"/>}
-                image={user.foto}
-                name={user.userName}
+                image={user.user_image}
+                name={`${user.first_name} ${user.last_name}`}
                 estado={user.is_active}
                 // onToggleEstado={() => handleToggle()}
                 onEdit={handleEdit}
@@ -42,16 +65,16 @@ export default function ViewUserPage(){
                 }
             >
                 <ViewDetailCard fields={[
-                    { label: "Tipo de documento", value: user.userDocumentType },
-                    { label: "Número de documento", value: user.userDocument },
-                    { label: "Tipo de usuario", value: user.userType },
-                    { label: "Fecha inicio", value: formatDate(user.userDateStart) },
-                    { label: "Fecha fin", value: formatDate(user.userDateEnd) },
-                    { label: "Correo electrónico", value: user.userEmail },
-                    { label: "Número telefónico", value: user.userTel },
-                    { label: "Dirección", value: user.userAddres },
-                    { label: "Segundo teléfono", value: user.userTel2 },
-                    { label: "Correo institucional", value: user.userEmail2 },
+                    { label: "Tipo de documento", value: user.user_document_type },
+                    { label: "Número documento", value: user.user_document },
+                    { label: "Grupo", value: user.groups?.map(g => g.name).join(",") },
+                    { label: "Fecha inicio", value: formatDate(user.user_date_start) },
+                    { label: "Fecha fin", value: formatDate(user.user_date_end) },
+                    { label: "Correo electrónico", value: user.email },
+                    { label: "Número telefónico", value: user.user_tel },
+                    { label: "Dirección", value: user.user_addres },
+                    { label: "Segundo teléfono", value: user.user_tel2 },
+                    { label: "Correo institucional", value: user.user_email2 },
                 ]} />
             </ViewPageTemplate>
     )

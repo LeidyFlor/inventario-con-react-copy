@@ -183,7 +183,7 @@ export default function DataTable({ data, columns }) {
                                 {row.getVisibleCells().map(cell => (
 
 
-                                    <td key={cell.id} className="p-3 border-b">
+                                    <td key={cell.id} className="py-2em px-3 border-b">
 
 
                                         {/* Render dinámico del contenido de la celda */}

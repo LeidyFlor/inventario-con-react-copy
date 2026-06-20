@@ -26,7 +26,7 @@ export default function TechnicalFilesInput({
     const [isLoading, setIsLoading] = useState(false)
     const [dragIndex, setDragIndex] = useState(null) // solo aplica a newFiles
 
-    // ─── Utilidades de tipo ──────────────────────────────────────────────────
+    //  Utilidades de tipo 
 
     // Discrimina si un archivo existente es imagen por su extensión en la URL
     const existingIsImage = (file) => {
@@ -38,7 +38,7 @@ export default function TechnicalFilesInput({
     // Discrimina si un File nuevo es imagen por su MIME type
     const newIsImage = (file) => file.type.startsWith("image/")
 
-    // ─── Previews para archivos nuevos (ObjectURL) ───────────────────────────
+    //  Previews para archivos nuevos (ObjectURL) 
     const newPreviews = useMemo(
         () => newFiles.map((f) => (newIsImage(f) ? URL.createObjectURL(f) : null)),
         [newFiles]
@@ -51,7 +51,7 @@ export default function TechnicalFilesInput({
         }
     }, [newPreviews])
 
-    // ─── Agregar archivos nuevos ─────────────────────────────────────────────
+    //  Agregar archivos nuevos 
     const handleFiles = async (files) => {
         setIsLoading(true)
         await new Promise((r) => setTimeout(r, 500))
@@ -66,14 +66,14 @@ export default function TechnicalFilesInput({
         setIsLoading(false)
     }
 
-    // ─── Eliminar archivo nuevo ──────────────────────────────────────────────
+    //  Eliminar archivo nuevo 
     const removeNew = (i) => {
         const copy = [...newFiles]
         copy.splice(i, 1)
         onNewFilesChange(copy)
     }
 
-    // ─── Reordenar archivos nuevos por drag & drop ───────────────────────────
+    //  Reordenar archivos nuevos por drag & drop 
     const reorderNew = (from, to) => {
         const copy = [...newFiles]
         const [moved] = copy.splice(from, 1)
@@ -81,13 +81,13 @@ export default function TechnicalFilesInput({
         onNewFilesChange(copy)
     }
 
-    // ─── Cuántos archivos más se pueden agregar ──────────────────────────────
+    //  Cuántos archivos más se pueden agregar 
     const canAddMore = existingFiles.length + newFiles.length < maxFiles
 
     return (
         <div className="grid grid-cols-3 gap-2">
 
-            {/* ── Archivos existentes del backend ──────────────────────────── */}
+            {/*  Archivos existentes del backend  */}
             {existingFiles.map((file) => (
                 <div
                     key={`existing-${file.id}`}
@@ -126,7 +126,7 @@ export default function TechnicalFilesInput({
                 </div>
             ))}
 
-            {/* ── Archivos nuevos (File objects, aún no subidos) ───────────── */}
+            {/*  Archivos nuevos (File objects, aún no subidos)  */}
             {newFiles.map((file, i) => (
                 <div
                     key={`new-${i}`}
@@ -169,7 +169,7 @@ export default function TechnicalFilesInput({
                 </div>
             ))}
 
-            {/* ── Botón para agregar más archivos (se oculta al llegar al límite) ── */}
+            {/*  Botón para agregar más archivos (se oculta al llegar al límite)*/}
             {canAddMore && (
                 <div
                     onClick={() => !isLoading && inputRef.current.click()}

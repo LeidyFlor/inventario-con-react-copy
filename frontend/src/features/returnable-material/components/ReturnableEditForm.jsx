@@ -18,16 +18,16 @@ async function updateReturnable(id, formData, newImageFile) {
     const token = sessionStorage.getItem("token")
     const data = new FormData()
 
-    data.append("brand",                formData.brandName)
-    data.append("inventory_manager",    formData.inventoryManager)
-    data.append("material_name",        formData.materialName)
-    data.append("material_description", formData.materialDescription)
+    data.append("brand",formData.brandName)
+    data.append("inventory_manager",formData.inventoryManager)
+    data.append("material_name",formData.materialName)
+    data.append("material_description",formData.materialDescription)
     data.append("material_barcode_sena",formData.materialBarcodeSena)
-    data.append("material_unit_price",  formData.materialUnitPrice)
-    data.append("material_location",    formData.materialLocation || "")
-    data.append("material_model",       formData.returnableMaterialModel)
-    data.append("material_serial",      formData.returnableMaterialSerial)
-    data.append("material_category",    formData.returnableMaterialCategory)
+    data.append("material_unit_price",formData.materialUnitPrice)
+    data.append("material_location",formData.materialLocation || "")
+    data.append("material_model",formData.returnableMaterialModel)
+    data.append("material_serial",formData.returnableMaterialSerial)
+    data.append("material_category",formData.returnableMaterialCategory)
     if (formData.returnableMaterialDimensions) {
         data.append("material_dimensions", formData.returnableMaterialDimensions)
     }
@@ -51,40 +51,40 @@ export default function ReturnableEditForm() {
     const { id } = useParams()
     const navigate = useNavigate()
 
-    // ── Estado del formulario ────────────────────────────────────────────────
+    //  Estado del formulario 
     const [formData, setFormData] = useState({
-        materialBarcodeSena:          "",
-        brandName:                    "",
-        returnableMaterialModel:      "",
-        materialName:                 "",
-        inventoryManager:             "",
-        materialDescription:          "",
-        materialUnitPrice:            "",
-        materialLocation:             "",
-        returnableMaterialSerial:     "",
-        returnableMaterialCategory:   "",
-        returnableMaterialDimensions: "",
+        materialBarcodeSena:"",
+        brandName:"",
+        returnableMaterialModel:"",
+        materialName:"",
+        inventoryManager:"",
+        materialDescription:"",
+        materialUnitPrice:"",
+        materialLocation:"",
+        returnableMaterialSerial:"",
+        returnableMaterialCategory:"",
+        returnableMaterialDimensions:"",
     })
     const [errors,  setErrors]  = useState({})
     const [loading, setLoading] = useState(true)   // cargando datos del backend
     const [saving,  setSaving]  = useState(false)  // enviando el PATCH
 
-    // ── Imagen principal ─────────────────────────────────────────────────────
+    //  Imagen principal 
     const [currentImage,   setCurrentImage]   = useState(null)  // URL del backend
     const [newImageFiles,  setNewImageFiles]  = useState([])    // File[] si el usuario cambia la imagen
     const [showFileInput,  setShowFileInput]  = useState(false)
 
-    // ── Fichas técnicas ──────────────────────────────────────────────────────
-    const [existingFiles,  setExistingFiles]  = useState([])   // [{id, file_url, file_name}] del backend
-    const [newTechFiles,   setNewTechFiles]   = useState([])   // File[] nuevos
-    const [removedFileIds, setRemovedFileIds] = useState([])   // IDs a eliminar al guardar
+    //  Fichas técnicas (vienen del backend)
+    const [existingFiles,  setExistingFiles]  = useState([])// [{id, file_url, file_name}] del backend
+    const [newTechFiles,   setNewTechFiles]   = useState([])// File[] nuevos
+    const [removedFileIds, setRemovedFileIds] = useState([])// IDs a eliminar al guardar
 
-    // ── Opciones de selects ──────────────────────────────────────────────────
-    const [brands,    setBrands]    = useState([])
-    const [managers,  setManagers]  = useState([])
+    //  Opciones de selects 
+    const [brands,setBrands]= useState([])
+    const [managers,setManagers]= useState([])
     const categories = getMaterialCategories()
 
-    // ── Carga inicial — material + selects ───────────────────────────────────
+    //  Carga inicial — material + selects 
     useEffect(() => {
         async function load() {
             try {
@@ -101,17 +101,17 @@ export default function ReturnableEditForm() {
 
                 // Llenar el formulario con los datos del backend
                 setFormData({
-                    materialBarcodeSena:          material.material_barcode_sena ?? "",
-                    brandName:                    String(material.brand),
-                    returnableMaterialModel:      material.material_model ?? "",
-                    materialName:                 material.material_name ?? "",
-                    inventoryManager:             String(material.inventory_manager),
-                    materialDescription:          material.material_description ?? "",
-                    materialUnitPrice:            material.material_unit_price ?? "",
-                    materialLocation:             material.material_location ?? "",
-                    returnableMaterialSerial:     material.material_serial ?? "",
-                    returnableMaterialCategory:   material.material_category ?? "",
-                    returnableMaterialDimensions: material.material_dimensions ?? "",
+                    materialBarcodeSena:material.material_barcode_sena ?? "",
+                    brandName:String(material.brand),
+                    returnableMaterialModel:material.material_model ?? "",
+                    materialName:material.material_name ?? "",
+                    inventoryManager:String(material.inventory_manager),
+                    materialDescription:material.material_description ?? "",
+                    materialUnitPrice:material.material_unit_price ?? "",
+                    materialLocation:material.material_location ?? "",
+                    returnableMaterialSerial:material.material_serial ?? "",
+                    returnableMaterialCategory:material.material_category ?? "",
+                    returnableMaterialDimensions:material.material_dimensions ?? "",
                 })
 
                 setCurrentImage(material.material_image ?? null)
@@ -127,7 +127,7 @@ export default function ReturnableEditForm() {
         load()
     }, [id])
 
-    // ── Handlers ─────────────────────────────────────────────────────────────
+    //  Handlers 
     const handleChange = (e) => {
         const { name, value } = e.target
         setFormData(prev => ({ ...prev, [name]: value }))
@@ -177,7 +177,7 @@ export default function ReturnableEditForm() {
         }
     }
 
-    // ── Loading ───────────────────────────────────────────────────────────────
+    //  Loading 
     if (loading) {
         return (
             <div className="flex justify-center items-center h-64">
@@ -186,7 +186,7 @@ export default function ReturnableEditForm() {
         )
     }
 
-    // ── Render ────────────────────────────────────────────────────────────────
+    //  Render 
     return (
         <div className="flex flex-col place-items-center justify-items-center w-full">
             <div className="bg-gradient-container-green border-4 border-border-green-container p-6 rounded-4xl w-fit md:w-full mt-2">
@@ -205,7 +205,7 @@ export default function ReturnableEditForm() {
                     onSubmit={handleSubmit}
                     noValidate
                 >
-                    {/* ── Columna izquierda: imagen + fichas técnicas ─────── */}
+                    {/*  Columna izquierda: imagen + fichas técnicas  */}
                     <div className="flex flex-col gap-6 items-center">
 
                         {/* Imagen principal */}
@@ -266,7 +266,7 @@ export default function ReturnableEditForm() {
                                 existingFiles={existingFiles}
                                 onRemoveExisting={(fileId) => {
                                     setExistingFiles(prev => prev.filter(f => f.id !== fileId))
-                                    setRemovedFileIds(prev => [...prev, fileId])
+                                    setRemovedFileIds(prev => [...prev, fileId]) //acumula para borrarlo al guardar
                                 }}
                                 newFiles={newTechFiles}
                                 onNewFilesChange={setNewTechFiles}
@@ -275,7 +275,7 @@ export default function ReturnableEditForm() {
                         </div>
                     </div>
 
-                    {/* ── Columna derecha: campos del material ─────────────── */}
+                    {/*  Columna derecha: campos del material  */}
                     <div className="grid grid-cols-dense bg-background border-2 border-border-edit-informaion p-8 rounded-xl">
                         <div className="md:grid md:grid-cols-[160px_1fr] items-center gap-4">
 

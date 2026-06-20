@@ -25,13 +25,13 @@ export default function ViewPageTemplate({
     children,          // aquí va el ViewDetailCard u otro contenido
 }) {
     return (
-        <div className=" flex flex-col place-items-center justify-items-center gap-6 w-full">
+        <div className=" flex flex-col place-items-center justify-items-center gap-4 w-full">
             {/* contenedor verde */}
             <div className="bg-gradient-container-green border-4 border-border-green-container p-6 rounded-4xl w-fit md:w-full place-self-center">
 
             {/* Encabezado, icon y title se reemplazan */}
                 <div className="flex md:items-start flex-col md:flex-row md:justify-between place-items-center">
-                <div className="mb-6 max-w-max">
+                <div className="mb-3 max-w-max">
                     <h3 className="flex gap-2 text-gradient-title text-h3 pb-0.5">{icon} {title}</h3>
                         
                     <div className="h-0.5 bg-gradiant-title-line"></div>
@@ -49,7 +49,7 @@ export default function ViewPageTemplate({
             <div className="flex flex-col lg:grid lg:grid-flow-col-dense gap-2 lg:gap-0">
 
                 {/* Panel izquierdo */}
-                <div className="flex flex-col items-center gap-4">
+                <div className="flex flex-col items-center gap-4 justify-center">
                         {/* Imagen o inicial */}
                         {image ? (
                             <img
@@ -58,7 +58,7 @@ export default function ViewPageTemplate({
                                 className="w-48 h-48 object-cover rounded-lg"
                             />
                         ) : (
-                            <div className="w-60 h-60 rounded-2xl flex items-center justify-center bg-surface border-2 border-input-border">
+                            <div className="w-48 h-48 rounded-lg flex items-center justify-center bg-surface border-2 border-input-border">
                                 <span className="text-2xl font-body text-text-primary">
                                     {name?.charAt(0).toUpperCase()}
                                 </span>
