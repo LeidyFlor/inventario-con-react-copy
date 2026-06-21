@@ -90,14 +90,27 @@ class UserCreateSerializer(serializers.ModelSerializer):
         return user
 
 
-class UserUpdateSerializer(serializers.ModelSerializer):
     """Serializer para editar usuarios — sin password"""
-
+class UserUpdateSerializer(serializers.ModelSerializer):
+    groups = serializers.PrimaryKeyRelatedField(
+        queryset=Group.objects.all(),
+        many=True,
+        required=False
+    )
+    email = serializers.EmailField(required=False)
+    def validate_email(self, value):
+        # Obtiene el usuario que se está editando
+        user = self.instance
+        # Verifica si otro usuario ya tiene ese correo
+        if Users.objects.filter(email=value).exclude(pk=user.pk).exists():
+            raise serializers.ValidationError("Este correo ya está registrado por otro usuario.")
+        return value
     class Meta:
         model = Users
         fields = [
             'first_name',
             'last_name',
+            'email',
             'user_email2',
             'user_document_type',
             'user_document',
@@ -108,7 +121,17 @@ class UserUpdateSerializer(serializers.ModelSerializer):
             'user_date_end',
             'is_active',
             'is_accountant',
+            'groups',
         ]
+        def update(self, instance, validated_data): #se activa automaticamente
+            groups = validated_data.pop('groups', None)
+            # Si cambia el email, sincronizar el username
+            if 'email' in validated_data:
+                validated_data['username'] = validated_data['email']
+            instance = super().update(instance, validated_data)
+            if groups is not None:
+                instance.groups.set(groups)
+            return instance
 
 class GroupSerializer(serializers.ModelSerializer):
     """Serializer para listar y gestionar grupos"""

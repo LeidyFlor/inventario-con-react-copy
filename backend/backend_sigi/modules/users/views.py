@@ -74,10 +74,29 @@ class UserViewSet(viewsets.ViewSet):
         except Users.DoesNotExist:
             return Response({'error': 'Usuario no encontrado'}, status=status.HTTP_404_NOT_FOUND)
         serializer = UserUpdateSerializer(user, data=request.data, partial=True)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        serializer.save()
+        # Guardar imagen  igual que en create
+        file = request.FILES.get('user_image')
+        if file:
+            file_name = f"{user.id}/{timezone.now().strftime('%Y%m%d_%H%M%S')}_{file.name}"
+            storage_url = f"{settings.SUPABASE_URL}/storage/v1/object/user-images/{file_name}"
+            response = http_requests.post(
+                storage_url,
+                headers={
+                    'Authorization': f'Bearer {settings.SUPABASE_SERVICE_KEY}',
+                    'apikey': settings.SUPABASE_SERVICE_KEY,
+                    'Content-Type': file.content_type,
+                },
+                data=file.read()
+            )
+            if response.status_code in (200, 201):
+                url = f"{settings.SUPABASE_URL}/storage/v1/object/public/user-images/{file_name}"
+                user.user_image = url
+                user.save()
+        # retorna informacion ca,biada y la imagen cuando ya fue cargada
+        return Response(UserSerializer(user).data)
 
     def partial_update(self, request, pk=None):
         """PATCH /api/users/{id}/ — editar campos parciales (ej: is_active)"""
