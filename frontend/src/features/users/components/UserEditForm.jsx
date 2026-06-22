@@ -2,7 +2,7 @@ import { Input, Button, IconButton, Select, StatusSwitch, FileInput, Alert, Mult
 import React, {useState, useEffect} from "react";
 import { getDocumentTypes, getUserTypes } from "@/features/users/services/selectService";
 import { userEditSchema } from "../schemas/userEditShema.js";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useBlocker } from "react-router-dom";
 import { updateUser } from "../services/userService.js";
 import { fileSchema } from "@/shared";
 import { FilePenLine } from "lucide-react";
@@ -15,6 +15,7 @@ export default function UserEditForm() {
     const navigate = useNavigate();
     const [user, setUser] = useState(null)
     const [loading, setLoading] = useState(true)
+    const [isDirty, setIsDirty] = useState(false)
     //Fromateo de fecha de Iso a AAAA-MM-DD
     const formatDateForInput = (dateString) => {
         if (!dateString) return "";
@@ -44,11 +45,31 @@ export default function UserEditForm() {
     const [imagen, setImagen] = useState([]);
     //Boton que para mostrar el FielInput
     const [showFileInput, setShowFileInput] = useState(false);
+    // bloquea la naveacion para preguntar antes de poder darle en cancelar o ir atras
+    const blocker = useBlocker(
+        ({ currentLocation, nextLocation }) =>
+            isDirty && currentLocation.pathname !== nextLocation.pathname
+    )
 
     useEffect(() => {
         getDocumentTypes().then(setDocumentTypes);
         getUserTypes().then(setUserTypes);
     }, []); 
+    useEffect(() => {
+        if (blocker.state === "blocked") {
+            Alert.warning(
+                "¿Salir sin guardar?",
+                "Los cambios no guardados se perderán"
+            ).then((result) => {
+                if (result.isConfirmed) {
+                    setIsDirty(false)
+                    blocker.proceed()
+                } else {
+                    blocker.reset()
+                }
+            })
+        }
+    }, [blocker])
 
     useEffect(() =>{
         const token = sessionStorage.getItem("token")
@@ -114,6 +135,7 @@ export default function UserEditForm() {
             //Se actualiza unicamente lo que cambió
             [name]: value,
         }));
+        setIsDirty(true) //para detectar cuando se haya hecho un cambio para mostrar la alerta de no guardado
     };
     // ==================================================
     //              Handle Submit
@@ -152,6 +174,7 @@ export default function UserEditForm() {
         try {
             Alert.loading("Guardando cambios...")
             await updateUser(id, result.data)
+            setIsDirty(false)//caundo los datos son correctos se quita el bloqueo de la navegacion
             Alert.close()
             await Alert.success("Usuario Actualizado", "Los cambios fueron guardados correctamente")
             navigate(`/dashboard/users/${user.id}/view`)

@@ -1,5 +1,6 @@
+import { Alert } from "@/shared";
 //Funte de datos de usuarios (mock o fuente centralizada)
-import { users } from "../../data/users";
+import { getUsers } from "../../services/userService";
 
 //Utilidad pra transformar datos en dataset de reporte
 import buildReportDataset from "../utils/buildReportDataSet";
@@ -10,12 +11,13 @@ import { generatePdfReport } from "./generatePdfReport";
 
 //Caso de uso: orquestador de generacion de reportes de usuarios
 //Patron: Aplication services (coordina utilidades y servicios)
-export function generateUserReport({
+export async function generateUserReport({
   format, //"excel" | "pdf"
   selectedFields, //Campos seleccionados por el usuario
   scope, //Alcance del reporte
   userDocument, //Filtro opcional
 }) {
+  const users = await getUsers()
   //Construccion del dataset (desacoplado de la UI)
 
   const { headers, rows } = buildReportDataset({
@@ -27,7 +29,7 @@ export function generateUserReport({
 
   //Validacion: evita generar archivos vacios
   if (!rows.length) {
-    alert("No hay datos para generar el reporte.");
+    Alert.error("No hay datos para generar el reporte.");
     return; //Corte de ejecucion
   }
 
