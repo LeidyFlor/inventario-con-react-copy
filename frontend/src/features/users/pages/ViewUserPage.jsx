@@ -30,7 +30,7 @@ export default function ViewUserPage(){
                 <p className="text-text-muted text-center">Cargando usuarios</p>
 
             </div>
-        );
+    );
 
     if (!user) return <p>Usuario no encontrado</p>;
 

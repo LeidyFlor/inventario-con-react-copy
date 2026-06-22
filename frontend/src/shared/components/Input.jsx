@@ -7,6 +7,7 @@ export default function Input({
     className = "", //para definir ancho del contenedor
     error,
     variant = "default",
+    value,
     ...props
     // porps son las propiedades de un componenete. Y label para que por defecto el campo sea tipo texto
 }) {
@@ -77,6 +78,8 @@ export default function Input({
                     // toma el input de cuando se crea el input
                     type={type}
                     size={isDate ? 12: undefined}
+                    value={value}
+                    style={isDate ? { color: !value ? 'var(--color-text-muted)' : 'var(--color-text-primary)' } : undefined}
                     className={`
                         relative
                         w-full

@@ -43,6 +43,7 @@ export default function GroupRegisterModal({ onClose, onGroupCreated }) {
         try {
             setLoading(true)
             const newGroup = await createGroup(groupName.trim())
+            await Alert.success("Grupo creado", `El grupo "${newGroup.name}" fue creado correctamente.`)
             onGroupCreated({ value: newGroup.id, label: newGroup.name })
             onClose()
         } catch {

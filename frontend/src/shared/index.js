@@ -13,6 +13,7 @@ export { Dropdown, DropdownContent, DropdownItem, DropdownTrigger } from "./comp
 export { default as Textarea } from "./components/TextArea.jsx";
 export { default as FileInput } from "./components/FileInput.jsx";
 export { default as TechnicalFilesInput } from "./components/TechnicalFilesInput.jsx";
+export { default as MultiSelect } from "./components/MultiSelect.jsx";
 export { default as AuthLayout } from "./layouts/AuthLayout.jsx";
 export { default as Navbar } from "./layouts/Navbar.jsx";
 export { default as Header } from "./layouts/Header.jsx";

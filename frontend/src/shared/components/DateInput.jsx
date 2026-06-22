@@ -3,8 +3,8 @@
 export default function DateInput({
     label,
     type = "text",
+    value,
     ...props
-    // props son las propiedades del componente
 }) {
     // cuerpo de la funcion
     return (
@@ -34,14 +34,13 @@ export default function DateInput({
                 {/* Area visual del input */}
                 <input
                     type={type}
-                    placeholder="DD/MM/AAAA"
-                    className="
+                    value={value}
+                    className={`
                         bg-transparent
-                        text-text-primary
-                        placeholder-text-primary
                         focus:outline-none
                         w-full
-                    "
+                        ${value ? "text-text-primary" : "text-text-muted"}
+                    `}
                     {...props}
                 >
                 </input>

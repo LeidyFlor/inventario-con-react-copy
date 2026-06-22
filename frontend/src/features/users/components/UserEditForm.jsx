@@ -1,50 +1,99 @@
-import { Input, Button, IconButton, Select, StatusSwitch, FileInput } from "@/shared"
+import { Input, Button, IconButton, Select, StatusSwitch, FileInput, Alert, MultiSelect } from "@/shared"
 import React, {useState, useEffect} from "react";
 import { getDocumentTypes, getUserTypes } from "@/features/users/services/selectService";
-import { userShema } from "../schemas/userShema.js";
+import { userEditSchema } from "../schemas/userEditShema.js";
 import { useParams, useNavigate } from "react-router-dom";
-import { users } from "../data/users";
+import { updateUser } from "../services/userService.js";
 import { fileSchema } from "@/shared";
 import { FilePenLine } from "lucide-react";
+import { Ping } from 'ldrs/react'
+import 'ldrs/react/Ping.css'
+
 
 export default function UserEditForm() {
     const { id } = useParams();
     const navigate = useNavigate();
-    const user = users.find(u => u.id === Number(id));
+    const [user, setUser] = useState(null)
+    const [loading, setLoading] = useState(true)
     //Fromateo de fecha de Iso a AAAA-MM-DD
     const formatDateForInput = (dateString) => {
         if (!dateString) return "";
         return new Date(dateString).toISOString().split("T")[0]; // "2026-01-01"
     };
-
     const [formData, setFormData] = useState({
-        userDocument: user?.userDocument ?? "",
-        userName: user?.userName ?? "",
-        userEmail: user?.userEmail ?? "",
-        userEmail2: user?.userEmail2 ?? "",
-        userAddres: user?.userAddres ?? "",
-        userTel: user?.userTel ?? "",
-        userTel2: user?.userTel2 ?? "",
-        userType: user?.userType ?? "",
-        userDocumentType: user?.userDocumentType ?? "",
-        userDateStart: formatDateForInput(user?.userDateStart ?? ""),
-        userDateEnd: formatDateForInput(user?.userDateEnd ?? ""),
-        is_active: user?.is_active ?? "",
-        userImage: user?.userIamgen ?? [],
+        userDocument: "",
+        First_name: "",
+        Last_name: "",
+        userEmail: "",
+        userEmail2: "",
+        userAddres: "",
+        userTel: "",
+        userTel2: "",
+        userType: [],
+        userDocumentType: "",
+        userDateStart: "",
+        userDateEnd: "",
+        is_active: true,
+        userImage: [],
     });
-    const [isActive, setIsActive] = useState(user?.is_active ?? true);
+    const [isActive, setIsActive] = useState(true);
     const [errors, setErrors] = useState({});
     // useState que me trae el arreglo mediante el get en servicios
     const [documentTypes, setDocumentTypes] = useState([]);
     const [userTypes, setUserTypes] = useState([]);
-    const [imagen, setImagen] = useState(user?.userImage ?? null);
+    const [imagen, setImagen] = useState([]);
     //Boton que para mostrar el FielInput
     const [showFileInput, setShowFileInput] = useState(false);
 
     useEffect(() => {
         getDocumentTypes().then(setDocumentTypes);
         getUserTypes().then(setUserTypes);
-    },[]); //los [] es para que al menos se ejecute una vez, no tiene dependencia
+    }, []); 
+
+    useEffect(() =>{
+        const token = sessionStorage.getItem("token")
+        fetch(`/api/users/${id}/`, {
+            headers: {"Authorization": `Bearer ${token}`}
+        })
+        .then(res => res.json())
+        .then(data => {
+            setUser(data)
+            setImagen(data.user_image ?? null)
+            setFormData({
+                First_name: data.first_name?? "",
+                Last_name: data.last_name ?? "",
+                userDocument: data.user_document ?? "",
+                userEmail: data.email ?? "",
+                userEmail2: data.user_email2 ?? "",
+                userAddres: data.user_addres ?? "",
+                userTel: data.user_tel ?? "",
+                userTel2: data.user_tel2 ?? "",
+                userType: data.groups?.map(g => String(g.id)) ?? [], //luego será reemplazdo para que pueda tomar muchos grupos
+                userDocumentType: data.user_document_type ?? "",
+                userDateStart: formatDateForInput(data.user_date_start),
+                userDateEnd: formatDateForInput(data.user_date_end),
+                userImage: []
+            })
+            setIsActive(data.is_active ?? true)
+            setLoading(false)
+        })
+        .catch(() => setLoading(false)) //en caso de que falle el fetch
+    },[id]);
+    if (loading) return (
+        <div className="flex flex-col place-items-center gap-2">
+            <Ping
+                size="45"
+                speed="1.5"
+                color="#56B526"
+            />
+            <p className="text-text-muted text-center">Cargando usuarios</p>
+
+        </div>
+    );
+
+    if (!user) return <p>Usuario no encontrado</p>;
+
+    //los [] es para que al menos se ejecute una vez, no tiene dependencia
     
     // Handle eventos. onChange cada vez que se escribe. onBlur toma el valor cuando uno sale del campo
 
@@ -73,12 +122,12 @@ export default function UserEditForm() {
         Función que se ejecuta cuando se envía el formulario
     */
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
 
         e.preventDefault();
         //Se valida el objeto formData usando el esquema definido con Zod
         // safeParse devuelve un objeto indicando si la validacion fue exitosa o no
-        const result = userShema.safeParse(formData);
+        const result = userEditSchema.safeParse(formData);
 
         //Si la validacion falla
         if (!result.success) {
@@ -88,8 +137,6 @@ export default function UserEditForm() {
             //se recorren para asociar cada error a su campo correspondiente
             result.error.issues.forEach((issue) => {
                 const field = issue.path[0]
-
-
                 //Se guarda el mensaje de error en el objeto fieldErrors
                 fieldErrors[field] = issue.message;
             });
@@ -102,10 +149,20 @@ export default function UserEditForm() {
         //Si la validacion es exitosa se limpian los errores anteriores
         setErrors({});
         //result.data contiene los datos ya validados por Zod
-        console.log("Usuario valido:", result.data);
-        //SE LLMA LA API PARA GUARDAR LOS RESULTADOS
+        try {
+            Alert.loading("Guardando cambios...")
+            await updateUser(id, result.data)
+            Alert.close()
+            await Alert.success("Usuario Actualizado", "Los cambios fueron guardados correctamente")
+            navigate(`/dashboard/users/${user.id}/view`)
+
+        } catch (error) {
+            Alert.close()
+            Alert.error("Error al actualizar usuario", error.message)
+        }
+    
     }
-    if (!user) return <p>Usuario no encontrado</p>;
+    
     return(
         <div className="flex flex-col place-items-center justify-items-center w-full">
 
@@ -113,7 +170,7 @@ export default function UserEditForm() {
             <div className="bg-gradient-container-green border-4 border-border-green-container p-6 rounded-4xl w-fit md:w-full">
                 {/* contenedor princiapl */}
                 {/* CAMBIO GENERADO AQUÍ */}
-                <form className="flex flex-col lg:grid lg:grid-cols-[420px_1fr] lg:items-center 6 w-full" onSubmit={handleSubmit} noValidate>
+                <form className="flex flex-col lg:grid lg:grid-cols-[420px_1fr] lg:items-center w-full" onSubmit={handleSubmit} noValidate>
                     {/* Contenedor izquierdo */}
                     {/* CAMBIO GENERADO AQUÍ */}
                     <div className="w-full max-w-[320px] mx-auto flex flex-col items-center p-4 gap-4">
@@ -131,12 +188,12 @@ export default function UserEditForm() {
                             {imagen ? (
                                 <img
                                 src={imagen}
-                                alt={user.userName}
+                                alt={user.first_name} //del backend por eso en minuscula
                                 className="w-48 h-48 object-cover rounded-lg"
                                 />
                             ) : (
                                 <div className="w-48 h-48 rounded-lg flex items-center justify-center bg-surface border-2 border-input-border">
-                                    <span className="text-2xl">{user.userName?.charAt(0).toUpperCase()}</span>
+                                    <span className="text-2xl">{user.first_name?.charAt(0).toUpperCase()}</span>
                                 </div>
                             )}
 
@@ -170,15 +227,27 @@ export default function UserEditForm() {
                             )}
 
                         </div>
-                        <Input
-                            name="userName"
-                            value={formData.userName}
-                            onChange={handleChange}
-                            error={errors.userName}
-                            variant="nameEdit"
-                        />
+                        <div className="flex gap-1">
+                            <Input
+                                label="Nombre(s)"
+                                name="First_name"
+                                value={formData.First_name}
+                                onChange={handleChange}
+                                error={errors.First_name}
+                                variant="nameEdit"
+                            />
+                            <Input
+                            label="Apellido(s)"
+                                name="Last_name"
+                                value={formData.Last_name}
+                                onChange={handleChange}
+                                error={errors.Last_name}
+                                variant="nameEdit"
+                            />
+
+                        </div>
                        
-                        {/* Estado y Editar */}
+                        {/* Estado */}
                         <div className="flex items-center gap-4">
                             <div className="flex items-center gap-2">
                                 <span className="font-semibold text-medium">Estado</span>
@@ -217,14 +286,14 @@ export default function UserEditForm() {
                             </div>
                             <div>
                             <p className="parrafo-edit-style">Tipo de usuario:</p>
-                            <Select
-                                name="userType"
-                                options={userTypes}
-                                value={formData.userType}
-                                onChange={handleChange}
-                                error={errors.userType}
-                                variant="isEdit"
-                            />
+                                <MultiSelect
+                                    name="userType"
+                                    options={userTypes}
+                                    value={Array.isArray(formData.userType) ? formData.userType : []}
+                                    onChange={(name, newValue) => setFormData(prev => ({ ...prev, [name]: newValue }))}
+                                    error={errors.userType}
+                                    variant="isEdit"
+                                />
                             </div>
                             <div>
                                 <p className="parrafo-edit-style">Fecha inicio:</p>

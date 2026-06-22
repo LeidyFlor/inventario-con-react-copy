@@ -123,15 +123,15 @@ class UserUpdateSerializer(serializers.ModelSerializer):
             'is_accountant',
             'groups',
         ]
-        def update(self, instance, validated_data): #se activa automaticamente
-            groups = validated_data.pop('groups', None)
-            # Si cambia el email, sincronizar el username
-            if 'email' in validated_data:
-                validated_data['username'] = validated_data['email']
-            instance = super().update(instance, validated_data)
-            if groups is not None:
-                instance.groups.set(groups)
-            return instance
+    def update(self, instance, validated_data): #se activa automaticamente
+        groups = validated_data.pop('groups', None)
+        # Si cambia el email, sincronizar el username
+        if 'email' in validated_data:
+            validated_data['username'] = validated_data['email']
+        instance = super().update(instance, validated_data)
+        if groups is not None:
+            instance.groups.set(groups)
+        return instance
 
 class GroupSerializer(serializers.ModelSerializer):
     """Serializer para listar y gestionar grupos"""

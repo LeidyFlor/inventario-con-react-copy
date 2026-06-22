@@ -1,4 +1,4 @@
-import { Input, Button, IconButton, Select, StatusSwitch, FileInput } from "@/shared"
+import { Input, Button, IconButton, Select, StatusSwitch, FileInput, MultiSelect } from "@/shared"
 import React, {useState, useEffect} from "react";
 import { getDocumentTypes, getUserTypes } from "@/features/users/services/selectService";
 import { userShema } from "../schemas/userShema.js";
@@ -6,7 +6,7 @@ import { UserRoundPlus } from "lucide-react";
 import { Alert } from "@/shared";
 import { createUser } from "../services/userService.js";
 import { useNavigate } from "react-router-dom";
-import { GroupCreateModalPage } from "@/features/groups";
+import { GroupCreateModalPage } from "@/features/groups/";
 
 export default function UserRegisterForm() {
     const navigate = useNavigate();
@@ -171,12 +171,18 @@ export default function UserRegisterForm() {
                         {/* Grupo: select + botón crear al lado */}
                         <div className="flex flex-col gap-1 w-80">
                             <div className="flex items-end gap-1">
-                                <Select
+                                <MultiSelect
                                     label="Grupo"
                                     name="userType"
                                     options={userTypes}
                                     value={formData.userType}
-                                    onChange={handleChange}
+                                    //como este componente no tiene target se debe configurar el dormato de envío del array
+                                    onChange={(name, newValue) => {
+                                        setFormData(prevData => ({
+                                            ...prevData,
+                                            [name]: newValue
+                                        }));
+                                    }}
                                     error={errors.userType}
                                 />
                                 <div className="min-w-35">
@@ -325,7 +331,7 @@ export default function UserRegisterForm() {
                     onClick={() => setGroupModalOpen(false)}
                 >
                     <div onClick={(e) => e.stopPropagation()}>
-                        <GroupRegisterModal
+                        <GroupCreateModalPage
                             onClose={() => setGroupModalOpen(false)}
                             onGroupCreated={(newGroup) => {
                                 // Agrega el nuevo grupo al select y lo deja seleccionado
