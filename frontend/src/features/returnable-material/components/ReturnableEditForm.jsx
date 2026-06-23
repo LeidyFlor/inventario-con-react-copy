@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react"
 import { useParams, useNavigate } from "react-router-dom"
 import { FilePenLine } from "lucide-react"
-import { Input, Button, Select, FileInput, Textarea, Alert, TechnicalFilesInput, TextArea } from "@/shared"
+import { Input, Button, Select, FileInput, Textarea, Alert, TechnicalFilesInput} from "@/shared"
 import { getBrands, getInventoryManagers, getMaterialCategories } from "../services/selectService"
 import {
     getReturnables,
