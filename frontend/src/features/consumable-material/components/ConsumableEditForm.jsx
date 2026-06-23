@@ -1,4 +1,11 @@
-import { Input, Button, IconButton, Select, StatusSwitch, FileInput } from "@/shared";
+import {
+    Input,
+    Button,
+    IconButton,
+    Select,
+    StatusSwitch,
+    FileInput
+} from "@/shared";
 import React, { useState } from "react";
 import { consumableMaterialShema } from "../schemas/consumableMaterialShema.js";
 import { useParams, useNavigate } from "react-router-dom";
@@ -6,8 +13,10 @@ import { materials } from "../data/materials.js";
 import { FilePenLine } from "lucide-react";
 
 export default function ConsumableEditForm() {
+
     const { id } = useParams();
     const navigate = useNavigate();
+
     const material = materials.find((m) => m.id === Number(id));
 
     const [formData, setFormData] = useState({
@@ -40,6 +49,7 @@ export default function ConsumableEditForm() {
 
     const handleChange = (e) => {
         const { name, value } = e.target;
+
         setFormData((prev) => ({
             ...prev,
             [name]: value,
@@ -61,45 +71,46 @@ export default function ConsumableEditForm() {
 
         if (!result.success) {
             const fieldErrors = {};
+
             result.error.issues.forEach((issue) => {
-                const field = issue.path[0];
-                fieldErrors[field] = issue.message;
+                fieldErrors[issue.path[0]] = issue.message;
             });
+
             setErrors(fieldErrors);
             return;
         }
 
         setErrors({});
         console.log("Material válido:", result.data);
-        // SE LLAMA LA API PARA GUARDAR LOS RESULTADOS
     };
 
     if (!material) return <p>Material no encontrado</p>;
 
     return (
         <div className="flex flex-col place-items-center justify-items-center w-full">
-            <div className="bg-gradient-container-green border-4 border-border-green-container p-6 rounded-4xl w-fit md:w-full mt-2">
-                <div className="mb-6 max-w-max">
-                    <h1 className="flex gap-2 text-gradient-title text-h3 pb-0.5">
-                        <FilePenLine className="text-brand" />
-                        Editar material de consumo
-                    </h1>
-                    <div className="h-0.5 bg-gradiant-title-line"></div>
-                </div>
+
+            {/* Contenedor verde */}
+            <div className="bg-gradient-container-green border-4 border-border-green-container p-6 rounded-4xl w-fit md:w-full">
 
                 <form
-                    className="flex flex-col lg:grid lg:grid-flow-col-dense items-center gap-8"
+                    className="flex flex-col lg:grid lg:grid-cols-[420px_1fr] lg:items-center w-full"
                     onSubmit={handleSubmit}
                     noValidate
                 >
-                    {/* Contenedor izquierdo */}
-                    <div className="flex flex-col gap-4 place-items-center">
 
-                        {/* Contenedor imagen */}
-                        <div className="flex flex-col gap-4 place-items-center text-center">
-                            <h2 className="w-80">Puede subir 1 archivo, archivos permitidos: PDF, PNG, JPG. Máximo de 10MB</h2>
+                    {/* IZQUIERDA */}
+                    <div className="w-full max-w-[320px] mx-auto flex flex-col items-center p-4 gap-4">
 
-                            {/* Imagen actual o inicial con letra */}
+                        <div className="mb-2 max-w-max">
+                            <h1 className="flex gap-2 text-gradient-title text-h3 pb-0.5">
+                                <FilePenLine className="text-brand" />
+                                Editar material de consumo
+                            </h1>
+                            <div className="h-0.5 bg-gradiant-title-line"></div>
+                        </div>
+
+                        <div className="flex flex-col gap-4 place-items-center">
+
                             {imagen ? (
                                 <img
                                     src={imagen}
@@ -114,7 +125,10 @@ export default function ConsumableEditForm() {
                                 </div>
                             )}
 
-                            {/* Botón OR FileInput — nunca los dos a la vez */}
+                            <h2 className="w-70 text-text-muted text-small text-center">
+                                1 archivo: PDF, PNG, JPG. Máx 10MB.
+                            </h2>
+
                             {!showFileInput ? (
                                 <Button
                                     variant="primary"
@@ -128,7 +142,11 @@ export default function ConsumableEditForm() {
                                 <FileInput
                                     value={formData.materialImage ?? []}
                                     onChange={(files) => {
-                                        setFormData(prev => ({ ...prev, materialImage: files }));
+                                        setFormData(prev => ({
+                                            ...prev,
+                                            materialImage: files
+                                        }));
+
                                         if (files.length > 0) {
                                             setImagen(URL.createObjectURL(files[0]));
                                             setShowFileInput(false);
@@ -139,7 +157,9 @@ export default function ConsumableEditForm() {
                             )}
 
                             {errors.materialImage && (
-                                <span className="text-red-800 text-sm">{errors.materialImage}</span>
+                                <span className="text-red-800 text-sm">
+                                    {errors.materialImage}
+                                </span>
                             )}
                         </div>
 
@@ -164,113 +184,135 @@ export default function ConsumableEditForm() {
                                 <span className="font-semibold text-medium">Estado</span>
                                 <StatusSwitch
                                     checked={isActive}
-                                    onChange={() => setIsActive((prev) => !prev)}
-                                    className="inline-flex"
+                                    onChange={() => setIsActive(prev => !prev)}
+                                    className={`inline-flex`}
                                 />
                             </div>
                         </div>
+
                     </div>
 
-                    {/* Contenedor derecho */}
-                    <div className="grid grid-cols-dense items-center gap-10 bg-background border-2 border-border-edit-informaion p-8 rounded-xl">
-                        <div className="md:grid md:grid-cols-[130px_1fr] grid auto-cols items-center gap-4">
+                    {/* DERECHA */}
+                    <div className="w-full flex flex-col gap-4 bg-background border-2 border-border-edit-informaion p-4 rounded-xl">
 
-                            <p className="parrafo-edit-style">Placa Sena:</p>
-                            <Input
-                                name="materialBarcodeSena"
-                                value={formData.materialBarcodeSena}
-                                onChange={handleChange}
-                                error={errors.materialBarcodeSena}
-                                variant="isEdit"
-                            />
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-3">
 
-                            <p className="parrafo-edit-style">Marca:</p>
-                            <Input
-                                name="brandName"
-                                value={formData.brandName}
-                                onChange={handleChange}
-                                error={errors.brandName}
-                                variant="isEdit"
-                            />
+                            <div>
+                                <p className="parrafo-edit-style">Placa Sena:</p>
+                                <Input
+                                    name="materialBarcodeSena"
+                                    value={formData.materialBarcodeSena}
+                                    onChange={handleChange}
+                                    error={errors.materialBarcodeSena}
+                                    variant="isEdit"
+                                />
+                            </div>
 
-                            <p className="parrafo-edit-style">Modelo:</p>
-                            <Input
-                                name="returnableMaterialModel"
-                                value={formData.returnableMaterialModel}
-                                onChange={handleChange}
-                                error={errors.returnableMaterialModel}
-                                variant="isEdit"
-                            />
+                            <div>
+                                <p className="parrafo-edit-style">Marca:</p>
+                                <Input
+                                    name="brandName"
+                                    value={formData.brandName}
+                                    onChange={handleChange}
+                                    error={errors.brandName}
+                                    variant="isEdit"
+                                />
+                            </div>
 
-                            <p className="parrafo-edit-style">Cuentadante:</p>
-                            <Input
-                                name="inventoryManager"
-                                value={formData.inventoryManager}
-                                onChange={handleChange}
-                                error={errors.inventoryManager}
-                                variant="isEdit"
-                            />
+                            <div>
+                                <p className="parrafo-edit-style">Modelo:</p>
+                                <Input
+                                    name="returnableMaterialModel"
+                                    value={formData.returnableMaterialModel}
+                                    onChange={handleChange}
+                                    error={errors.returnableMaterialModel}
+                                    variant="isEdit"
+                                />
+                            </div>
 
-                            <p className="parrafo-edit-style">Cantidad:</p>
-                            <Input
-                                type="number"
-                                name="materialQuantity"
-                                value={formData.materialQuantity}
-                                onChange={handleChange}
-                                error={errors.materialQuantity}
-                                variant="isEdit"
-                            />
+                            <div>
+                                <p className="parrafo-edit-style">Cuentadante:</p>
+                                <Input
+                                    name="inventoryManager"
+                                    value={formData.inventoryManager}
+                                    onChange={handleChange}
+                                    error={errors.inventoryManager}
+                                    variant="isEdit"
+                                />
+                            </div>
 
-                            <p className="parrafo-edit-style">Precio unitario:</p>
-                            <Input
-                                type="number"
-                                name="materialUnitPrice"
-                                value={formData.materialUnitPrice}
-                                onChange={handleChange}
-                                error={errors.materialUnitPrice}
-                                variant="isEdit"
-                            />
+                            <div>
+                                <p className="parrafo-edit-style">Cantidad:</p>
+                                <Input
+                                    type="number"
+                                    name="materialQuantity"
+                                    value={formData.materialQuantity}
+                                    onChange={handleChange}
+                                    error={errors.materialQuantity}
+                                    variant="isEdit"
+                                />
+                            </div>
 
-                            <p className="parrafo-edit-style">Precio total:</p>
-                            <Input
-                                type="number"
-                                name="materialTotalPrice"
-                                value={formData.materialTotalPrice}
-                                onChange={handleChange}
-                                error={errors.materialTotalPrice}
-                                variant="isEdit"
-                            />
+                            <div>
+                                <p className="parrafo-edit-style">Precio unitario:</p>
+                                <Input
+                                    type="number"
+                                    name="materialUnitPrice"
+                                    value={formData.materialUnitPrice}
+                                    onChange={handleChange}
+                                    error={errors.materialUnitPrice}
+                                    variant="isEdit"
+                                />
+                            </div>
 
-                            <p className="parrafo-edit-style">Ubicación:</p>
-                            <Input
-                                name="materialLocation"
-                                value={formData.materialLocation}
-                                onChange={handleChange}
-                                error={errors.materialLocation}
-                                variant="isEdit"
-                            />
+                            <div>
+                                <p className="parrafo-edit-style">Precio total:</p>
+                                <Input
+                                    type="number"
+                                    name="materialTotalPrice"
+                                    value={formData.materialTotalPrice}
+                                    onChange={handleChange}
+                                    error={errors.materialTotalPrice}
+                                    variant="isEdit"
+                                />
+                            </div>
 
-                            <p className="parrafo-edit-style">Estado:</p>
-                            <Select
-                                name="materialState"
-                                options={materialStateOptions}
-                                value={formData.materialState}
-                                onChange={handleChange}
-                                error={errors.materialState}
-                                variant="isEdit"
-                            />
+                            <div>
+                                <p className="parrafo-edit-style">Ubicación:</p>
+                                <Input
+                                    name="materialLocation"
+                                    value={formData.materialLocation}
+                                    onChange={handleChange}
+                                    error={errors.materialLocation}
+                                    variant="isEdit"
+                                />
+                            </div>
 
-                            <div className="place-items-start">
+                            <div>
+                                <p className="parrafo-edit-style">Estado material:</p>
+
+                                <Select
+                                    name="materialState"
+                                    options={materialStateOptions}
+                                    value={formData.materialState}
+                                    onChange={handleChange}
+                                    error={errors.materialState}
+                                    variant="isEdit"
+                                />
+                            </div>
+
+                            {/* BOTONES */}
+                            <div className="col-span-1 md:col-span-2 flex justify-between items-center">
+
                                 <Button
                                     variant="secondary"
                                     size="sm"
-                                    onClick={() => navigate(-1)}
                                     type="button"
+                                    onClick={() => navigate(-1)}
                                 >
                                     Cancelar
                                 </Button>
-                            </div>
-                            <div className="mt-1 flex items-end justify-end">
+
                                 <IconButton
                                     variant="primary"
                                     size="md"
@@ -278,12 +320,17 @@ export default function ConsumableEditForm() {
                                 >
                                     Guardar
                                 </IconButton>
+
                             </div>
 
                         </div>
+
                     </div>
+
                 </form>
+
             </div>
+
         </div>
     );
 }

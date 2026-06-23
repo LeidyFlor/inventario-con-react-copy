@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react"
 import { useParams, useNavigate } from "react-router-dom"
 import { FilePenLine } from "lucide-react"
-import { Input, Button, Select, FileInput, Textarea, Alert, TechnicalFilesInput } from "@/shared"
+import { Input, Button, Select, FileInput, Textarea, Alert, TechnicalFilesInput, TextArea } from "@/shared"
 import { getBrands, getInventoryManagers, getMaterialCategories } from "../services/selectService"
 import {
     getReturnables,
@@ -187,99 +187,124 @@ export default function ReturnableEditForm() {
     }
 
     //  Render 
-    return (
-        <div className="flex flex-col place-items-center justify-items-center w-full">
-            <div className="bg-gradient-container-green border-4 border-border-green-container p-6 rounded-4xl w-fit md:w-full mt-2">
+   return (
+    <div className="flex flex-col place-items-center justify-items-center w-full">
+        <div className="bg-gradient-container-green border-4 border-border-green-container p-6 rounded-4xl w-fit md:w-full">
 
-                {/* Título */}
-                <div className="mb-6 max-w-max">
-                    <h1 className="flex gap-2 text-gradient-title text-h3 pb-0.5">
-                        <FilePenLine className="text-brand" />
-                        Editar material devolutivo
-                    </h1>
-                    <div className="h-0.5 bg-gradiant-title-line"></div>
-                </div>
+            <form
+                className="flex flex-col lg:grid lg:grid-cols-[420px_1fr] lg:items-center w-full"
+                onSubmit={handleSubmit}
+                noValidate
+            >
 
-                <form
-                    className="flex flex-col lg:grid lg:grid-flow-col-dense items-start gap-8"
-                    onSubmit={handleSubmit}
-                    noValidate
-                >
-                    {/*  Columna izquierda: imagen + fichas técnicas  */}
-                    <div className="flex flex-col gap-6 items-center">
+                {/* COLUMNA IZQUIERDA */}
+                <div className="w-full max-w-[320px] mx-auto flex flex-col items-center p-4 gap-6">
 
-                        {/* Imagen principal */}
-                        <div className="flex flex-col gap-3 items-center">
-                            <h2 className="font-bold text-body">Imagen del elemento</h2>
-                            <p className="text-text-muted text-small w-72 text-center">
-                                1 archivo: PDF, PNG, JPG. Máx 10MB.
-                            </p>
-
-                            {/* Muestra imagen actual mientras no se reemplaza */}
-                            {!showFileInput && (
-                                currentImage ? (
-                                    <img
-                                        src={newImageFiles.length > 0
-                                            ? URL.createObjectURL(newImageFiles[0])
-                                            : currentImage}
-                                        alt="Imagen del material"
-                                        className="w-48 h-48 object-cover rounded-lg"
-                                    />
-                                ) : (
-                                    <div className="w-48 h-48 rounded-lg flex items-center justify-center bg-surface border-2 border-input-border">
-                                        <span className="text-2xl font-bold">
-                                            {formData.materialName?.charAt(0).toUpperCase()}
-                                        </span>
-                                    </div>
-                                )
-                            )}
-
-                            {!showFileInput ? (
-                                <Button
-                                    variant="secondary"
-                                    size="sm"
-                                    type="button"
-                                    onClick={() => setShowFileInput(true)}
-                                >
-                                    Cambiar imagen
-                                </Button>
-                            ) : (
-                                <FileInput
-                                    value={newImageFiles}
-                                    onChange={(files) => {
-                                        setNewImageFiles(files)
-                                        if (files.length > 0) setShowFileInput(false)
-                                    }}
-                                    multiple={false}
-                                />
-                            )}
-                        </div>
-
-                        {/* Fichas técnicas — mezcla archivos del backend + nuevos */}
-                        <div className="flex flex-col gap-3 items-center">
-                            <h2 className="font-bold text-body">Fichas técnicas</h2>
-                            <p className="text-text-muted text-small w-72 text-center">
-                                Los archivos marcados "Guardado" ya están en el sistema.
-                                Puedes agregar más o eliminar los existentes.
-                            </p>
-                            <TechnicalFilesInput
-                                existingFiles={existingFiles}
-                                onRemoveExisting={(fileId) => {
-                                    setExistingFiles(prev => prev.filter(f => f.id !== fileId))
-                                    setRemovedFileIds(prev => [...prev, fileId]) //acumula para borrarlo al guardar
-                                }}
-                                newFiles={newTechFiles}
-                                onNewFilesChange={setNewTechFiles}
-                                accept="image/*,application/pdf"
-                            />
-                        </div>
+                    {/* Título */}
+                    <div className="mb-2 max-w-max">
+                        <h1 className="flex gap-2 text-gradient-title text-h3 pb-0.5">
+                            <FilePenLine className="text-brand" />
+                            Editar material devolutivo
+                        </h1>
+                        <div className="h-0.5 bg-gradiant-title-line"></div>
                     </div>
 
-                    {/*  Columna derecha: campos del material  */}
-                    <div className="grid grid-cols-dense bg-background border-2 border-border-edit-informaion p-8 rounded-xl">
-                        <div className="md:grid md:grid-cols-[160px_1fr] items-center gap-4">
+                    {/* Imagen principal */}
+                    <div className="flex flex-col gap-3 items-center">
+                        <h2 className="font-bold text-body">
+                            Imagen del elemento
+                        </h2>
 
-                            <p className="parrafo-edit-style">Placa SENA:</p>
+                        <p className="text-text-muted text-small w-72 text-center">
+                            1 archivo: PDF, PNG, JPG. Máx 10MB.
+                        </p>
+
+                        {!showFileInput && (
+                            currentImage ? (
+                                <img
+                                    src={
+                                        newImageFiles.length > 0
+                                            ? URL.createObjectURL(newImageFiles[0])
+                                            : currentImage
+                                    }
+                                    alt="Imagen del material"
+                                    className="w-48 h-48 object-cover rounded-lg"
+                                />
+                            ) : (
+                                <div className="w-48 h-48 rounded-lg flex items-center justify-center bg-surface border-2 border-input-border">
+                                    <span className="text-2xl font-bold">
+                                        {formData.materialName?.charAt(0).toUpperCase()}
+                                    </span>
+                                </div>
+                            )
+                        )}
+
+                        {!showFileInput ? (
+                            <Button
+                                variant="primary"
+                                size="sm"
+                                type="button"
+                                onClick={() => setShowFileInput(true)}
+                            >
+                                Cambiar imagen
+                            </Button>
+                        ) : (
+                            <FileInput
+                                value={newImageFiles}
+                                onChange={(files) => {
+                                    setNewImageFiles(files);
+
+                                    if (files.length > 0) {
+                                        setShowFileInput(false);
+                                    }
+                                }}
+                                multiple={false}
+                            />
+                        )}
+                    </div>
+
+                    {/* Fichas técnicas */}
+                    <div className="flex flex-col gap-3 items-center">
+                        <h2 className="font-bold text-body">
+                            Fichas técnicas
+                        </h2>
+
+                        <p className="text-text-muted text-small w-72 text-center">
+                            Los archivos marcados "Guardado" ya están en el sistema.
+                            Puedes agregar más o eliminar los existentes.
+                        </p>
+
+                        <TechnicalFilesInput
+                            existingFiles={existingFiles}
+                            onRemoveExisting={(fileId) => {
+                                setExistingFiles(prev =>
+                                    prev.filter(f => f.id !== fileId)
+                                );
+
+                                setRemovedFileIds(prev => [
+                                    ...prev,
+                                    fileId
+                                ]);
+                            }}
+                            newFiles={newTechFiles}
+                            onNewFilesChange={setNewTechFiles}
+                            accept="image/*,application/pdf"
+                        />
+                    </div>
+
+                </div>
+
+                {/* COLUMNA DERECHA */}
+                <div className="w-full flex flex-col gap-4 bg-background border-2 border-border-edit-informaion p-4 rounded-xl">
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-3">
+
+                        {/* Placa */}
+                        <div>
+                            <p className="parrafo-edit-style">
+                                Placa SENA:
+                            </p>
+
                             <Input
                                 name="materialBarcodeSena"
                                 value={formData.materialBarcodeSena}
@@ -287,8 +312,14 @@ export default function ReturnableEditForm() {
                                 error={errors.materialBarcodeSena}
                                 variant="isEdit"
                             />
+                        </div>
 
-                            <p className="parrafo-edit-style">Serial:</p>
+                        {/* Serial */}
+                        <div>
+                            <p className="parrafo-edit-style">
+                                Serial:
+                            </p>
+
                             <Input
                                 name="returnableMaterialSerial"
                                 value={formData.returnableMaterialSerial}
@@ -296,8 +327,14 @@ export default function ReturnableEditForm() {
                                 error={errors.returnableMaterialSerial}
                                 variant="isEdit"
                             />
+                        </div>
 
-                            <p className="parrafo-edit-style">Marca:</p>
+                        {/* Marca */}
+                        <div>
+                            <p className="parrafo-edit-style">
+                                Marca:
+                            </p>
+
                             <Select
                                 options={brands}
                                 name="brandName"
@@ -306,8 +343,14 @@ export default function ReturnableEditForm() {
                                 error={errors.brandName}
                                 variant="isEdit"
                             />
+                        </div>
 
-                            <p className="parrafo-edit-style">Modelo:</p>
+                        {/* Modelo */}
+                        <div>
+                            <p className="parrafo-edit-style">
+                                Modelo:
+                            </p>
+
                             <Input
                                 name="returnableMaterialModel"
                                 value={formData.returnableMaterialModel}
@@ -315,8 +358,14 @@ export default function ReturnableEditForm() {
                                 error={errors.returnableMaterialModel}
                                 variant="isEdit"
                             />
+                        </div>
 
-                            <p className="parrafo-edit-style">Nombre:</p>
+                        {/* Nombre */}
+                        <div>
+                            <p className="parrafo-edit-style">
+                                Nombre:
+                            </p>
+
                             <Input
                                 name="materialName"
                                 value={formData.materialName}
@@ -324,8 +373,14 @@ export default function ReturnableEditForm() {
                                 error={errors.materialName}
                                 variant="isEdit"
                             />
+                        </div>
 
-                            <p className="parrafo-edit-style">Cuentadante:</p>
+                        {/* Cuentadante */}
+                        <div>
+                            <p className="parrafo-edit-style">
+                                Cuentadante:
+                            </p>
+
                             <Select
                                 options={managers}
                                 name="inventoryManager"
@@ -334,8 +389,14 @@ export default function ReturnableEditForm() {
                                 error={errors.inventoryManager}
                                 variant="isEdit"
                             />
+                        </div>
 
-                            <p className="parrafo-edit-style">Categoría:</p>
+                        {/* Categoría */}
+                        <div>
+                            <p className="parrafo-edit-style">
+                                Categoría:
+                            </p>
+
                             <Select
                                 options={categories}
                                 name="returnableMaterialCategory"
@@ -344,23 +405,32 @@ export default function ReturnableEditForm() {
                                 error={errors.returnableMaterialCategory}
                                 variant="isEdit"
                             />
+                        </div>
 
-                            {/* Dimensiones solo aparece para muebles_enseres */}
-                            {formData.returnableMaterialCategory === "muebles_enseres" && (
-                                <>
-                                    <p className="parrafo-edit-style">Dimensiones:</p>
-                                    <Input
-                                        name="returnableMaterialDimensions"
-                                        value={formData.returnableMaterialDimensions}
-                                        onChange={handleChange}
-                                        error={errors.returnableMaterialDimensions}
-                                        placeholder="Ej: 120x75x20cm"
-                                        variant="isEdit"
-                                    />
-                                </>
-                            )}
+                        {/* Dimensiones */}
+                        {formData.returnableMaterialCategory === "muebles_enseres" && (
+                            <div>
+                                <p className="parrafo-edit-style">
+                                    Dimensiones:
+                                </p>
 
-                            <p className="parrafo-edit-style">Valor unitario:</p>
+                                <Input
+                                    name="returnableMaterialDimensions"
+                                    value={formData.returnableMaterialDimensions}
+                                    onChange={handleChange}
+                                    error={errors.returnableMaterialDimensions}
+                                    placeholder="Ej: 120x75x20cm"
+                                    variant="isEdit"
+                                />
+                            </div>
+                        )}
+
+                        {/* Valor unitario */}
+                        <div>
+                            <p className="parrafo-edit-style">
+                                Valor unitario:
+                            </p>
+
                             <Input
                                 type="number"
                                 name="materialUnitPrice"
@@ -369,8 +439,14 @@ export default function ReturnableEditForm() {
                                 error={errors.materialUnitPrice}
                                 variant="isEdit"
                             />
+                        </div>
 
-                            <p className="parrafo-edit-style">Ubicación:</p>
+                        {/* Ubicación */}
+                        <div>
+                            <p className="parrafo-edit-style">
+                                Ubicación:
+                            </p>
+
                             <Input
                                 name="materialLocation"
                                 value={formData.materialLocation}
@@ -378,8 +454,14 @@ export default function ReturnableEditForm() {
                                 error={errors.materialLocation}
                                 variant="isEdit"
                             />
+                        </div>
 
-                            <p className="parrafo-edit-style">Descripción:</p>
+                        {/* Descripción */}
+                        <div className="md:col-span-2">
+                            <p className="parrafo-edit-style">
+                                Descripción:
+                            </p>
+
                             <Textarea
                                 name="materialDescription"
                                 value={formData.materialDescription}
@@ -387,32 +469,38 @@ export default function ReturnableEditForm() {
                                 error={errors.materialDescription}
                                 variant="isEdit"
                             />
-
-                            {/* Botones */}
-                            <div className="place-items-start mt-2">
-                                <Button
-                                    variant="secondary"
-                                    size="sm"
-                                    type="button"
-                                    onClick={() => navigate(-1)}
-                                >
-                                    Cancelar
-                                </Button>
-                            </div>
-                            <div className="flex justify-end mt-2">
-                                <Button
-                                    variant="primary"
-                                    size="md"
-                                    type="submit"
-                                    disabled={saving}
-                                >
-                                    {saving ? "Guardando..." : "Guardar"}
-                                </Button>
-                            </div>
                         </div>
+
+                        {/* Botones */}
+                        <div className="col-span-1 md:col-span-2 flex justify-between items-center mt-2">
+
+                            <Button
+                                variant="secondary"
+                                size="sm"
+                                type="button"
+                                onClick={() => navigate(-1)}
+                            >
+                                Cancelar
+                            </Button>
+
+                            <Button
+                                variant="primary"
+                                size="md"
+                                type="submit"
+                                disabled={saving}
+                            >
+                                {saving ? "Guardando..." : "Guardar"}
+                            </Button>
+
+                        </div>
+
                     </div>
-                </form>
-            </div>
+
+                </div>
+
+            </form>
+
         </div>
-    )
+    </div>
+)
 }
