@@ -85,8 +85,9 @@ class UserCreateSerializer(serializers.ModelSerializer):
 
         user.groups.set(groups)  # asignar grupos después de guardar (necesita ID en la BD)
 
-        # TODO: aquí después enviaremos el correo con la contraseña
-        print(f"Contraseña generada para {user.email}: {password}")  # temporal para probar
+        # Guardamos la contraseña en texto plano como atributo temporal
+        # para que el view la pueda enviar por correo (no se persiste en la BD)
+        user._plain_password = password
         return user
 
 

@@ -152,4 +152,18 @@ CORS_ALLOWED_ORIGINS = [
     'http://localhost:5173',   # host de react
 ]
 
+# Cache - Redis Cloud
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": os.getenv("REDIS_URL", ""),
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        }
+    }
+}
 
+# Resend - API para envío de correos
+RESEND_API_KEY = os.getenv('RESEND_API_KEY', '')
+DEFAULT_FROM_EMAIL = os.getenv('RESEND_FROM_EMAIL', '')
+RESEND_TEMPLATE_ID = os.getenv('RESEND_TEMPLATE_ID', '')
