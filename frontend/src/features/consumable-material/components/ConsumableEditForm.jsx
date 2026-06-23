@@ -4,7 +4,8 @@ import {
     IconButton,
     Select,
     StatusSwitch,
-    FileInput
+    FileInput,
+    Textarea,
 } from "@/shared";
 import React, { useState } from "react";
 import { consumableMaterialShema } from "../schemas/consumableMaterialShema.js";
@@ -171,7 +172,7 @@ export default function ConsumableEditForm() {
                             variant="nameEdit"
                         />
 
-                        <Input
+                        <Textarea
                             name="materialDescription"
                             value={formData.materialDescription}
                             onChange={handleChange}

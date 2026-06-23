@@ -84,6 +84,13 @@ export default function ReturnableEditForm() {
     const [managers,setManagers]= useState([])
     const categories = getMaterialCategories()
 
+    const materialStateOptions = [
+        { value: "Disponible", label: "Disponible" },
+        { value: "Agotado", label: "Agotado" },
+        { value: "En revisión", label: "En revisión" },
+        { value: "Dado de baja", label: "Dado de baja" },
+    ];
+
     //  Carga inicial — material + selects 
     useEffect(() => {
         async function load() {
@@ -189,7 +196,7 @@ export default function ReturnableEditForm() {
     //  Render 
    return (
     <div className="flex flex-col place-items-center justify-items-center w-full">
-        <div className="bg-gradient-container-green border-4 border-border-green-container p-6 rounded-4xl w-fit md:w-full">
+        <div className="bg-gradient-container-green border-4 border-border-green-container p-4 rounded-4xl w-fit md:w-full">
 
             <form
                 className="flex flex-col lg:grid lg:grid-cols-[420px_1fr] lg:items-center w-full"
@@ -239,6 +246,8 @@ export default function ReturnableEditForm() {
                             )
                         )}
 
+                        
+
                         {!showFileInput ? (
                             <Button
                                 variant="primary"
@@ -262,6 +271,8 @@ export default function ReturnableEditForm() {
                             />
                         )}
                     </div>
+                    
+                    
 
                     {/* Fichas técnicas */}
                     <div className="flex flex-col gap-3 items-center">
@@ -293,9 +304,11 @@ export default function ReturnableEditForm() {
                     </div>
 
                 </div>
+                {/* COLUMNA MITAD */}
+
 
                 {/* COLUMNA DERECHA */}
-                <div className="w-full flex flex-col gap-4 bg-background border-2 border-border-edit-informaion p-4 rounded-xl">
+                <div className="w-full flex flex-col gap-2 bg-background border-2 border-border-edit-informaion p-4 rounded-xl">
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-3">
 
@@ -314,6 +327,22 @@ export default function ReturnableEditForm() {
                             />
                         </div>
 
+                        {/* Categoría */}
+                        <div>
+                            <p className="parrafo-edit-style">
+                                Categoría:
+                            </p>
+
+                            <Select
+                                options={categories}
+                                name="returnableMaterialCategory"
+                                value={formData.returnableMaterialCategory}
+                                onChange={handleChange}
+                                error={errors.returnableMaterialCategory}
+                                variant="isEdit"
+                            />
+                        </div>
+
                         {/* Serial */}
                         <div>
                             <p className="parrafo-edit-style">
@@ -325,6 +354,20 @@ export default function ReturnableEditForm() {
                                 value={formData.returnableMaterialSerial}
                                 onChange={handleChange}
                                 error={errors.returnableMaterialSerial}
+                                variant="isEdit"
+                            />
+                        </div>
+
+                        {/* Estado material */}
+                        <div>
+                            <p className="parrafo-edit-style">Estado material:</p>
+                        
+                            <Select
+                                name="materialState"
+                                options={materialStateOptions}
+                                value={formData.materialState}
+                                onChange={handleChange}
+                                error={errors.materialState}
                                 variant="isEdit"
                             />
                         </div>
@@ -345,6 +388,19 @@ export default function ReturnableEditForm() {
                             />
                         </div>
 
+                        {/* Cantidad */}
+                        <div>
+                            <p className="parrafo-edit-style">Cantidad:</p>
+                            <Input
+                                type="number"
+                                name="materialQuantity"
+                                value={formData.materialQuantity}
+                                onChange={handleChange}
+                                error={errors.materialQuantity}
+                                variant="isEdit"
+                            />
+                        </div>
+
                         {/* Modelo */}
                         <div>
                             <p className="parrafo-edit-style">
@@ -360,17 +416,45 @@ export default function ReturnableEditForm() {
                             />
                         </div>
 
-                        {/* Nombre */}
+                        {/* Valor unitario */}
                         <div>
                             <p className="parrafo-edit-style">
-                                Nombre:
+                                Valor unitario:
                             </p>
 
+                            <Input
+                                type="number"
+                                name="materialUnitPrice"
+                                value={formData.materialUnitPrice}
+                                onChange={handleChange}
+                                error={errors.materialUnitPrice}
+                                variant="isEdit"
+                            />
+                        </div>
+                        <div>
+                            <p className="parrafo-edit-style">
+                                Nombre del elemento
+                            </p>
+                            {/* Nombre del elemento */}
                             <Input
                                 name="materialName"
                                 value={formData.materialName}
                                 onChange={handleChange}
                                 error={errors.materialName}
+                                variant="isEdit"
+                            />
+                        </div>
+                            
+                        
+                        {/* Valor total */}
+                        <div>
+                            <p className="parrafo-edit-style">Precio total:</p>
+                            <Input
+                                type="number"
+                                name="materialTotalPrice"
+                                value={formData.materialTotalPrice}
+                                onChange={handleChange}
+                                error={errors.materialTotalPrice}
                                 variant="isEdit"
                             />
                         </div>
@@ -391,18 +475,30 @@ export default function ReturnableEditForm() {
                             />
                         </div>
 
-                        {/* Categoría */}
+                        {/* Ubicación */}
                         <div>
                             <p className="parrafo-edit-style">
-                                Categoría:
+                                Ubicación:
                             </p>
 
-                            <Select
-                                options={categories}
-                                name="returnableMaterialCategory"
-                                value={formData.returnableMaterialCategory}
+                            <Input
+                                name="materialLocation"
+                                value={formData.materialLocation}
                                 onChange={handleChange}
-                                error={errors.returnableMaterialCategory}
+                                error={errors.materialLocation}
+                                variant="isEdit"
+                            />
+                        </div>
+
+                        {/* Dimensiones */}
+                        <div>
+                            <p className="parrafo-edit-style">Dimensiones:</p>
+                            <Input
+                                type="number"
+                                name="dimension"
+                                value={formData.dimension}
+                                onChange={handleChange}
+                                error={errors.dimension}
                                 variant="isEdit"
                             />
                         </div>
@@ -424,37 +520,6 @@ export default function ReturnableEditForm() {
                                 />
                             </div>
                         )}
-
-                        {/* Valor unitario */}
-                        <div>
-                            <p className="parrafo-edit-style">
-                                Valor unitario:
-                            </p>
-
-                            <Input
-                                type="number"
-                                name="materialUnitPrice"
-                                value={formData.materialUnitPrice}
-                                onChange={handleChange}
-                                error={errors.materialUnitPrice}
-                                variant="isEdit"
-                            />
-                        </div>
-
-                        {/* Ubicación */}
-                        <div>
-                            <p className="parrafo-edit-style">
-                                Ubicación:
-                            </p>
-
-                            <Input
-                                name="materialLocation"
-                                value={formData.materialLocation}
-                                onChange={handleChange}
-                                error={errors.materialLocation}
-                                variant="isEdit"
-                            />
-                        </div>
 
                         {/* Descripción */}
                         <div className="md:col-span-2">
