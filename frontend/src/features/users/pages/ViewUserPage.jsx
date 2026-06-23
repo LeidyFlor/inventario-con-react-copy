@@ -4,12 +4,15 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { Ping } from 'ldrs/react'
 import 'ldrs/react/Ping.css'
+import { KeyRound, ListTodo } from "lucide-react";
+import ChangePasswordModal from "../components/ChangePasswordModal";
 
 export default function ViewUserPage(){
     const navigate = useNavigate();
-    const { id } = useParams(); // 👈 obtiene el id de la URL. usa String
+    const { id } = useParams();
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [showPasswordModal, setShowPasswordModal] = useState(false);
 
     useEffect(() => {
         const token = sessionStorage.getItem("token");
@@ -20,16 +23,12 @@ export default function ViewUserPage(){
             .then(data => { setUser(data); setLoading(false); })
             .catch(() => setLoading(false));
     }, [id]);
-    if (loading) return (
-            <div className="flex flex-col place-items-center gap-2">
-                <Ping
-                    size="45"
-                    speed="1.5"
-                    color="#56B526"
-                />
-                <p className="text-text-muted text-center">Cargando usuarios</p>
 
-            </div>
+    if (loading) return (
+        <div className="flex flex-col place-items-center gap-2">
+            <Ping size="45" speed="1.5" color="#56B526" />
+            <p className="text-text-muted text-center">Cargando usuarios</p>
+        </div>
     );
 
     if (!user) return <p>Usuario no encontrado</p>;
@@ -37,7 +36,7 @@ export default function ViewUserPage(){
     const handleEdit = () => {
         navigate(`/dashboard/users/${user.id}/edit`);
     };
-    //Convierte fecha de formato ISO a fecha legible
+
     const formatDate = (dateString) => {
         if (!dateString) return "—";
         return new Date(dateString).toLocaleDateString("es-CO", {
@@ -48,26 +47,32 @@ export default function ViewUserPage(){
     };
 
     return(
-            // se deben colocar los nombres de los campos del backend
+        <>
             <ViewPageTemplate
                 title="Perfil de usuario"
                 icon={<UserRound className="text-brand"/>}
                 image={user.user_image}
                 name={`${user.first_name} ${user.last_name}`}
                 estado={user.is_active}
-                // onToggleEstado={() => handleToggle()}
                 onEdit={handleEdit}
                 topActions={
                     <div className="flex gap-4">
-                        <Button variant="primary" size="sm">Agregar tarea</Button>
-                        <Button variant="ghost" size="sm">Ver tarea</Button>
+                        <Button variant="primary" size="sm"><p className="hidden md:block">Agregar tarea</p></Button>
+                        <Button variant="ghost" size="sm"><ListTodo size={16} /><p className="hidden md:block">Tareas</p></Button>
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setShowPasswordModal(true)}
+                        >
+                            <KeyRound size={20} /><p className="hidden md:block">Cambiar contraseña</p>
+                        </Button>
                     </div>
                 }
             >
                 <ViewDetailCard fields={[
                     { label: "Tipo de documento", value: user.user_document_type },
                     { label: "Número documento", value: user.user_document },
-                    { label: "Grupo", value: user.groups?.map(g => g.name).join(",") },
+                    { label: "Grupo", value: user.groups?.map(g => g.name).join(", ") },
                     { label: "Fecha inicio", value: formatDate(user.user_date_start) },
                     { label: "Fecha fin", value: formatDate(user.user_date_end) },
                     { label: "Correo electrónico", value: user.email },
@@ -77,5 +82,10 @@ export default function ViewUserPage(){
                     { label: "Correo institucional", value: user.user_email2 },
                 ]} />
             </ViewPageTemplate>
+
+            {showPasswordModal && (
+                <ChangePasswordModal onClose={() => setShowPasswordModal(false)} />
+            )}
+        </>
     )
 }

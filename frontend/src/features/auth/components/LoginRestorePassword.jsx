@@ -1,10 +1,13 @@
-import { Input, Button, IconButton, Select, Checkbox } from "@/shared"
+import { Input, Button, IconButton, Select, Checkbox, Alert } from "@/shared"
 import React, { useState } from "react";
 import { loginEmailSchema } from "../schemas/loginEmailSchema";
 import logoSigi from "@/assets/images/LOGO-SIGI.png";
 import { useNavigate, Link } from "react-router-dom";
+import { forgotPassword } from "../services/passwordRecoveryService"
+
 
 export default function LoginRestorePassword() {
+    
     const navigate = useNavigate();
     const [formData, setFormData] = useState({
         userEmail: "",
@@ -40,7 +43,7 @@ export default function LoginRestorePassword() {
         Función que se ejecuta cuando se envía el formulario
     */
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
 
         e.preventDefault();
         //Se valida el objeto formData usando el esquema definido con Zod
@@ -68,9 +71,16 @@ export default function LoginRestorePassword() {
         }
         //Si la validacion es exitosa se limpian los errores anteriores
         setErrors({});
-        //result.data contiene los datos ya validados por Zod
-        console.log("Usuario valido:", result.data);
-        navigate("/auth/code")
+        try {
+            Alert.loading("Enviando código...")
+            await forgotPassword(result.data.userEmail)
+            Alert.close()
+            // Pasa el email a la siguiente pantalla via state
+            navigate("/auth/code", { state: { email: result.data.userEmail } })
+        } catch (error) {
+            Alert.close()
+            Alert.error("Error", error.message)
+        }
     }
 
     return (

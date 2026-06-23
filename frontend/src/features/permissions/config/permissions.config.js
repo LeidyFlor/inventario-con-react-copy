@@ -1,96 +1,54 @@
 // src/config/permissions.config.js
-//La key de los permisos debe conincidir con lo que se recibe del backend
+// Las keys deben coincidir con los codenames de Django (permission.codename)
 
 export const PERMISSIONS = [
   {
     category: "Gestión Usuarios",
-    key: "Usuarios",
+    key: "users",
     permissions: [
-      { key: "Usuarios_crear", label: "Crear usuarios" },
-      { key: "Usuarios_visualizar", label: "Visualizar usuarios" },
-      { key: "Usuarios_actualizar", label: "Actualizar usuarios" },
-      { key: "Usuarios_listar", label: "Listar usuarios" },
-      {
-        key: "Usuarios_activar_desactivar",
-        label: "Activar/Desactivar usuarios",
-      },
-      { key: "Usuarios_reporte", label: "Generar reporte usuarios" },
+      { key: "add_users",                label: "Crear usuarios" },
+      { key: "view_users",               label: "Visualizar usuarios" },
+      { key: "change_users",             label: "Actualizar usuarios" },
+      { key: "listar_usuarios",          label: "Listar usuarios" },
+      { key: "delete_users",             label: "Activar/Desactivar usuarios" },
+      { key: "generar_reporte_usuarios", label: "Generar reporte usuarios" },
     ],
   },
   {
     category: "Gestión Marcas",
-    key: "Marcas",
+    key: "brand",
     permissions: [
-      { key: "Marcas_crear", label: "Crear marca" },
-      { key: "Marcas_visualizar", label: "Visualizar marca" },
-      { key: "Marcas_actualizar", label: "Actualizar marca" },
-      { key: "Marcas_activar_desactivar", label: "Activar/Desactivar marca" },
-      { key: "Marcas_reporte", label: "Generar reporte marcas" },
+      { key: "add_brand",               label: "Crear marca" },
+      { key: "view_brand",              label: "Visualizar marca" },
+      { key: "change_brand",            label: "Actualizar marca" },
+      { key: "delete_brand",            label: "Activar/Desactivar marca" },
+      { key: "listar_brand",            label: "Listar marcas" },
+      { key: "generar_reporte_brand",   label: "Generar reporte marcas" },
     ],
   },
   {
     category: "Gestión Material de Consumo",
-    key: "Materiales",
+    key: "consumablematerial",
     permissions: [
-      { key: "Materiales_crear", label: "Crear material consumo" },
-      { key: "Materiales_visualizar", label: "Visualizar material consumo" },
-      { key: "Materiales_actualizar", label: "Actualizar material consumo" },
-      { key: "Materiales_listar", label: "Listar material consumo" },
-      {
-        key: "Materiales_activar_desactivar",
-        label: "Activar/Desactivar material consumo",
-      },
-      { key: "Materiales_reporte", label: "Generar reporte material consumo" },
+      { key: "add_consumablematerial",                label: "Crear material consumo" },
+      { key: "view_consumablematerial",               label: "Visualizar material consumo" },
+      { key: "change_consumablematerial",             label: "Actualizar material consumo" },
+      { key: "listar_consumablematerial",             label: "Listar material consumo" },
+      { key: "delete_consumablematerial",             label: "Activar/Desactivar material consumo" },
+      { key: "generar_reporte_consumablematerial",    label: "Generar reporte material consumo" },
     ],
   },
   {
     category: "Gestión Material Devolutivo",
-    key: "Material_Devolutivo",
+    key: "returnablematerial",
     permissions: [
-      { key: "Material_Devolutivo_crear", label: "Crear material devolutivo" },
-      {
-        key: "Material_Devolutivo_visualizar",
-        label: "Visualizar material devolutivo",
-      },
-      {
-        key: "Material_Devolutivo_actualizar",
-        label: "Actualizar material devolutivo",
-      },
-      {
-        key: "Material_Devolutivo_listar",
-        label: "Listar material devolutivo",
-      },
-      {
-        key: "Material_Devolutivo_activar_desactivar",
-        label: "Activar/Desactivar material devolutivo",
-      },
-      {
-        key: "Material_Devolutivo_reporte",
-        label: "Generar reporte material devolutivo",
-      },
+      { key: "add_returnablematerial",               label: "Crear material devolutivo" },
+      { key: "view_returnablematerial",              label: "Visualizar material devolutivo" },
+      { key: "change_returnablematerial",            label: "Actualizar material devolutivo" },
+      { key: "listar_returnablematerial",            label: "Listar material devolutivo" },
+      { key: "delete_returnablematerial",            label: "Activar/Desactivar material devolutivo" },
+      { key: "generar_reporte_returnablematerial",   label: "Generar reporte material devolutivo" },
     ],
   },
-  {
-    category: "Gestión Préstamos",
-    key: "Prestamos",
-    permissions: [
-      { key: "Prestamos_crear", label: "Crear préstamo" },
-      { key: "Prestamos_visualizar", label: "Visualizar préstamo" },
-      { key: "Prestamos_actualizar", label: "Actualizar préstamo" },
-      { key: "Prestamos_listar", label: "Listar préstamos" },
-      {
-        key: "Prestamos_activar_desactivar",
-        label: "Activar/Desactivar préstamo",
-      },
-      { key: "Prestamos_reporte", label: "Generar reporte préstamos" },
-    ],
-  },
-  {
-    category: "Retorno Préstamos",
-    key: "RetornarPrestamos",
-    permissions: [
-      { key: "RetornarPrestamos_retornar", label: "Retornar préstamo" },
-      { key: "RetornarPrestamos_aprobar", label: "Aprobar retorno préstamo" },
-    ],
-  },
+  // Prestamos se agrega cuando exista el modelo en el backend
 ];
