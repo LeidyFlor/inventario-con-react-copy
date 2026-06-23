@@ -74,7 +74,7 @@ export const userShema = z
       .string()
       .min(1, "Debe seleccionar un tipo de documento"),
 
-    userType: z.string().min(1, "Debe seleccionar un tipo de usuario"),
+    userType: z.array(z.string()).min(1, "Debe seleccionar mínimo un tipo de usuario"),
 
     userDocument: z
       .string()
@@ -98,7 +98,8 @@ export const userShema = z
       "La fecha fin es obligatoria",
       "Fecha de fin inválida",
     ),
-    userImage: fileSchema.shape.files.optional(),
+    //acepta array vacio, lleno o undefined
+    userImage: z.array(z.instanceof(File)).optional(),
   })
   //para que email y confirmación sean iguales
   .refine((data) => data.userEmail === data.userEmailConfir, {

@@ -30,15 +30,19 @@ export const Alert = {
         confirmButtonText: 'Entendido',
         reverseButtons: true,
     }),
-    warning: (title, text = '') => Swal.fire({
-        ...baseConfig,
-        icon: 'warning',
-        title,
-        text,
-        confirmButtonText: 'Aceptar',
-        showCancelButton: true,
-        reverseButtons: true,
-    }),
+    warning: async (title, text = '') =>{
+        const result = await Swal.fire({
+            ...baseConfig,
+            icon: 'warning',
+            title,
+            text,
+            showCancelButton: true,
+            confirmButtonText: 'Confirmar',
+            cancelButtonText: 'Cancelar',
+            reverseButtons: true,
+        })
+        return result
+    },
     confirm: async (title, text = '') =>{
         const result = await Swal.fire({
             ...baseConfig,

@@ -36,7 +36,7 @@ export const getUsersColumns = (setUsers, navigate) => [
         header: "Nombre",
         cell: ({ row }) => (
             <span
-                onClick={() => navigate(`/dashboard/users/${row.original.id}/view`)}
+                onDoubleClick={() => navigate(`/dashboard/users/${row.original.id}/view`)}
                 className="cursor-pointer hover:underline"
             >
                 {row.original.first_name} {row.original.last_name}

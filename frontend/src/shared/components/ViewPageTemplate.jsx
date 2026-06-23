@@ -80,12 +80,8 @@ export default function ViewPageTemplate({
                     {/* Estado y Editar */}
                     <div className="flex items-center gap-4">
                         <div className="flex items-center gap-2">
-                            <span>Estado</span>
-                            <StatusSwitch
-                                checked={estado === true}
-                                onChange={onToggleEstado}
-                                className={`inline-flex`}
-                            />
+                            <span className="font-medium">Estado: </span>
+                            {estado == true ? "Activo" : "Inactivo"}
                         </div>
                         <Button variant="warning" size={"sm"} onClick={onEdit}>
                             Editar

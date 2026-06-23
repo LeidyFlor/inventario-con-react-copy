@@ -1,10 +1,15 @@
-import { Input, Button, IconButton, Select, Checkbox } from "@/shared"
+import { Input, Button, IconButton, Select, Checkbox, Alert } from "@/shared"
 import React, { useState } from "react";
 import { restorePasswordSchema } from "../schemas/restorePasswordSchema";
 import logoSigi from "@/assets/images/LOGO-SIGI.png";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
+import { resetPassword } from "../services/passwordRecoveryService"
+
 
 export default function LoginRestoreNewPassword() {
+    const location = useLocation()
+    const email = location.state?.email
+    const code = location.state?.code
     const navigate = useNavigate();
     const [formData, setFormData] = useState({
         userPassword: "",
@@ -40,7 +45,7 @@ export default function LoginRestoreNewPassword() {
         Función que se ejecuta cuando se envía el formulario
     */
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
 
         e.preventDefault();
         //Se valida el objeto formData usando el esquema definido con Zod
@@ -68,9 +73,16 @@ export default function LoginRestoreNewPassword() {
         }
         //Si la validacion es exitosa se limpian los errores anteriores
         setErrors({});
-        //result.data contiene los datos ya validados por Zod
-        console.log("Usuario valido:", result.data);
-        navigate("/auth") //Despues de las validaciones se navega acá
+        try {
+            Alert.loading("Cambiando contraseña...")
+            await resetPassword(email, code, result.data.userPassword)
+            Alert.close()
+            await Alert.success("Contraseña actualizada", "Ya puedes iniciar sesión con tu nueva contraseña")
+            navigate("/auth")
+        } catch (error) {
+            Alert.close()
+            Alert.error("Error", error.message)
+        }
     }
 
     return (

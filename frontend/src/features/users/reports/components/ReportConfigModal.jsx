@@ -8,7 +8,7 @@ import { userReportFields } from "../config/userReportFields";
 import { generateUserReport } from "../services/generateUserReport";
 
 // Componentes UI reutilizables (design system)
-import { Button, Input, Select, Checkbox } from "@/shared";
+import { Button, Input, Select, Checkbox, Alert } from "@/shared";
 
 // Componente modal para configuración de reportes
 export function ReportConfigModal({ isOpen, onClose }) {
@@ -44,14 +44,15 @@ export function ReportConfigModal({ isOpen, onClose }) {
     };
 
     // Handler principal para generar el reporte
-    const handleGenerateReport = () => {
+    const handleGenerateReport = async () => {
         // Invoca el caso de uso con la configuración actual
-        generateUserReport({
+        await generateUserReport({
             format,
             selectedFields,
             scope,
             userDocument,
         });
+        Alert.success("Reporte generado", "El archivo fue descargado exitosamente")
 
         // Cierra el modal después de generar el reporte
         onClose();

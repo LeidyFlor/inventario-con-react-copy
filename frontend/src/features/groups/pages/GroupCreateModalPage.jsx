@@ -1,12 +1,9 @@
 import GroupRegisterModal from "../components/GroupRegisterModal.jsx";
 
-export default function GroupCreateModalPage() {
-
+export default function GroupCreateModalPage({ onClose, onGroupCreated }) {
     return (
         <div>
-            <GroupRegisterModal />
-
+            <GroupRegisterModal onClose={onClose} onGroupCreated={onGroupCreated} />
         </div>
-
     )
 }

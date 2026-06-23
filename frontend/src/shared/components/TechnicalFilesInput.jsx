@@ -91,7 +91,7 @@ export default function TechnicalFilesInput({
             {existingFiles.map((file) => (
                 <div
                     key={`existing-${file.id}`}
-                    className="relative w-24 h-24 border rounded overflow-hidden group"
+                    className="relative w-16 h-16 border rounded overflow-hidden group"
                 >
                     {existingIsImage(file) ? (
                         // Muestra la imagen directamente desde su URL en Supabase
@@ -134,7 +134,7 @@ export default function TechnicalFilesInput({
                     onDragStart={() => setDragIndex(i)}
                     onDragOver={(e) => e.preventDefault()}
                     onDrop={() => reorderNew(dragIndex, i)}
-                    className="relative w-24 h-24 border-2 border-brand/50 rounded overflow-hidden group"
+                    className="relative w-16 h-16 border-2 border-brand/50 rounded overflow-hidden group"
                 >
                     {newIsImage(file) ? (
                         <img src={newPreviews[i]} className="w-full h-full object-cover" />
@@ -173,11 +173,11 @@ export default function TechnicalFilesInput({
             {canAddMore && (
                 <div
                     onClick={() => !isLoading && inputRef.current.click()}
-                    className="w-24 h-24 border-2 border-dashed rounded flex items-center justify-center cursor-pointer bg-background"
+                    className="w-16 h-16 border-2 border-dashed rounded flex items-center justify-center cursor-pointer bg-background"
                 >
                     {isLoading ? (
                         <InfinityLoader
-                            size="55"
+                            size="28"
                             stroke="4"
                             strokeLength="0.15"
                             bgOpacity="0.1"
@@ -186,7 +186,7 @@ export default function TechnicalFilesInput({
                         />
                     ) : (
                         <span className="text-text-primary text-sm font-bold text-center">
-                            Seleccionar
+                            Subir
                             <CloudUpload className="place-self-center mx-auto mt-1" />
                         </span>
                     )}

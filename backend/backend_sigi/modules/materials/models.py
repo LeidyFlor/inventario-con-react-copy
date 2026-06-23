@@ -12,6 +12,10 @@ class Brand(models.Model):
 
     class Meta:
         db_table = 'brand'
+        permissions = [
+            ('listar_brand',           'Listar marcas'),
+            ('generar_reporte_brand',  'Generar reporte marcas'),
+        ]
 
     def __str__(self):
         return self.name
@@ -105,6 +109,10 @@ class ConsumableMaterial(Material):
 
     class Meta:
         db_table = 'consumable_material'
+        permissions = [
+            ('listar_consumablematerial',          'Listar material de consumo'),
+            ('generar_reporte_consumablematerial', 'Generar reporte material de consumo'),
+        ]
 
     def __str__(self):
         return self.material_name
@@ -130,6 +138,10 @@ class ReturnableMaterial(Material):
 
     class Meta:
         db_table = 'returnable_material'
+        permissions = [
+            ('listar_returnablematerial',          'Listar material devolutivo'),
+            ('generar_reporte_returnablematerial', 'Generar reporte material devolutivo'),
+        ]
 
     def __str__(self):
         return self.material_name

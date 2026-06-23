@@ -1,10 +1,15 @@
-import { Input, Button, IconButton, Select, Checkbox } from "@/shared"
+import { Input, Button, IconButton, Select, Checkbox, Alert } from "@/shared"
 import React, { useState } from "react";
 import { loginCodeSchema } from "../schemas/loginCodeSchema";
 import logoSigi from "@/assets/images/LOGO-SIGI.png";
-import { useNavigate } from "react-router-dom";
+import { useNavigate,useLocation } from "react-router-dom";
+import { verifyResetCode } from "../services/passwordRecoveryService"
+import { forgotPassword } from "../services/passwordRecoveryService"
+
 
 export default function LoginRestorePasswordCode() {
+    const location = useLocation()
+    const email = location.state?.email
     const navigate = useNavigate();
     const [formData, setFormData] = useState({
         userCode: "",
@@ -39,7 +44,7 @@ export default function LoginRestorePasswordCode() {
         Función que se ejecuta cuando se envía el formulario
     */
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
 
         e.preventDefault();
         //Se valida el objeto formData usando el esquema definido con Zod
@@ -68,8 +73,16 @@ export default function LoginRestorePasswordCode() {
         //Si la validacion es exitosa se limpian los errores anteriores
         setErrors({});
         //result.data contiene los datos ya validados por Zod
-        console.log("Usuario valido:", result.data);
-        navigate("/auth/newpassword")
+        try {
+            Alert.loading("Verificando código...")
+            await verifyResetCode(email, result.data.userCode)
+            Alert.close()
+            // Pasa email Y código a la siguiente pantalla
+            navigate("/auth/newpassword", { state: { email, code: result.data.userCode } })
+        } catch (error) {
+            Alert.close()
+            Alert.error("Error", error.message)
+        }
     }
 
     return (
@@ -129,7 +142,20 @@ export default function LoginRestorePasswordCode() {
                     <h3 className="text-small font-label text-text-primary">
                         ¿No recibiste el token?
                     </h3>
-                    <span className="text-small text-brand">
+                    <span
+                        className="text-small text-brand cursor-pointer"
+                        onClick={async () => {
+                            try {
+                                Alert.loading("Reenviando código...")
+                                await forgotPassword(email)
+                                Alert.close()
+                                Alert.success("Código reenviado", "Revisa tu correo")
+                            } catch {
+                                Alert.close()
+                                Alert.error("Error", "No se pudo reenviar el código")
+                            }
+                        }}
+                    >
                         Reenviar token
                     </span>
                 </div>
