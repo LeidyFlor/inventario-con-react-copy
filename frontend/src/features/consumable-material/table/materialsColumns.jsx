@@ -45,15 +45,15 @@ export const getMaterialsColumns = (setMaterials) => [
     },
 
     // Ubicación
-    {
-        accessorKey: "material_location",
-        header: "Ubicación",
-    },
+    // {
+    //     accessorKey: "material_location",
+    //     header: "Ubicación",
+    // },
 
     // Estado — muestra "Disponible" si activo, o el motivo si inactivo
     {
         id: "estado",
-        header: "Estado",
+        header: "Condición",
         cell: ({ row }) => (
             <MaterialStateTag
                 isActive={row.original.is_active}
@@ -65,7 +65,7 @@ export const getMaterialsColumns = (setMaterials) => [
     // Switch activo/inactivo — pide motivo al desactivar
     {
         id: "is_active",
-        header: "Activo",
+        header: "Estado",
         cell: ({ row }) => {
             const material = row.original
 

@@ -8,7 +8,7 @@ import { consumableReportFields } from "../config/consumableReportFields";
 import { generateConsumableReport } from "../services/generateConsumableReport";
 
 // Componentes UI reutilizables (design system)
-import { Button, Input, Select, Checkbox } from "@/shared";
+import { Button, Input, Select, Checkbox, Alert } from "@/shared";
 
 // Componente modal para configuración de reportes
 export function ReportConfigModal({ isOpen, onClose }) {
@@ -46,18 +46,24 @@ export function ReportConfigModal({ isOpen, onClose }) {
     };
 
     // Handler principal para generar el reporte
-    const handleGenerateReport = () => {
-        // Invoca el caso de uso con la configuración actual
-       generateConsumableReport({
-            format,
-            selectedFields,
-            scope,
-            materialBarcodeSena,
-            materialName,
-        });
-
-        // Cierra el modal después de generar el reporte
-        onClose();
+    const handleGenerateReport = async () => {
+        try {
+            await generateConsumableReport({
+                format,
+                selectedFields,
+                scope,
+                materialBarcodeSena,
+                materialName,
+            });
+            Alert.success("Reporte generado", "El archivo fue descargado exitosamente");
+            onClose();
+        } catch (err) {
+            if (err.message === "sin_datos") {
+                Alert.error("Sin resultados", "No se encontraron materiales con ese filtro.");
+            } else {
+                Alert.error("No se pudo generar el reporte", err);
+            }
+        }
     };
 
     return (

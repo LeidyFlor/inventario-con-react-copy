@@ -1,53 +1,57 @@
 export const consumableReportFields = [
-    {
-        key: "materialBarcodeSena",
+    { 
+        key: 
+        "material_barcode_sena",
         label: "Placa sena",
-        default: true,
-    },
-    {
-        key: "brandName",
+        default: true  },
+    { 
+        key: 
+        "brand_name",
         label: "Marca",
-        default: true,
-    },
-    {
-        key: "materialName",
+        default: true  },
+    { 
+        key: 
+        "material_name",
         label: "Nombre material",
-        default: true,
-    },
-    {
-        key: "inventoryManager",
-        label: "Cuentadante",
-        default: true,
-    },
-    {
-        key: "materialDescription",
+        default: true},
+    { 
+        key: 
+        "inventory_manager_name",
+         label: "Cuentadante",
+        default: true  },
+    { 
+        key: 
+        "material_description",
         label: "Descripción",
-        default: false,
-    },
-    {
-        key: "materialState",
+        default: false },
+    { 
+        key: 
+        "material_state",
+        label: "Condición",
+        default: false },
+    { 
+        key: 
+        "is_active",
         label: "Estado",
-        default: false,
-    },
-    {
-        key: "materialQuantity",
+        default: false },
+    { 
+        key: 
+        "material_quantity",
         label: "Cantidad",
-        default: false,
-    },
-    {
-        key: "materialUnitPrice",
+        default: false },
+    { 
+        key: 
+        "material_unit_price",
         label: "Valor unitario",
-        default: false,
-    },
-    {
-        key: "materialTotalPrice",
-        label: "Valor total",
-        default: false,
-    },
-    {
-        key: "materialLocation",
+        default: false },
+    { 
+        key: 
+        "material_total_price",
+           label: "Valor total",
+        default: false },
+    { 
+        key: 
+        "material_location",
         label: "Ubicación",
-        default: false,
-    },
-   
+        default: false },
 ];
