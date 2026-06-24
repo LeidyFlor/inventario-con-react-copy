@@ -126,6 +126,33 @@ class ConsumableMaterialViewSet(viewsets.ViewSet):
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         serializer.save()
+
+        # Reemplazar imagen si viene en el request
+        file = request.FILES.get('material_image')
+        if file:
+            if material.material_image:
+                old_path = material.material_image.split('/public/material-data-sheet/')[1]
+                http_requests.delete(
+                    f"{settings.SUPABASE_URL}/storage/v1/object/material-data-sheet/{old_path}",
+                    headers={
+                        'Authorization': f'Bearer {settings.SUPABASE_SERVICE_KEY}',
+                        'apikey': settings.SUPABASE_SERVICE_KEY,
+                    }
+                )
+            file_name = f"materials/{material.id}/{timezone.now().strftime('%Y%m%d_%H%M%S')}_{file.name}"
+            response = http_requests.post(
+                f"{settings.SUPABASE_URL}/storage/v1/object/material-data-sheet/{file_name}",
+                headers={
+                    'Authorization': f'Bearer {settings.SUPABASE_SERVICE_KEY}',
+                    'apikey': settings.SUPABASE_SERVICE_KEY,
+                    'Content-Type': file.content_type,
+                },
+                data=file.read()
+            )
+            if response.status_code in (200, 201):
+                material.material_image = f"{settings.SUPABASE_URL}/storage/v1/object/public/material-data-sheet/{file_name}"
+                material.save()
+
         return Response(ConsumableMaterialSerializer(material).data)
 
     def partial_update(self, request, pk=None):

@@ -43,6 +43,50 @@ export async function createMaterial(formData) {
     return response.json()
 }
 
+// Trae un material por ID
+export async function getMaterial(id) {
+    const token = sessionStorage.getItem("token")
+    const response = await fetch(`${API_URL}/consumable-materials/${id}/`, {
+        headers: { "Authorization": `Bearer ${token}` }
+    })
+    if (!response.ok) throw new Error("Material no encontrado")
+    return response.json()
+}
+
+// Edita un material — usa FormData porque puede traer imagen
+export async function updateMaterial(id, formData, isActive, materialImage) {
+    const token = sessionStorage.getItem("token")
+    const data = new FormData()
+
+    data.append("brand", formData.brand)
+    data.append("inventory_manager", formData.inventoryManager)
+    data.append("material_name", formData.materialName)
+    data.append("material_description", formData.materialDescription)
+    data.append("material_quantity", formData.materialQuantity)
+    data.append("material_unit_price", formData.materialUnitPrice)
+    data.append("is_active", isActive)
+
+    if (formData.materialBarcodeSena)
+        data.append("material_barcode_sena", formData.materialBarcodeSena)
+    if (formData.materialLocation)
+        data.append("material_location", formData.materialLocation)
+    if (!isActive && formData.materialState)
+        data.append("material_state", formData.materialState)
+    if (materialImage && materialImage.length > 0)
+        data.append("material_image", materialImage[0])
+
+    const response = await fetch(`${API_URL}/consumable-materials/${id}/`, {
+        method: "PATCH",
+        headers: { "Authorization": `Bearer ${token}` },
+        body: data,
+    })
+    if (!response.ok) {
+        const error = await response.json()
+        throw new Error(JSON.stringify(error))
+    }
+    return response.json()
+}
+
 // Activa o desactiva un material
 // Si se desactiva, debe enviarse el motivo (materialState)
 export async function toggleMaterialStatus(id, isActive, materialState = null) {
