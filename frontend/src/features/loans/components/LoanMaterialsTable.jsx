@@ -20,37 +20,37 @@ export default function LoanMaterialsTable({
     const columns = [
         {
             accessorKey: "name",
-            header: () => <span className="block min-w-[8rem] lg:min-w-0">Nombre</span>,
+            header: () => <span className="block min-w-32">Nombre</span>,
             cell: ({ row }) => (
-                <span className="block min-w-[8rem] lg:min-w-0">
+                <span className="block min-w-32 py-3">
                     {row.original.name}
                 </span>
             ),
         },
         {
             accessorKey: "placaSena",
-            header: () => <span className="block min-w-[7rem] lg:min-w-0">Placa SENA</span>,
+            header: () => <span className="block min-w-24">Placa SENA</span>,
             cell: ({ row }) => (
-                <span className="block min-w-[7rem] lg:min-w-0 whitespace-nowrap">
+                <span className="block min-w-24 py-3 whitespace-nowrap">
                     {row.original.placaSena}
                 </span>
             ),
         },
         {
             accessorKey: "serial",
-            header: () => <span className="block min-w-[7rem] lg:min-w-0">Serial</span>,
+            header: () => <span className="block min-w-24">Serial</span>,
             cell: ({ row }) => (
-                <span className="block min-w-[7rem] lg:min-w-0 whitespace-nowrap">
+                <span className="block min-w-24 py-3 whitespace-nowrap">
                     {row.original.serial}
                 </span>
             ),
         },
         {
             accessorKey: "cantidad",
-            header: () => <span className="block min-w-[5rem] lg:min-w-0">Cantidad</span>,
+            header: () => <span className="block min-w-20 text-center">Cantidad</span>,
 
             // En modo no editable se muestra solo el valor actual.
-            // En modo editable la cantidad será editable SÓLO para materiales de tipo consumo. 
+            // En modo editable la cantidad será editable solo para materiales de tipo consumo
             // Para materiales devolutivos mostramos el valor fijo y no permitimos la edición desde aquí.
             cell: ({ row }) => {
                 const tipo = String(row.original.tipo ?? "").toLowerCase();
@@ -58,36 +58,38 @@ export default function LoanMaterialsTable({
 
                 if (!EditQuantity) {
                     return (
-                        <span className="block min-w-[5rem] lg:min-w-0">
+                        <span className="block min-w-20 py-3 text-center">
                             {row.original.cantidad}
                         </span>
                     );
                 }
 
                 return (
-                    <input
-                        type="number"
-                        min="0"
-                        value={row.original.cantidad ?? ""}
-                        onChange={(event) => {
-                            // Mantener controlado como string antes de parsear
-                            const value = event.target.value;
-                            const parsed = value === "" ? "" : Number(value);
-                            onQuantityChange?.(
-                                row.original.id,
-                                value === "" || Number.isNaN(parsed) ? 0 : parsed
-                            );
-                        }}
-                        className="w-20 rounded-xl border border-border px-3 py-2 text-body text-text-primary"
-                    />
+                    <div className="flex min-w-20 justify-center">
+                        <input
+                            type="text"
+                            inputMode="numeric"
+                            value={row.original.cantidad ?? ""}
+                            onChange={(event) => {
+                                // Mantener controlado como string antes de parsear
+                                const value = event.target.value.replace(/\D/g, "");
+                                const parsed = value === "" ? "" : Number(value);
+                                onQuantityChange?.(
+                                    row.original.id,
+                                    value === "" || Number.isNaN(parsed) ? 0 : parsed
+                                );
+                            }}
+                            className="w-16 rounded-xl border border-border px-3 py-2 text-center text-body text-text-primary"
+                        />
+                    </div>
                 );
             },
         },
         {
             accessorKey: "tipo",
-            header: () => <span className="block min-w-[6rem] lg:min-w-0">Tipo</span>,
+            header: () => <span className="block min-w-24">Tipo</span>,
             cell: ({ row }) => (
-                <span className="block min-w-[6rem] lg:min-w-0 whitespace-nowrap">
+                <span className="block min-w-24 py-3 whitespace-nowrap">
                     {row.original.tipo}
                 </span>
             ),
@@ -98,9 +100,9 @@ export default function LoanMaterialsTable({
     if (editable) {
         columns.push({
             id: "actions",
-            header: "",
+            header: () => <span className="block min-w-12"></span>,
             cell: ({ row }) => (
-                <div className="flex min-w-[5rem] lg:min-w-0 justify-end">
+                <div className="flex min-w-12">
                     <IconButtonReal
                         label="Remover"
                         variant="outline"

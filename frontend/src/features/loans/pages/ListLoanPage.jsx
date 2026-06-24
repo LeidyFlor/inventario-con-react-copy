@@ -28,7 +28,7 @@ export default function ListLoanPage() {
 
   return (      
     
-    <div className="p-6">
+    <div className="p-2">
         <div className="flex flex-col md:flex-row justify-between ">
               {/* contenenedor del titulo y la linea */}
               <div className=" mb-6 max-w-max">

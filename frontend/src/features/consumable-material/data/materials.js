@@ -2,9 +2,9 @@ export const materials = [
     {
         id: 1,
         materialBarcodeSena: "ADSO123",
-        brandName: "HP",
+        brandName: "Canon",
         returnableMaterialModel: "Optiplex",
-        materialName: "Computador",
+        materialName: "Cámara",
         inventoryManager: "Edwar Velazquez",
         materialDescription: "Trabajo en formacion en la zona 1",
         materialState: "Disponible",

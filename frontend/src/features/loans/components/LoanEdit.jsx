@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { Button, IconButton, Input, Select, Textarea } from "@/shared";
-import { ClipboardList } from "lucide-react";
+import { Button, IconButton, Input, Textarea } from "@/shared";
+import { ClipboardList, Pencil } from "lucide-react";
 import { getUserName } from "../services/selectService.js";
 import { loanSchema } from "../schemas/loanSchema";
 import { loans } from "../data/loans";
@@ -20,6 +20,7 @@ export default function LoanEditPage() {
 
   // Errores de validación del formulario
   const [errors, setErrors] = useState({});
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   // Estado local del formulario con valores iniciales del préstamo
   const [formData, setFormData] = useState(() => ({
@@ -105,56 +106,89 @@ export default function LoanEditPage() {
     };
 
     console.log("Guardar préstamo:", updatedLoan);
+    setIsEditModalOpen(false);
     navigate(-1);
   };
 
   return (
-    <div className="flex flex-col place-items-center justify-items-center relative px-4 py-6">
-      <div className="bg-gradient-container-green border-4 border-border-green-container p-4 md:p-6 rounded-4xl w-full max-w-5xl lg:max-w-6xl mx-auto overflow-hidden">
-        <div className="mb-6 max-w-max">
+    <div className="p-2">
+      <div>
+        <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div className="max-w-max">
           <h1 className="flex items-center gap-3 text-gradient-title text-h3 pb-0.5">
             <ClipboardList className="text-brand" />
             Editar préstamo
           </h1>
           <div className="h-0.5 bg-gradiant-title-line"></div>
+          </div>
+
+          <div className="w-fit">
+            <Button
+              variant="primary"
+              size="sm"
+              type="button"
+              onClick={() => setIsEditModalOpen(true)}
+            >
+              Editar materiales
+            </Button>
+          </div>
         </div>
 
         {/* Formulario principal dividido en dos columnas: datos del préstamo y materiales */}
-        <form
-          className="flex flex-col-reverse lg:grid lg:grid-cols-[360px_minmax(0,1fr)] lg:items-start gap-6"
-          onSubmit={handleSubmit}
-          noValidate
-        >
-          <div className="rounded-4xl border border-border bg-background p-6 shadow-sm w-full max-w-full mx-auto lg:mx-0 lg:self-start">
-            <div className="grid gap-4 w-full">
-              <Input
-                label="ID préstamo"
-                value={formData.idLoan}
-                disabled
-                variant="isEdit"
-              />
+        <div className="block">
+          <div className="w-full max-w-full mx-auto lg:mx-0 lg:min-w-0">
 
-              <Input
-                label="Usuario solicitante"
-                name="loanUserRequester"
-                value={formData.loanUserRequester}
-                onChange={handleChange}
-                options={userNameOptions}
-                error={errors.loanUserRequester}
-                variant="isEdit"
-              />
+            {/* Tabla de materiales del préstamo. editable=true habilita cantidades y botón para eliminar filas */}
+            <LoanMaterialsTable
+              materials={materials}
+              editable
+              onQuantityChange={handleQuantityChange}
+              onRemoveMaterial={handleRemoveMaterial}
+            />
+          </div>
+        </div>
+      </div>
 
-              <Input
-                label="Usuario prestador"
-                name="loanUserLender"
-                value={formData.loanUserLender}
-                onChange={handleChange}
-                error={errors.loanUserLender}
-                variant="isEdit"
-                disabled
-              />
+      {isEditModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <div className="w-full max-w-2xl rounded-2xl bg-background p-6 shadow-2xl">
+            <div className="flex flex-col items-start gap-2 mb-6 max-w-max">
+              <div className="flex items-center gap-2 pb-0.5">
+                <Pencil className="text-brand" />
+                <h2 className="text-gradient-title text-h2">Editar préstamo</h2>
+              </div>
+              <div className="h-0.5 bg-gradiant-title-line w-full"></div>
+            </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <form className="grid grid-cols-1 gap-4" onSubmit={handleSubmit} noValidate>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Input
+                  label="ID préstamo"
+                  value={formData.idLoan}
+                  disabled
+                  variant="isEdit"
+                />
+
+                <Input
+                  label="Usuario solicitante"
+                  name="loanUserRequester"
+                  value={formData.loanUserRequester}
+                  onChange={handleChange}
+                  options={userNameOptions}
+                  error={errors.loanUserRequester}
+                  variant="isEdit"
+                />
+
+                <Input
+                  label="Usuario prestador"
+                  name="loanUserLender"
+                  value={formData.loanUserLender}
+                  onChange={handleChange}
+                  error={errors.loanUserLender}
+                  variant="isEdit"
+                  disabled
+                />
+
                 <Input
                   label="Fecha de salida"
                   type="date"
@@ -165,6 +199,7 @@ export default function LoanEditPage() {
                   variant="isEdit"
                   disabled
                 />
+
                 <Input
                   label="Fecha de entrega"
                   type="date"
@@ -172,6 +207,27 @@ export default function LoanEditPage() {
                   value={formData.loanDateIn}
                   onChange={handleChange}
                   error={errors.loanDateIn}
+                  variant="isEdit"
+                />
+
+                <Input
+                  label="Estado préstamo"
+                  value={formData.loanStatus}
+                  disabled
+                  variant="isEdit"
+                />
+
+                <Input
+                  label="Tipo de préstamo"
+                  value={formData.loanType}
+                  disabled
+                  variant="isEdit"
+                />
+
+                <Input
+                  label="Grupo aprendices"
+                  value={formData.loanStudentsGroup}
+                  disabled
                   variant="isEdit"
                 />
               </div>
@@ -185,57 +241,28 @@ export default function LoanEditPage() {
                 variant="isEdit"
               />
 
-              <Input
-                label="Estado préstamo"
-                value={formData.loanStatus}
-                disabled
-                variant="isEdit"
-              />
+              <div className="flex flex-row items-center justify-between gap-3 mt-4">
+                <div className="w-fit">
+                  <Button
+                    variant="secondary"
+                    size="md"
+                    type="button"
+                    onClick={() => setIsEditModalOpen(false)}
+                  >
+                    Cancelar
+                  </Button>
+                </div>
 
-              <Input
-                label="Tipo de préstamo"
-                value={formData.loanType}
-                disabled
-                variant="isEdit"
-              />
-
-              <Input
-                label="Grupo aprendices"
-                value={formData.loanStudentsGroup}
-                disabled
-                variant="isEdit"
-              />
-            </div>
-
-            <div className="mt-6 flex flex-col sm:flex-row justify-center lg:justify-start items-center gap-3 sm:gap-6 lg:gap-16">
-              <Button
-                variant="secondary"
-                size="md"
-                type="button"
-                onClick={() => navigate(-1)}
-              >
-                Cancelar
-              </Button>
-
-              <IconButton size="md" type="submit">
-                Guardar
-              </IconButton>
-            </div>
+                <div className="w-fit">
+                  <IconButton size="md" type="submit">
+                    Guardar
+                  </IconButton>
+                </div>
+              </div>
+            </form>
           </div>
-
-          <div className="w-full max-w-full mx-auto lg:mx-0 lg:min-w-0 ">
-
-            {/* Tabla de materiales del préstamo. editable=true habilita cantidades y botón para eliminar filas */}
-            <LoanMaterialsTable
-              materials={materials}
-              editable
-              className
-              onQuantityChange={handleQuantityChange}
-              onRemoveMaterial={handleRemoveMaterial}
-            />
-          </div>
-        </form>
-      </div>
+        </div>
+      )}
     </div>
   );
 }

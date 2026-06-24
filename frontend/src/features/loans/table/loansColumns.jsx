@@ -1,44 +1,55 @@
 import { useState } from "react";
-import { StatusSwitch } from "@/shared/";
+import { StatusSwitch, Button } from "@/shared/";
 import LoanRowActions from "../components/LoanRowActions";
 
-//   Celda con texto truncado + botón expandir/colapsar
-/*
-    Cada instancia tiene su propio useState → el toggle
-    de una fila no afecta a las demás.
-    maxChars: cantidad de caracteres visibles antes del "..."
-*/
 function TruncatedCell({ value, maxChars = 30 }) {
-    const [expanded, setExpanded] = useState(false);
+    const [open, setOpen] = useState(false);
 
-    // Si el texto cabe completo, se muestra sin botón
     if (!value || value.length <= maxChars) {
-        return <span className="">{value}</span>;
+        return <span>{value}</span>;
     }
 
     return (
-        <div className="flex flex-col gap-1">
-
-            {/* Texto: completo o truncado según el estado */}
-            <span className="">
-                {expanded ? value : `${value.slice(0, maxChars)}...`}
-            </span>
-
-            {/* Botón toggle - sin estilos llamativos para no competir con la tabla */}
+        <>
             <button
-                onClick={() => setExpanded(!expanded)}
-                className="text-small text-text-primary underline self-start hover:opacity-70 transition-opacity"
+                onClick={() => setOpen(true)}
+                className="text-text-primary underline hover:opacity-70 transition-opacity"
             >
-                {expanded ? "Ver menos" : "Ver más"}
+                Ver info.
             </button>
 
-        </div>
+            {open && (
+                <div
+                    className="fixed inset-0 z-50 flex items-center justify-center bg-black/30"
+                    onClick={() => setOpen(false)}
+                >
+                    <div
+                        className="bg-surface items-center rounded-2xl shadow-lg max-w-sm w-full mx-4 p-6"
+                        
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <div
+                            className="text-text-primary pb-2 font-semibold text-center"
+                        >
+                            Justificación de uso
+                        </div>
+                        <p className="text-body text-text-primary">{value}</p>
+                            <div className="flex justify-center pt-2">
+                                <Button
+                                    size="sm"
+                                    variant="secondary"
+                                    onClick={() => setOpen(false)}
+                                >
+                                    Cerrar
+                                </Button>
+                            </div>
+                    </div>
+                </div>
+            )}
+        </>
     );
 }
 
-// ==================================================
-//   Definición de columnas
-// ==================================================
 export const loansColumns = [
 
     // Columna ID préstamo
