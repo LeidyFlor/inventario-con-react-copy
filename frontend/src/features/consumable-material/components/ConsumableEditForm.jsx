@@ -91,7 +91,7 @@ export default function ConsumableEditForm() {
         <div className="flex flex-col place-items-center justify-items-center w-full">
 
             {/* Contenedor verde */}
-            <div className="bg-gradient-container-green border-4 border-border-green-container p-6 rounded-4xl w-fit md:w-full">
+            <div className="bg-gradient-container-green border-border-green-container p-6 rounded-4xl w-fit md:w-full">
 
                 <form
                     className="flex flex-col lg:grid lg:grid-cols-[420px_1fr] lg:items-center w-full"
@@ -100,7 +100,7 @@ export default function ConsumableEditForm() {
                 >
 
                     {/* IZQUIERDA */}
-                    <div className="w-full max-w-[320px] mx-auto flex flex-col items-center p-4 gap-4">
+                    <div className="w-full max-w-[320px] mx-auto flex flex-col items-center p-2 gap-2">
 
                         <div className="mb-2 max-w-max">
                             <h1 className="flex gap-2 text-gradient-title text-h3 pb-0.5">
@@ -119,7 +119,7 @@ export default function ConsumableEditForm() {
                                     className="w-48 h-48 object-cover rounded-lg"
                                 />
                             ) : (
-                                <div className="w-48 h-48 rounded-lg flex items-center justify-center bg-surface border-2 border-input-border">
+                                <div className="w-32 h-32 rounded-lg flex items-center justify-center bg-surface border-2 border-input-border">
                                     <span className="text-2xl font-bold">
                                         {material.materialName?.charAt(0).toUpperCase()}
                                     </span>
@@ -164,14 +164,6 @@ export default function ConsumableEditForm() {
                             )}
                         </div>
 
-                        <Input
-                            name="materialName"
-                            value={formData.materialName}
-                            onChange={handleChange}
-                            error={errors.materialName}
-                            variant="nameEdit"
-                        />
-
                         <Textarea
                             name="materialDescription"
                             value={formData.materialDescription}
@@ -180,7 +172,7 @@ export default function ConsumableEditForm() {
                             variant="isEdit"
                         />
 
-                        <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-2">
                             <div className="flex items-center gap-2">
                                 <span className="font-semibold text-medium">Estado</span>
                                 <StatusSwitch
@@ -219,6 +211,21 @@ export default function ConsumableEditForm() {
                                     variant="isEdit"
                                 />
                             </div>
+
+                            <div>
+                                <p className="parrafo-edit-style">
+                                    Nombre del elemento:
+                                </p>
+
+                                <Input
+                                    name="materialName"
+                                    value={formData.materialName}
+                                    onChange={handleChange}
+                                    error={errors.materialName}
+                                    variant="isEdit"
+                                />
+                            </div>
+
 
                             <div>
                                 <p className="parrafo-edit-style">Modelo:</p>
