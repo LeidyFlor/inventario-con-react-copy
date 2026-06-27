@@ -80,7 +80,7 @@ export default function ReturnableRegisterForm() {
             <div className="bg-gradient-container-green border-4 border-border-green-container p-6 rounded-4xl w-fit h-fit">
 
                 {/* Título */}
-                <div className="mb-6 max-w-max">
+                <div className="mb-3 max-w-max">
                     <h1 className="flex gap-2 text-gradient-title text-h3 pb-0.5">
                         <Router className="text-brand" />
                         Crear material devolutivo
@@ -97,9 +97,11 @@ export default function ReturnableRegisterForm() {
                     <div className="flex flex-col items-center gap-6">
 
                         {/* Imagen principal */}
-                        <div className="flex flex-col gap-4 items-center text-center">
+                        <div className="flex flex-col gap-3 items-center text-center">
                             <h2 className="font-bold text-body">Imagen del elemento</h2>
-                            <h2 className="w-80">Puede subir 1 archivo, archivos permitidos: PDF, PNG, JPG. Máximo de 10MB</h2>
+                            <p className="text-text-muted text-small text-center">
+                                Solo se admite 1 archivo (PNG, JPG). Máx 10MB.
+                            </p>
                             <FileInput
                                 value={formData.materialImage ?? []}
                                 onChange={(files) =>
@@ -113,9 +115,11 @@ export default function ReturnableRegisterForm() {
                         </div>
 
                         {/* Fichas técnicas */}
-                        <div className="flex flex-col gap-4 items-center text-center">
+                        <div className="flex flex-col gap-3 items-center text-center">
                             <h2 className="font-bold text-body">Imagen del elemento</h2>
-                            <h2 className="w-80">Puede subir 12 archivos, archivos permitidos: PDF, PNG, JPG. Máximo de 10MB c/u</h2>
+                            <p className="text-text-muted text-small text-center">
+                                Se admiten 12 archivos (PNG, JPG, PNG). Máx 10MB.
+                            </p>
                             <FileInput
                                 value={formData.materialTechnicalSheet ?? []}
                                 onChange={(files) =>
@@ -133,7 +137,7 @@ export default function ReturnableRegisterForm() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-10">
 
                         {/* Columna izquierda */}
-                        <div className="flex flex-col gap-4">
+                        <div className="flex flex-col gap-2">
                             <Input
                                 label="Placa SENA"
                                 placeholder="Placa SENA"
@@ -178,7 +182,7 @@ export default function ReturnableRegisterForm() {
                         </div>
 
                         {/* Columna derecha */}
-                        <div className="flex flex-col gap-4">
+                        <div className="flex flex-col gap-2">
                             <Select
                                 label="Categoría"
                                 options={categories}
