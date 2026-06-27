@@ -1,78 +1,18 @@
-2// Campos que se desean tener en el reporte
+// Campos disponibles para el reporte — keys en snake_case (nombres reales del backend)
 export const returnableReportFields = [
-  {
-    key: "materialBarcodeSena",
-    label: "Placa Sena",
-    default: true,
-  },
-  {
-    key: "materialName",
-    label: "Nombre material",
-    default: true,
-  },
-  {
-    key: "brandName",
-    label: "Marca",
-    default: true,
-  },
-  {
-    key: "returnableMaterialSerial",
-    label: "Serial",
-    default: true,
-  },
-  {
-    key: "returnableMaterialModel",
-    label: "Modelo",
-    default: true,
-  },
-  {
-    key: "inventoryManager",
-    label: "Cuntadante",
-    default: true,
-  },
-  {
-    key: "materialDescription",
-    label: "Descipción",
-    default: false,
-  },
-  {
-    key: "materialQuantity",
-    label: "Cantidad",
-    default: false,
-  },
-  {
-    key: "materialUnitPrice",
-    label: "Valor unitario",
-    default: false,
-  },
-  {
-    key: "materialTotalPrice",
-    label: "Valor total",
-    default: false,
-  },
-  {
-    key: "materialLocation",
-    label: "Ubicación",
-    default: false,
-  },
-  {
-    key: "returnableMaterialCategory",
-    label: "Categoría",
-    default: true,
-  },
-  {
-    key: "returnableMaterialDimensions",
-    label: "Dimensiones",
-    default: false,
-  },
-  {
-    key: "materialState",
-    label: "Estado",
-    default: false,
-  },
-  {
-    key: "is_active",
-    label: "Disponibilidad",
-    default: false,
-  },
+  { key: "material_barcode_sena",   label: "Placa SENA",       default: true  },
+  { key: "material_name",           label: "Nombre material",  default: true  },
+  { key: "brand_name",              label: "Marca",            default: true  },
+  { key: "material_serial",         label: "Serial",           default: true  },
+  { key: "material_model",          label: "Modelo",           default: true  },
+  { key: "inventory_manager_name",  label: "Cuentadante",      default: true  },
+  { key: "material_category",       label: "Categoría",        default: true  },
+  { key: "material_description",    label: "Descripción",      default: false },
+  { key: "material_quantity",       label: "Cantidad",         default: false },
+  { key: "material_unit_price",     label: "Valor unitario",   default: false },
+  { key: "material_total_price",    label: "Valor total",      default: false },
+  { key: "material_location",       label: "Ubicación",        default: false },
+  { key: "material_dimensions",     label: "Dimensiones",      default: false },
+  { key: "material_state",          label: "Estado",           default: false },
+  { key: "is_active",               label: "Disponibilidad",   default: false },
 ];

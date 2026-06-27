@@ -129,8 +129,8 @@ class ReturnableMaterial(Material):
         ('muebles_enseres', 'Muebles y enseres'),
     ]
 
-    material_model = models.CharField(max_length=150)
-    material_serial = models.CharField(max_length=150)
+    material_model = models.CharField(max_length=150, blank=True, default='')
+    material_serial = models.CharField(max_length=150, blank=True, default='')
     material_category = models.CharField(max_length=20, choices=CATEGORIES)
 
     # Solo si categoría es 'muebles_enseres' — formato: "120x75x20cm"

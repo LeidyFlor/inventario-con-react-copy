@@ -186,26 +186,38 @@ class ReturnableMaterialSerializer(serializers.ModelSerializer):
         read_only_fields = ['id', 'material_quantity_loaned']
 
 
-# Para crear — placa SENA obligatoria, cantidad forzada a 1
+# Para crear
 class ReturnableMaterialCreateSerializer(serializers.ModelSerializer):
 
+    # Cantidad opcional en el request — se calcula en validate()
+    material_quantity = serializers.IntegerField(required=False, default=1)
+
     def validate(self, data):
-        # Placa SENA es obligatoria en devolutivos
-        if not data.get('material_barcode_sena'):
+        category = data.get('material_category', '')
+        barcode  = data.get('material_barcode_sena', '').strip()
+
+        # Placa SENA obligatoria para maquinaria y muebles; opcional para herramienta
+        if category != 'herramienta' and not barcode:
             raise serializers.ValidationError({
-                'material_barcode_sena': 'La placa SENA es obligatoria para materiales devolutivos.'
+                'material_barcode_sena': 'La placa SENA es obligatoria para esta categoría.'
             })
 
+        # Si tiene placa o categoría NO es herramienta → cantidad forzada a 1
+        if barcode or category != 'herramienta':
+            data['material_quantity'] = 1
+        else:
+            # herramienta sin placa: cantidad debe ser >= 1
+            qty = data.get('material_quantity', 1)
+            if not qty or qty < 1:
+                raise serializers.ValidationError({
+                    'material_quantity': 'La cantidad debe ser mayor a 0.'
+                })
+
         # Solo muebles_enseres puede tener dimensiones
-        if data.get('material_dimensions') and data.get('material_category') != 'muebles_enseres':
+        if data.get('material_dimensions') and category != 'muebles_enseres':
             data['material_dimensions'] = None
 
         return data
-
-    def create(self, validated_data):
-        # La cantidad siempre es 1 en devolutivos (un serial = un bien)
-        validated_data['material_quantity'] = 1
-        return super().create(validated_data)
 
     class Meta:
         model = ReturnableMaterial
@@ -215,6 +227,7 @@ class ReturnableMaterialCreateSerializer(serializers.ModelSerializer):
             'material_name',
             'material_description',
             'material_barcode_sena',
+            'material_quantity',
             'material_unit_price',
             'material_location',
             'material_model',
@@ -228,9 +241,14 @@ class ReturnableMaterialCreateSerializer(serializers.ModelSerializer):
 # Para editar — validaciones de estado + reglas de categoría
 class ReturnableMaterialUpdateSerializer(serializers.ModelSerializer):
 
+    # Cantidad opcional — solo editable para herramienta sin placa
+    material_quantity = serializers.IntegerField(required=False)
+
     def validate(self, data):
-        is_active = data.get('is_active', self.instance.is_active)
+        is_active     = data.get('is_active', self.instance.is_active)
         material_state = data.get('material_state', self.instance.material_state)
+        category      = data.get('material_category', self.instance.material_category)
+        barcode       = (data.get('material_barcode_sena') or self.instance.material_barcode_sena or '').strip()
 
         # Desactivar requiere motivo
         if not is_active and not material_state:
@@ -242,24 +260,30 @@ class ReturnableMaterialUpdateSerializer(serializers.ModelSerializer):
         if is_active:
             data['material_state'] = None
 
-        # Placa SENA obligatoria también en edición
-        barcode = data.get('material_barcode_sena', self.instance.material_barcode_sena)
-        if not barcode:
+        # Placa SENA obligatoria para maquinaria y muebles; opcional para herramienta
+        if category != 'herramienta' and not barcode:
             raise serializers.ValidationError({
-                'material_barcode_sena': 'La placa SENA es obligatoria para materiales devolutivos.'
+                'material_barcode_sena': 'La placa SENA es obligatoria para esta categoría.'
             })
 
+        # Regla de cantidad
+        if barcode or category != 'herramienta':
+            # Tiene placa o no es herramienta → siempre 1
+            data['material_quantity'] = 1
+        else:
+            # herramienta sin placa → usar valor enviado o mantener el actual
+            qty = data.get('material_quantity', self.instance.material_quantity)
+            if not qty or qty < 1:
+                raise serializers.ValidationError({
+                    'material_quantity': 'La cantidad debe ser mayor a 0.'
+                })
+            data['material_quantity'] = qty
+
         # Dimensiones solo aplican a muebles_enseres
-        category = data.get('material_category', self.instance.material_category)
         if data.get('material_dimensions') and category != 'muebles_enseres':
             data['material_dimensions'] = None
 
         return data
-
-    def update(self, instance, validated_data):
-        # Cantidad siempre 1 — no se puede cambiar desde la edición
-        validated_data.pop('material_quantity', None)
-        return super().update(instance, validated_data)
 
     class Meta:
         model = ReturnableMaterial
@@ -269,6 +293,7 @@ class ReturnableMaterialUpdateSerializer(serializers.ModelSerializer):
             'material_name',
             'material_description',
             'material_barcode_sena',
+            'material_quantity',
             'material_unit_price',
             'material_location',
             'material_model',

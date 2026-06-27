@@ -84,7 +84,7 @@ export default function FileInput({
                     )}
 
                     {/* Acciones hover: reorder visual + eliminar */}
-                    <div className=" flex gap-1 opacity-0 group-hover:opacity-100">
+                    <div className="absolute top-1 right-1 flex flex-col gap-1 opacity-0 group-hover:opacity-100">
                         <button className="w-7 h-7 bg-white rounded-full text-black text-xs">
                             ↔️
                         </button>

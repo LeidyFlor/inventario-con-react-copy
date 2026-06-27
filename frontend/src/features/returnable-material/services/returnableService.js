@@ -22,11 +22,15 @@ export async function createReturnable(formData) {
     data.append("inventory_manager",    formData.inventoryManager)
     data.append("material_name",        formData.materialName)
     data.append("material_description", formData.materialDescription)
-    data.append("material_barcode_sena",formData.materialBarcodeSena)
+    data.append("material_barcode_sena",formData.materialBarcodeSena || "")
     data.append("material_unit_price",  formData.materialUnitPrice)
     data.append("material_location",    formData.materialLocation || "")
-    data.append("material_model",       formData.returnableMaterialModel)
-    data.append("material_serial",      formData.returnableMaterialSerial)
+    data.append("material_model",       formData.returnableMaterialModel || "")
+    data.append("material_serial",      formData.returnableMaterialSerial || "")
+    // Cantidad: solo relevante para herramienta sin placa; el backend la fuerza a 1 en los demás casos
+    if (formData.materialQuantity) {
+        data.append("material_quantity", formData.materialQuantity)
+    }
     data.append("material_category",    formData.returnableMaterialCategory)
 
     // Dimensiones solo si la categoría es muebles_enseres

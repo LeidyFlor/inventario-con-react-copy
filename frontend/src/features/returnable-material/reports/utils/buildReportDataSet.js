@@ -1,52 +1,55 @@
-//Funcion utilitaria para construir el dataset de un reporte (tabla)
-//Patron: trasformacion de datos (input -> output listo para exportar)
+const CATEGORY_LABELS = {
+    herramienta:        "Herramienta",
+    maquinaria_equipos: "Maquinaria y equipos",
+    muebles_enseres:    "Muebles y enseres",
+};
+
+const STATE_LABELS = {
+    no_disponible: "No disponible",
+    prestado:      "Prestado",
+    traslado:      "Traslado",
+    baja:          "Baja",
+};
+
+// Extrae el valor de un campo aplicando transformaciones especiales
+const getValue = (m, field) => {
+    if (field.key === "material_state") {
+        if (m.is_active) return "Disponible";
+        return STATE_LABELS[m.material_state] ?? m.material_state ?? "—";
+    }
+    if (field.key === "is_active") return m.is_active ? "Activo" : "Inactivo";
+    if (field.key === "material_category") {
+        return CATEGORY_LABELS[m.material_category] ?? m.material_category ?? "—";
+    }
+    return m[field.key] ?? "";
+};
+
+const normalize = (str) =>
+    str.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+
 export default function buildReportDataset({
-  returnableMaterial, //Array de usuarios origen
-  selectedFields, //Campos seleccionados para e reporte [{ key, label}]
-  scope, //Alcance del reporte: "all" | "document"
-  materialBarcodeSena, //Placa sena para filtrar (si aplica)
-  materialName, //Filtro por nombre del material(si aplica)
+    materials,
+    selectedFields,
+    scope,
+    materialBarcodeSena,
+    materialName,
 }) {
-  //Copia inmutable del array original (evita mutaciones)
-  let filteredreturnableMaterial = [...returnableMaterial];
-  //descarga por nombre del material, admite mayusculas minusculas y tildes para coincidier con el material
-  const normalize = (str) =>
-    str
-      .toLowerCase()
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "");
-  //filtro por alcence: nombre del material, si se aplica el filtro
-  if (scope === "name" && materialName) {
-    filteredreturnableMaterial = filteredreturnableMaterial.filter((returnableMaterial) =>
-      normalize(returnableMaterial.materialName).includes(normalize(materialName)),
-    );
-  }
-  //Filtro por alcance: si es por documento, se aplica filtro especifico
-  if (scope === "barcodeSena" && materialBarcodeSena) {
-    filteredreturnableMaterial = filteredreturnableMaterial.filter(
-      (returnableMaterial) => returnableMaterial.materialBarcodeSena === materialBarcodeSena,
-    );
-  }
+    let filtered = [...materials];
 
-  //Construccion de encabezados del reporte
-  //Se toma el label de cada campo seleccionado
-  const headers = selectedFields.map((field) => field.label);
+    if (scope === "name" && materialName) {
+        filtered = filtered.filter((m) =>
+            normalize(m.material_name ?? "").includes(normalize(materialName))
+        );
+    }
 
-  //Construccion de filas del reporte
-  // Cada usuario se trasforma en un array de valores segun los campos seleccionados
-  const rows = filteredreturnableMaterial.map((returnableMaterial) =>
-    selectedFields.map((field) => {
-      const value = returnableMaterial[field.key]; //Acceso dinamico a la propiedad
+    if (scope === "barcodeSena" && materialBarcodeSena) {
+        filtered = filtered.filter(
+            (m) => m.material_barcode_sena === materialBarcodeSena
+        );
+    }
 
-      //Normalizacion: evita undefined o null en el reporte. EN vez de dar error imprima vacio
-      return value ?? "";
-    }),
-  );
+    const headers = selectedFields.map((f) => f.label);
+    const rows    = filtered.map((m) => selectedFields.map((f) => getValue(m, f)));
 
-  //Estructura final desacoplada de la UI
-  // Lista para exporta a Excel, PDF o renderizar en tabla
-  return {
-    headers, //Array de strings (columnas)
-    rows, //Array de arrays (filas)
-  };
+    return { headers, rows };
 }
