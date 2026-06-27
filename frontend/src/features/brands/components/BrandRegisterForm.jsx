@@ -1,4 +1,4 @@
-import { Input, Button, IconButton } from "@/shared"
+    import { Input, Button, IconButton } from "@/shared"
 import { Tags } from "lucide-react";
 
 export default function BrandRegisterForm({ onClose }) {
