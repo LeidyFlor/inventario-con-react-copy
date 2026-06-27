@@ -13,10 +13,9 @@ export const consumableMaterialShema = z.object({
   inventoryManager: z.string().min(1, "Debe seleccionar un cuentadante"),
 
   materialDescription: z
-    .string()
-    .max(500, "Descripción demasiado larga")
-    .optional() //para campos opcionales
-    .or(z.literal("")),
+      .string()
+      .max(500, "Descripción demasiado larga")
+      .min(5, "Ingrese una descipcion"),
 
   materialName: z
     .string()
@@ -46,4 +45,12 @@ export const consumableMaterialShema = z.object({
     .string()
     .max(150, "Resuma la ubicación del material")
     .optional(),
+}).superRefine((data, ctx) => {
+    if (data.materialBarcodeSena?.trim() && data.materialQuantity !== 1) {
+        ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "Si el material tiene placa SENA, la cantidad debe ser 1",
+            path: ["materialQuantity"],
+        })
+    }
 });

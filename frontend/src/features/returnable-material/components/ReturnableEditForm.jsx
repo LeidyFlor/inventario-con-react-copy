@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useBlocker } from "react-router-dom";
 import { FilePenLine, Image, FileText } from "lucide-react";
+import { Ping } from "ldrs/react";
+import "ldrs/react/Ping.css";
 
 import {
     Input,
@@ -8,7 +10,8 @@ import {
     Select,
     Textarea,
     Alert,
-    IconButton
+    IconButton,
+    StatusSwitch
 } from "@/shared";
 
 import ImageModal from "./ReturnableModalImage";
@@ -17,7 +20,8 @@ import TechnicalFilesModal from "./ReturnableModalTechnicalFile";
 import {
     getBrands,
     getInventoryManagers,
-    getMaterialCategories
+    getMaterialCategories,
+    getMaterialStates
 } from "../services/selectService";
 
 import {
@@ -26,12 +30,12 @@ import {
     deleteTechnicalFile
 } from "../services/returnableService";
 
-import { returnableMaterialSchema } from "../schemas/returnableMaterialSchema";
+import { returnableEditSchema } from "../schemas/returnableEditSchema";
 
 const API_URL = "/api";
 
 
-async function updateReturnable(id, formData, newImageFile) {
+async function updateReturnable(id, formData, isActive, newImageFile) {
     const token = sessionStorage.getItem("token");
     const data = new FormData();
 
@@ -39,12 +43,18 @@ async function updateReturnable(id, formData, newImageFile) {
     data.append("inventory_manager", formData.inventoryManager);
     data.append("material_name", formData.materialName);
     data.append("material_description", formData.materialDescription);
-    data.append("material_barcode_sena", formData.materialBarcodeSena);
+    data.append("material_barcode_sena", formData.materialBarcodeSena || "");
     data.append("material_unit_price", formData.materialUnitPrice);
     data.append("material_location", formData.materialLocation || "");
-    data.append("material_model", formData.returnableMaterialModel);
-    data.append("material_serial", formData.returnableMaterialSerial);
+    data.append("material_model", formData.returnableMaterialModel || "");
+    data.append("material_serial", formData.returnableMaterialSerial || "");
     data.append("material_category", formData.returnableMaterialCategory);
+    data.append("material_quantity", formData.materialQuantity || "1");
+    data.append("is_active", isActive);
+
+    if (!isActive && formData.materialState) {
+        data.append("material_state", formData.materialState);
+    }
 
     if (formData.returnableMaterialDimensions) {
         data.append("material_dimensions", formData.returnableMaterialDimensions);
@@ -83,11 +93,14 @@ export default function ReturnableEditForm() {
         materialDescription: "",
         materialUnitPrice: "",
         materialLocation: "",
+        materialQuantity: "1",
         returnableMaterialSerial: "",
         returnableMaterialCategory: "",
-        returnableMaterialDimensions: ""
+        returnableMaterialDimensions: "",
+        materialState: "",
     });
 
+    const [isActive, setIsActive] = useState(true);
     const [errors, setErrors] = useState({});
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
@@ -97,40 +110,60 @@ export default function ReturnableEditForm() {
     const [newImageFiles, setNewImageFiles] = useState([]);
     const [showFileInput, setShowFileInput] = useState(false);
 
-   
+    /* Fichas técnicas */
     const [existingFiles, setExistingFiles] = useState([]);
     const [newTechFiles, setNewTechFiles] = useState([]);
     const [removedFileIds, setRemovedFileIds] = useState([]);
 
-    /* Los selects */
+    /* Selects */
     const [brands, setBrands] = useState([]);
     const [managers, setManagers] = useState([]);
     const categories = getMaterialCategories();
+    const materialStateOptions = getMaterialStates();
 
-    /* Para los modeles de imagen y ficha */
+    /* Modales */
     const [showImageModal, setShowImageModal] = useState(false);
     const [showFilesModal, setShowFilesModal] = useState(false);
+    // Vigilate de los cambios
+    const [isDirty, setIsDirty] = useState(false);
+    const blocker = useBlocker(
+        ({ currentLocation, nextLocation }) =>
+            isDirty && currentLocation.pathname !== nextLocation.pathname
+    );
 
-    const materialStateOptions = [
-        { value: "Disponible", label: "Disponible" },
-        { value: "Agotado", label: "Agotado" },
-        { value: "En revisión", label: "En revisión" },
-        { value: "Dado de baja", label: "Dado de baja" }
-    ];
+    useEffect(() => {
+        if (blocker.state === "blocked") {
+            Alert.warning(
+                "¿Salir sin guardar?",
+                "Los cambios no guardados se perderán"
+            ).then((result) => {
+                if (result.isConfirmed) {
+                    setIsDirty(false);
+                    blocker.proceed();
+                } else {
+                    blocker.reset();
+                }
+            });
+        }
+    }, [blocker]);
 
-    /* Cargar materiales devolutivos */
+    /* Cargar material */
     useEffect(() => {
         async function load() {
             try {
-                const [all, brands, managers] = await Promise.all([
+                const [all, brandsData, managersData] = await Promise.all([
                     getReturnables(),
                     getBrands(),
                     getInventoryManagers()
                 ]);
 
                 const material = all.find(m => String(m.id) === String(id));
-                if (!material) return;
+                if (!material) {
+                    Alert.error("Error", "Material no encontrado");
+                    return;
+                }
 
+                setIsActive(material.is_active ?? true);
                 setFormData({
                     materialBarcodeSena: material.material_barcode_sena ?? "",
                     brandName: String(material.brand),
@@ -140,16 +173,17 @@ export default function ReturnableEditForm() {
                     materialDescription: material.material_description ?? "",
                     materialUnitPrice: material.material_unit_price ?? "",
                     materialLocation: material.material_location ?? "",
+                    materialQuantity: String(material.material_quantity ?? 1),
                     returnableMaterialSerial: material.material_serial ?? "",
                     returnableMaterialCategory: material.material_category ?? "",
-                    returnableMaterialDimensions: material.material_dimensions ?? ""
+                    returnableMaterialDimensions: material.material_dimensions ?? "",
+                    materialState: material.material_state ?? "",
                 });
 
                 setCurrentImage(material.material_image ?? null);
                 setExistingFiles(material.technical_files ?? []);
-
-                setBrands(brands);
-                setManagers(managers);
+                setBrands(brandsData);
+                setManagers(managersData);
             } catch {
                 Alert.error("Error", "No se pudo cargar el material");
             } finally {
@@ -160,21 +194,21 @@ export default function ReturnableEditForm() {
         load();
     }, [id]);
 
-    /* Handle */
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData(prev => ({ ...prev, [name]: value }));
+        setErrors(prev => ({ ...prev, [name]: "" }));
+        setIsDirty(true);
     };
 
-    /* Submit */
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        const result = returnableMaterialSchema.safeParse(formData);
+        const result = returnableEditSchema.safeParse({ ...formData, isActive });
         if (!result.success) {
             const fieldErrors = {};
             result.error.issues.forEach(issue => {
-                fieldErrors[issue.path[0]] = issue.message;
+                if (issue.path[0]) fieldErrors[issue.path[0]] = issue.message;
             });
             setErrors(fieldErrors);
             return;
@@ -185,7 +219,8 @@ export default function ReturnableEditForm() {
 
             await updateReturnable(
                 id,
-                result.data,
+                formData,
+                isActive,
                 newImageFiles.length > 0 ? newImageFiles[0] : null
             );
 
@@ -196,21 +231,29 @@ export default function ReturnableEditForm() {
             if (newTechFiles.length > 0) {
                 await uploadTechnicalFiles(id, newTechFiles);
             }
-
-            Alert.success("OK", "Material actualizado");
-            navigate("/dashboard/returnable-material-list");
+            setIsDirty(false);
+            await Alert.success("Material actualizado", "Los cambios se guardaron correctamente.");
+            navigate(-1);
 
         } catch (err) {
-            Alert.error("Error", "No se pudo guardar");
-            console.error(err);
+            try {
+                const errObj = JSON.parse(err.message);
+                const first = Object.values(errObj)[0];
+                Alert.error("Error", Array.isArray(first) ? first[0] : String(first));
+            } catch {
+                Alert.error("Error", "No se pudo guardar el material");
+            }
         } finally {
             setSaving(false);
         }
     };
 
-    if (loading) {
-        return <p className="p-6">Cargando...</p>;
-    }
+    if (loading) return (
+        <div className="flex flex-col place-items-center gap-2">
+            <Ping size="45" speed="1.5" color="#56B526" />
+            <p className="text-text-muted text-center">Cargando material...</p>
+        </div>
+    );
 
     return (
         <div className="w-full flex flex-col items-center">
@@ -219,55 +262,34 @@ export default function ReturnableEditForm() {
 
                 {/* Header + Botones */}
                 <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-2 gap-2">
-
-                    {/* Header */}
                     <div className="max-w-max mb-1">
                         <h1 className="flex gap-2 text-gradient-title text-h3">
                             <FilePenLine className="text-brand" />
                             Editar material devolutivo
-                        </h1>{/*linea degradada del titulo*/}
+                        </h1>
                         <div className="h-0.5 bg-gradiant-title-line"></div>
                     </div>
 
                     <div className="flex gap-2">
-                        {/* Agregar imagen */}
-                        <Button
-                            type="button"
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => setShowImageModal(true)}
-                        >
+                        <Button type="button" size="sm" variant="ghost" onClick={() => setShowImageModal(true)}>
                             <Image size={18} />
                             Imagen
                         </Button>
-
-                        {/* Agregar ficha tecnica */}
-                        <Button
-                            type="button"
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => setShowFilesModal(true)}
-                        >
+                        <Button type="button" size="sm" variant="ghost" onClick={() => setShowFilesModal(true)}>
                             <FileText size={18} />
                             Fichas
                         </Button>
-
                     </div>
                 </div>
 
                 {/* Formulario */}
-                <form
-                    onSubmit={handleSubmit}
-                    className="grid lg:grid-cols-3 gap-4"
-                >
+                <form onSubmit={handleSubmit} className="grid lg:grid-cols-3 gap-4">
+
                     {/* IZQUIERDA */}
                     <div className="bg-background p-4 rounded-xl flex flex-col gap-2">
 
                         <div>
-                            <p className="parrafo-edit-style">
-                                Placa SENA:
-                            </p>
-
+                            <p className="parrafo-edit-style">Placa SENA:</p>
                             <Input
                                 name="materialBarcodeSena"
                                 value={formData.materialBarcodeSena}
@@ -278,10 +300,7 @@ export default function ReturnableEditForm() {
                         </div>
 
                         <div>
-                            <p className="parrafo-edit-style">
-                                Categoría:
-                            </p>
-
+                            <p className="parrafo-edit-style">Categoría:</p>
                             <Select
                                 options={categories}
                                 name="returnableMaterialCategory"
@@ -293,10 +312,7 @@ export default function ReturnableEditForm() {
                         </div>
 
                         <div>
-                            <p className="parrafo-edit-style">
-                                Serial:
-                            </p>
-
+                            <p className="parrafo-edit-style">Serial:</p>
                             <Input
                                 name="returnableMaterialSerial"
                                 value={formData.returnableMaterialSerial}
@@ -306,26 +322,37 @@ export default function ReturnableEditForm() {
                             />
                         </div>
 
-                        <div>
-                            <p className="parrafo-edit-style">
-                                Estado material:
-                            </p>
-
-                            <Select
-                                name="materialState"
-                                options={materialStateOptions}
-                                value={formData.materialState}
-                                onChange={handleChange}
-                                error={errors.materialState}
-                                variant="isEdit"
-                            />
+                        {/* Estado — Switch + motivo condicional */}
+                        <div className="flex flex-col gap-2">
+                            <div className="flex items-center gap-2">
+                                <span className="parrafo-edit-style">Estado:</span>
+                                <StatusSwitch
+                                    checked={isActive}
+                                    onChange={() => {
+                                        setIsActive(prev => !prev);
+                                        if (isActive) setFormData(prev => ({ ...prev, materialState: "" }));
+                                        setIsDirty(true);
+                                    }}
+                                    className="inline-flex"
+                                />
+                            </div>
+                            {!isActive && (
+                                <div>
+                                    <p className="parrafo-edit-style">Motivo inactividad:</p>
+                                    <Select
+                                        name="materialState"
+                                        options={materialStateOptions}
+                                        value={formData.materialState}
+                                        onChange={handleChange}
+                                        error={errors.materialState}
+                                        variant="isEdit"
+                                    />
+                                </div>
+                            )}
                         </div>
 
                         <div>
-                            <p className="parrafo-edit-style">
-                                Nombre del elemento:
-                            </p>
-
+                            <p className="parrafo-edit-style">Nombre del elemento:</p>
                             <Input
                                 name="materialName"
                                 value={formData.materialName}
@@ -341,10 +368,7 @@ export default function ReturnableEditForm() {
                     <div className="bg-background p-4 rounded-xl flex flex-col gap-3">
 
                         <div>
-                            <p className="parrafo-edit-style">
-                                Modelo:
-                            </p>
-
+                            <p className="parrafo-edit-style">Modelo:</p>
                             <Input
                                 name="returnableMaterialModel"
                                 value={formData.returnableMaterialModel}
@@ -355,10 +379,22 @@ export default function ReturnableEditForm() {
                         </div>
 
                         <div>
-                            <p className="parrafo-edit-style">
-                                Valor unitario:
-                            </p>
-
+                            <p className="parrafo-edit-style">Cantidad:</p>
+                            {formData.returnableMaterialCategory === "herramienta" && !formData.materialBarcodeSena?.trim() ? (
+                                <Input
+                                    type="number"
+                                    name="materialQuantity"
+                                    value={formData.materialQuantity}
+                                    onChange={handleChange}
+                                    error={errors.materialQuantity}
+                                    variant="isEdit"
+                                />
+                            ) : (
+                                <p className="text-text-primary font-semibold text-sm py-1">1</p>
+                            )}
+                        </div>
+                        <div>
+                            <p className="parrafo-edit-style">Valor unitario:</p>
                             <Input
                                 type="number"
                                 name="materialUnitPrice"
@@ -368,46 +404,22 @@ export default function ReturnableEditForm() {
                                 variant="isEdit"
                             />
                         </div>
-
-                        <div>
-                            <p className="parrafo-edit-style">
-                                Precio total:
-                            </p>
-
-                            <Input
-                                type="number"
-                                name="materialTotalPrice"
-                                value={formData.materialTotalPrice}
-                                onChange={handleChange}
-                                error={errors.materialTotalPrice}
-                                variant="isEdit"
-                            />
-                        </div>
-
-                        <div>
-                            <p className="parrafo-edit-style">
-                                Descripción:
-                            </p>
-
-                            <Textarea
-                                name="materialDescription"
-                                value={formData.materialDescription}
-                                onChange={handleChange}
-                                error={errors.materialDescription}
-                                variant="isEdit"
-                            />
-                        </div>
+                        {Number(formData.materialQuantity) > 1 && (
+                            <div>
+                                <p className="parrafo-edit-style">Valor total:</p>
+                                <p className="text-text-primary font-semibold text-sm py-1">
+                                    {`$${(Number(formData.materialQuantity) * Number(formData.materialUnitPrice)).toLocaleString("es-CO")}`}
+                                </p>
+                            </div>
+                        )}
 
                     </div>
 
-                    {/* Derecha */}
+                    {/* DERECHA */}
                     <div className="bg-background p-4 rounded-xl flex flex-col gap-3">
 
                         <div>
-                            <p className="parrafo-edit-style">
-                                Marca:
-                            </p>
-
+                            <p className="parrafo-edit-style">Marca:</p>
                             <Select
                                 options={brands}
                                 name="brandName"
@@ -419,39 +431,7 @@ export default function ReturnableEditForm() {
                         </div>
 
                         <div>
-                            <p className="parrafo-edit-style">
-                                Cantidad:
-                            </p>
-
-                            <Input
-                                type="number"
-                                name="materialQuantity"
-                                value={formData.materialQuantity}
-                                onChange={handleChange}
-                                error={errors.materialQuantity}
-                                variant="isEdit"
-                            />
-                        </div>
-
-                        <div>
-                            <p className="parrafo-edit-style">
-                                Dimensiones:
-                            </p>
-
-                            <Input
-                                name="returnableMaterialDimensions"
-                                value={formData.returnableMaterialDimensions}
-                                onChange={handleChange}
-                                error={errors.returnableMaterialDimensions}
-                                variant="isEdit"
-                            />
-                        </div>
-
-                        <div>
-                            <p className="parrafo-edit-style">
-                                Cuentadante:
-                            </p>
-
+                            <p className="parrafo-edit-style">Cuentadante:</p>
                             <Select
                                 options={managers}
                                 name="inventoryManager"
@@ -463,10 +443,7 @@ export default function ReturnableEditForm() {
                         </div>
 
                         <div>
-                            <p className="parrafo-edit-style">
-                                Ubicación:
-                            </p>
-
+                            <p className="parrafo-edit-style">Ubicación:</p>
                             <Input
                                 name="materialLocation"
                                 value={formData.materialLocation}
@@ -475,9 +452,32 @@ export default function ReturnableEditForm() {
                                 variant="isEdit"
                             />
                         </div>
+                        <div>
+                            <p className="parrafo-edit-style">Descripción:</p>
+                            <Textarea
+                                name="materialDescription"
+                                value={formData.materialDescription}
+                                onChange={handleChange}
+                                error={errors.materialDescription}
+                                variant="isEdit"
+                            />
+                        </div>
+
+                        {/* Dimensiones solo si es muebles_enseres */}
+                        {formData.returnableMaterialCategory === "muebles_enseres" && (
+                            <div>
+                                <p className="parrafo-edit-style">Dimensiones:</p>
+                                <Input
+                                    name="returnableMaterialDimensions"
+                                    value={formData.returnableMaterialDimensions}
+                                    onChange={handleChange}
+                                    error={errors.returnableMaterialDimensions}
+                                    variant="isEdit"
+                                />
+                            </div>
+                        )}
 
                     </div>
-
 
                     {/* FOOTER */}
                     <div className="lg:col-span-3 flex justify-between lg:justify-end">
@@ -485,7 +485,6 @@ export default function ReturnableEditForm() {
                             <Button type="button" variant="secondary" size="sm" onClick={() => navigate(-1)}>
                                 Cancelar
                             </Button>
-
                         </div>
                         <IconButton type="submit" variant="primary" disabled={saving}>
                             {saving ? "Guardando..." : "Guardar"}
@@ -493,10 +492,9 @@ export default function ReturnableEditForm() {
                     </div>
 
                 </form>
-
             </div>
 
-            {/* MODALS */}
+            {/* MODALES */}
             <ImageModal
                 isOpen={showImageModal}
                 onClose={() => setShowImageModal(false)}

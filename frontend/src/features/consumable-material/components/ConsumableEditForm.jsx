@@ -197,7 +197,9 @@ export default function ConsumableEditForm() {
                             <StatusSwitch
                                 className="inline-flex"
                                 checked={isActive}
-                                onChange={() => setIsActive(prev => !prev)}
+                                onChange={() => {setIsActive(prev => !prev);
+                                    setIsDirty(true);}
+                                }
                             />
                         </div>
                         {!isActive && (

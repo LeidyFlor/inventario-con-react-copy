@@ -5,7 +5,10 @@ export const consumableEditSchema = z
         brand: z.string().min(1, "Selecciona una marca"),
         inventoryManager: z.string().min(1, "Selecciona un cuentadante"),
         materialName: z.string().min(1, "El nombre es obligatorio"),
-        materialDescription: z.string().optional().or(z.literal("")),
+        materialDescription: z
+            .string()
+            .max(500, "Descripción demasiado larga")
+            .min(5, "Ingrese una descipcion"),
         materialBarcodeSena: z.string().optional().or(z.literal("")),
         materialQuantity: z.preprocess(
             (val) => Number(val),
@@ -25,6 +28,13 @@ export const consumableEditSchema = z
                 code: z.ZodIssueCode.custom,
                 message: "Indica el motivo de inactividad",
                 path: ["materialState"],
+            });
+        }
+        if (data.materialBarcodeSena?.trim() && Number(data.materialQuantity) !== 1) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: "Si el material tiene placa SENA, la cantidad debe ser 1",
+                path: ["materialQuantity"],
             });
         }
     });

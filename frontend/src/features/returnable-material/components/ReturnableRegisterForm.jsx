@@ -20,11 +20,12 @@ export default function ReturnableRegisterForm() {
         materialDescription:  "",
         materialUnitPrice:"",
         materialLocation:"",
+        materialQuantity: "",
         returnableMaterialSerial:"",
         returnableMaterialCategory:"",
         returnableMaterialDimensions:  "",
         materialImage: [],
-        materialTechnicalSheet: [],   // null → FileInput espera null para modo múltiple
+        materialTechnicalSheet: [],
     })
     const [errors, setErrors]   = useState({})
     const [loading, setLoading] = useState(false)
@@ -116,7 +117,7 @@ export default function ReturnableRegisterForm() {
 
                         {/* Fichas técnicas */}
                         <div className="flex flex-col gap-3 items-center text-center">
-                            <h2 className="font-bold text-body">Imagen del elemento</h2>
+                            <h2 className="font-bold text-body">Ficha técnica</h2>
                             <p className="text-text-muted text-small text-center">
                                 Se admiten 12 archivos (PNG, JPG, PNG). Máx 10MB.
                             </p>
@@ -216,6 +217,18 @@ export default function ReturnableRegisterForm() {
                                 onChange={handleChange}
                                 error={errors.materialUnitPrice}
                             />
+                            {/* Cantidad editable solo para herramienta sin placa */}
+                            {formData.returnableMaterialCategory === "herramienta" && !formData.materialBarcodeSena?.trim() && (
+                                <Input
+                                    label="Cantidad"
+                                    placeholder="Cantidad"
+                                    type="number"
+                                    name="materialQuantity"
+                                    value={formData.materialQuantity}
+                                    onChange={handleChange}
+                                    error={errors.materialQuantity}
+                                />
+                            )}
                             <Input
                                 label="Ubicación"
                                 placeholder="Ubicación del elemento"
