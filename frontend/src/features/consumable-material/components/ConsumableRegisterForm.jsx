@@ -94,7 +94,7 @@ export default function ConsumableRegisterForm() {
             {/* contenedor verde */}
             <div className="bg-gradient-container-green border-4 border-border-green-container p-6 rounded-4xl w-fit mt-2 h-fit">
                 {/* contenenedor del titulo y la linea */}
-                <div className="mb-6 max-w-max ">
+                <div className="mb-3 max-w-max ">
                     <h1 className="flex gap-2 text-gradient-title text-h3 pb-0.5">
                         <Cable className="text-brand"/>
                         Crear material de Consumo
@@ -107,12 +107,14 @@ export default function ConsumableRegisterForm() {
                 <form className="grid md:grid-flow-col-dense items-center gap-10  " onSubmit={handleSubmit} noValidate>
                     <div className="flex flex-col md:flex-row justify-center items-center">
                         <div className="flex flex-col place-items-center">
-                            <h2 className="mb-6 font-bold text-body">
+                            <h2 className="mb-4 font-bold text-body">
                                 Agregar imagen del elemento
                             </h2>
                             {/* Contenedor fileInput Imagen del archivo. tipo de arhcivo, cantidad y tamano */}
-                            <div className="flex flex-col gap-4 place-items-center">
-                                <h2 className="w-80">Puede subir 1 archivo, archivos permitidos: PDF, PNG, JPG. Máximo de 10MB</h2>
+                            <div className="flex flex-col gap-3 place-items-center">
+                                <p className="text-text-muted text-small text-center">
+                                    Solo se admite 1 archivo (PNG, JPG). Máx 10MB.
+                                </p>
                                 <FileInput
                                     value={formData.materialImage}
                                     onChange={(files) =>
@@ -131,7 +133,7 @@ export default function ConsumableRegisterForm() {
                     </div>
                     {/* Inputs */}
                     <div className="grid grid-cols-1 md:grid-cols-2 md:gap-10">
-                        <div className="flex flex-col gap-4">
+                        <div className="flex flex-col gap-3">
                             <Input
                                 placeholder="Placa Sena"
                                 name= "materialBarcodeSena"
@@ -167,7 +169,7 @@ export default function ConsumableRegisterForm() {
                             />
 
                         </div>
-                        <div className="flex flex-col gap-4">
+                        <div className="flex flex-col gap-3">
                             <Select
                                 label="Seleccione cuentadante"
                                 options={userName}
