@@ -3,9 +3,11 @@ import React, { useState, useEffect } from "react";
 import { getUserName, getLoanTypes } from "@/features/loans/services/selectService.js";
 import { loanSchema } from "../schemas/loanSchema";
 import { FilePlus2 } from "lucide-react"
+import MaterialsLoan from "./MaterialsLoan";
 
 export default function NewLoanForm() {
     const [formData, setFormData] = useState({
+        materialType: "",
         loanUserRequester: "",
         loanUserLender: "",
         loanStudentsGroup: "",
@@ -18,6 +20,7 @@ export default function NewLoanForm() {
     // useState que me trae el arreglo mediante el get en servicios
     const [userName, setUserName] = useState([]);
     const [loanTypes, setLoanTypes] = useState([]);
+    const [selectedMaterials, setSelectedMaterials] = useState([]);
 
     useEffect(() => {
         getUserName().then(setUserName);
@@ -79,10 +82,10 @@ export default function NewLoanForm() {
        <div className="flex flex-col place-items-center justify-items-center relative px-4">
 
             {/* Contenedor verde */}
-            <div className="bg-gradient-container-green border-4 border-border-green-container p-4 md:p-6 rounded-4xl w-full max-w-4xl overflow-hidden">
+            <div className="bg-gradient-container-green border-4 border-border-green-container p-4 md:p-5 rounded-4xl w-full max-w-4xl overflow-hidden">
 
                 {/* Título */}
-                <div className="mb-6 max-w-max">
+                <div className="mb-4 max-w-max">
                     <h1 className="text-gradient-title text-h3 pb-0.5 flex items-center gap-3">
                         <FilePlus2 className="text-brand"/>
                         Nuevo préstamo
@@ -95,19 +98,15 @@ export default function NewLoanForm() {
                     onSubmit={handleSubmit}
                     noValidate
                 >
-                    {/* Columna IZQUIERDA */}
+                    {/* Columna izquierda */}
                     <div className="flex flex-col gap-6 md:gap-0 md:justify-evenly border-b-2 md:border-b-0 md:border-r-2 pb-6 md:pb-0 md:pr-4 bg-gradiant-cian-purple-line w-full md:w-1/2 min-w-0">
 
-                        {/* 1. Materiales */}
-                        <div className="flex flex-col gap-4">
-                            <h2 className="font-bold text-body">1. Selecciona los materiales</h2>
-                            <div className="flex gap-3 justify-center">
-                                <Button variant="primary" size="md">Devolutivo</Button>
-                                <Button variant="primary" size="md">Consumible</Button>
-                            </div>
-                        </div>
+                        <MaterialsLoan
+                            selectedMaterials={selectedMaterials}
+                            setSelectedMaterials={setSelectedMaterials}
+                        />
 
-                        {/* 2. Usuario solicitante */}
+                        {/*  Usuario solicitante */}
                         <div className="flex flex-col gap-4">
                             <h2 className="font-bold text-body">2. Selecciona usuario solicitante</h2>
                             <Select
@@ -119,7 +118,7 @@ export default function NewLoanForm() {
                             />
                         </div>
 
-                        {/* 3. Usuario prestador */}
+                        {/*  Usuario prestador */}
                         <div className="flex flex-col gap-4">
                             <h2 className="font-bold text-body">3. Usuario prestador</h2>
                             <div className="flex flex-row items-center w-full gap-3">
@@ -128,6 +127,7 @@ export default function NewLoanForm() {
                                     name="loanUserLender"
                                     value={formData.loanUserLender}
                                     onChange={handleChange}
+                                    error={errors.loanUserLender}
                                 />
                                 <div className="whitespace-nowrap">
                                     <Button variant="outline" size="sm">
@@ -138,11 +138,11 @@ export default function NewLoanForm() {
                         </div>
                     </div>
 
-                    {/* Columna DERECHA */}
-                    <div className="flex flex-col gap-6 w-full md:w-1/2 min-w-0">
+                    {/* Columna derecha */}
+                    <div className="flex flex-col gap-4 w-full md:w-1/2 min-w-0">
                         <h2 className="font-bold text-body">4. Ingresar los siguientes datos:</h2>
 
-                        <div className="flex flex-col gap-4 w-full">
+                        <div className="flex flex-col gap-3 w-full">
                             <Input
                                 placeholder="Grupo aprendices"
                                 name="loanStudentsGroup"
@@ -201,6 +201,7 @@ export default function NewLoanForm() {
 
                 </form>
             </div>
+
         </div>
     );
 }

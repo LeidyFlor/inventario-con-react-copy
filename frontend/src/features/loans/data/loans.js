@@ -18,7 +18,7 @@ export const loans = [
             { id: 5, name: "Conector RJ45 Cat6", placaSena: null, serial: null, cantidad: 150, tipo: "Consumo" },
             { id: 6, name: "Cable UTP Cat6", placaSena: null, serial: null, cantidad: 50, tipo: "Consumo" },
             { id: 7, name: "Access Point Ubiquiti U6", placaSena: "SENA-03604", serial: "SN-AP-3604", cantidad: 1, tipo: "Devolutivo" },
-            { id: 9, name: "Bridas Plasticas", placaSena: null, serial: null, cantidad: 200, tipo: "Consumo" },
+            { id: 8, name: "Bridas Plasticas", placaSena: null, serial: null, cantidad: 200, tipo: "Consumo" },
             { id: 9, name: "Servidor Dell R740", placaSena: "SENA-03602", serial: "SN-SV-3602", cantidad: 1, tipo: "Devolutivo" },
             { id: 10, name: "Patch Cord Cat6 2m", placaSena: null, serial: null, cantidad: 25, tipo: "Consumo" },
             { id: 11, name: "Switch HP 24 Puertos", placaSena: "SENA-03605", serial: "SN-SW-3605", cantidad: 1, tipo: "Devolutivo" },

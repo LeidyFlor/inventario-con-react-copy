@@ -4,7 +4,7 @@ export const tasks = [
         userName: "Yosip Van León",
         userType: "Administrador",
         taskName: "Registrar inventario",
-        taskDescription: "Registro de herramientas y equipos en el inventario, asegurando que la información almacenada sea precisa para segui",
+        taskDescription: "Registro de herramientas y equipos en el inventario, asegurando que la información almacenada sea precisa para seguiRegistro de herramientas y equipos en el inventario, asegurando que la información almacenada sea precisa para seguiRegistro de herramientas y equipos en el inventario, asegurando que la información almacenada sea precisa para seguiRegistro de herramientas y equipos en el inventario, asegurando que la información almacenada sea precisa para segui",
         taskState: "Pendiente",
         taskDateStart: "2026-01-10T08:00:00.000+00:00",
         taskDateEnd: "2026-01-20T18:00:00.000+00:00",

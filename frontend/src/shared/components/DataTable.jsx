@@ -20,7 +20,7 @@ import { Button } from "@/shared/"
 // Recibe:
 // - data: datos que se mostrarán
 // - columns: configuración de columnas
-export default function DataTable({ data, columns }) {
+export default function DataTable({ data, columns, compact = false }) {
 
 
     // ================== ESTADO DE PAGINACIÓN ==================
@@ -80,7 +80,7 @@ export default function DataTable({ data, columns }) {
 
 
     return (
-        <div className="space-y-4">
+        <div className={compact ? "space-y-2" : "space-y-4"}>
 
 
             {/* ================== TOOLBAR ================== */}
@@ -97,7 +97,7 @@ export default function DataTable({ data, columns }) {
                     placeholder="Buscar..."
                     value={globalFilter ?? ""}
                     onChange={(e) => setGlobalFilter(e.target.value)}
-                    className="border rounded-xl px-3 py-2 w-64 hover:border-focus-border focus:outline-none focus:ring-1 focus:ring-focus-ring"
+                    className={`border rounded-xl px-3 w-64 hover:border-focus-border focus:outline-none focus:ring-1 focus:ring-focus-ring ${compact ? "py-1.5" : "py-2"}`}
                 />
 
 
@@ -106,7 +106,7 @@ export default function DataTable({ data, columns }) {
                 <select
                     value={table.getState().pagination.pageSize}
                     onChange={(e) => table.setPageSize(Number(e.target.value))}
-                    className="border rounded-xl px-2 py-2 w-64 hover:border-focus-border focus:outline-none focus:ring-1 focus:ring-focus-ring"
+                    className={`border rounded-xl px-2 w-64 hover:border-focus-border focus:outline-none focus:ring-1 focus:ring-focus-ring ${compact ? "py-1.5" : "py-2"}`}
                 >
                     {[5, 7, 10, 20, 50].map(size => (
                         <option key={size} value={size}>
