@@ -1,39 +1,48 @@
 import { useState } from "react";
-import { Button, Checkbox, Input } from "@/shared";
+import { Button, Checkbox, IconButton } from "@/shared";
 import DataTable from "@/shared/components/DataTable";
 import { materials } from "@/features/consumable-material/data/materials";
 import { returnableMaterial } from "@/features/returnable-material/data/retrunableMaterial";
+import { ArrowLeft, CheckCheck } from "lucide-react";
 
+// Constantes para evitar escribir estos strings directamente en la lógica
 const available = "Disponible";
 const returnable_type = "Devolutivo";
 const consumable_type = "Consumo";
 
-// Algunos datos mock usan camelCase y otros snake_case.
-// Esta ayuda mantiene el componente preparado para ambas formas sin duplicar lecturas.
+// Busca el valor de un campo en un objeto probando varios posibles nombres de clave,
+// útil porque los datos locales y los del backend pueden usar nombres distintos para el mismo campo
 const getField = (item, ...keys) => {
     const key = keys.find((currentKey) => item[currentKey] !== undefined);
     return key ? item[key] : "";
 };
 
-function MaterialModal({ title, isOpen, onClose, children, compact = false }) {
-
+// Backdrop cierra el modal al hacer click fuera del contenido
+function MaterialModal({ title, isOpen, onClose, children }) {
+    // Si no está abierto no se monta nada en el DOM
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/50">
+        // z-50 para que quede por encima del resto de la página; el click aquí llama onClose
+        <div
+            className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/50"
+            onClick={onClose}
+        >
+            {/* stopPropagation evita que el click dentro del panel propague al backdrop */}
             <div
-                className={`w-full max-h-[90vh] overflow-y-auto rounded-2xl bg-background p-5 shadow-2xl ${compact ? "max-w-136" : "max-w-5xl"}`}
+                className="w-full flex flex-col max-h-[90vh] rounded-2xl bg-background p-5 shadow-2xl max-w-5xl"
+                onClick={(e) => e.stopPropagation()}
             >
-                <div className="flex items-center gap-4 mb-4">
-                    <Button
-                        type="button"
-                        variant="secondary"
-                        size="sm"
-                        onClick={onClose}
-                    >
-                        Atrás
-                    </Button>
-                    {title && <h2 className="text-gradient-title text-h3 font-bold">{title}</h2>}
+                <div className="flex items-center mb-4">
+                    <div>
+                        <Button
+                            variant="secondary"
+                            onClick={onClose}
+                        >
+                            Atrás
+                        </Button>
+                    </div>
+                    {title && <h2 className="text-gradient-title text-h3 font-bold flex-1 pl-56">{title}</h2>}
                 </div>
                 {children}
             </div>
@@ -41,9 +50,8 @@ function MaterialModal({ title, isOpen, onClose, children, compact = false }) {
     );
 }
 
+// Celda de tabla que se muestra atenuada cuando la fila no está seleccionada
 function DisabledCell({ active, children, className = "" }) {
-    
-    // Muestra la fila donde si está activo usa color principal, si no, aparece atenuado
     return (
         <span className={`block py-3 ${active ? "text-text-primary" : "text-text-muted opacity-55"} ${className}`}>
             {children}
@@ -51,154 +59,156 @@ function DisabledCell({ active, children, className = "" }) {
     );
 }
 
+// Componente del paso 1 del préstamo: permite elegir materiales devolutivos y consumibles
 export default function MaterialsLoan({ setSelectedMaterials }) {
-    // null significa que no hay modal de tabla abierto
+    // Controla qué modal de tabla está abierto: "returnable" | "consumable" | null
     const [materialModal, setMaterialModal] = useState(null);
-    const [selectedReturnableId, setSelectedReturnableId] = useState("");
-    const [selectedConsumableId, setSelectedConsumableId] = useState("");
-    // Empieza en false porque la cantidad solo se pide despues de elegir un consumible.
-    const [quantityModalOpen, setQuantityModalOpen] = useState(false);
-    const [consumableQuantity, setConsumableQuantity] = useState("");
+    // Set con los IDs de devolutivos marcados; se usa Set para que .has() sea eficiente
+    const [selectedReturnableIds, setSelectedReturnableIds] = useState(new Set());
+    // Map donde la clave es el ID del consumible (string) y el valor es la cantidad ingresada
+    const [selectedConsumables, setSelectedConsumables] = useState(new Map());
 
+    // Solo devolutivos activos y en estado "Disponible"
     const availableReturnableMaterials = returnableMaterial.filter((material) =>
         material.is_active && material.materialState === available
     );
 
+    // Solo consumibles activos con cantidad disponible mayor a 0
     const availableConsumableMaterials = materials.filter((material) => {
-        const availableQuantity = Number(getField(
-            material,
-            "materialQuantity",
-            "material_quantity_available"
-        ));
-
+        const availableQuantity = Number(getField(material, "materialQuantity", "material_quantity_available"));
         return material.is_active && availableQuantity > 0;
     });
 
-    // Encuentra el material consumible que coincide con el id seleccionado
-    const selectedConsumableMaterial = availableConsumableMaterials.find(
-        (material) => String(material.id) === String(selectedConsumableId)
-    );
-
-    // Abre el modal de materiales del tipo indicado y limpia las selecciones anteriores
+    // Abre el modal del tipo indicado y limpia las selecciones anteriores
     const handleOpenMaterialModal = (type) => {
         setMaterialModal(type);
-        setSelectedReturnableId("");
-        setSelectedConsumableId("");
+        setSelectedReturnableIds(new Set());
+        setSelectedConsumables(new Map());
     };
 
-    const handleCloseMaterialModal = () => {
-        setMaterialModal(null);
+    const handleCloseMaterialModal = () => setMaterialModal(null);
+
+    // Agrega el ID al Set si no estaba, lo quita si ya estaba (toggle)
+    const toggleReturnable = (id) => {
+        setSelectedReturnableIds((prev) => {
+            const next = new Set(prev);
+            next.has(id) ? next.delete(id) : next.add(id);
+            return next;
+        });
     };
 
-    const handleCloseQuantityModal = () => {
-        setQuantityModalOpen(false);
+    // Al marcar inicializa la cantidad en "" para habilitar el input; al desmarcar elimina la entrada del Map
+    const toggleConsumable = (id) => {
+        setSelectedConsumables((prev) => {
+            const next = new Map(prev);
+            if (next.has(String(id))) {
+                next.delete(String(id));
+            } else {
+                next.set(String(id), "");
+            }
+            return next;
+        });
     };
-    // Agrega un material retornable a la lista de materiales seleccionados
-    const handleAddReturnable = () => {
 
-        // Busca el material seleccionado dentro de los materiales disponibles
-        const material = availableReturnableMaterials.find(
-            (item) => String(item.id) === String(selectedReturnableId)
+    // Actualiza la cantidad de un consumible ya seleccionado cuando el usuario escribe en el input de la tabla
+    const handleConsumableQtyChange = (id, value) => {
+        const availableQty = Number(
+            getField(
+                availableConsumableMaterials.find((m) => String(m.id) === String(id)) ?? {},
+                "materialQuantity",
+                "material_quantity_available"
+            )
         );
+        // /\D/g elimina cualquier carácter que no sea dígito
+        // Math.min impide ingresar más unidades de las disponibles
+        const digits = value.replace(/\D/g, "");
+        const clamped = digits === "" ? "" : Math.min(Number(digits), availableQty);
+        setSelectedConsumables((prev) => {
+            const next = new Map(prev);
+            next.set(String(id), clamped);
+            return next;
+        });
+    };
 
-        // Valida que el material exista antes de continuar
-        if (!material) return;
-
-        // Actualiza la lista eliminando duplicados y agregando el material seleccionado
-        setSelectedMaterials((prev) => [
-            ...prev.filter((item) => item.id !== material.id || item.tipo !== returnable_type),
-            {
-                id: material.id,
-                name: material.materialName,
-                placaSena: material.materialBarcodeSena,
-                serial: material.returnableMaterialSerial,
+    const handleConfirmReturnables = () => {
+        // Construye el array de devolutivos seleccionados con el formato estándar del préstamo
+        const toAdd = availableReturnableMaterials
+            .filter((item) => selectedReturnableIds.has(item.id))
+            .map((item) => ({
+                id: item.id,
+                name: item.materialName,
+                placaSena: item.materialBarcodeSena,
+                serial: item.returnableMaterialSerial,
                 cantidad: 1,
                 tipo: returnable_type,
-            },
-        ]);
+            }));
 
-        // Cierra el modal y limpia la selección actual
+        if (!toAdd.length) return;
+
+        setSelectedMaterials((prev) => {
+            // Quita del estado del padre los devolutivos que ya existían con el mismo ID para no duplicarlos
+            const filtered = prev.filter((item) => item.tipo !== returnable_type || !selectedReturnableIds.has(item.id));
+            return [...filtered, ...toAdd];
+        });
         setMaterialModal(null);
-        setSelectedReturnableId("");
+        setSelectedReturnableIds(new Set());
     };
 
+    const handleConfirmConsumables = () => {
+        const toAdd = [];
 
-    const handleOpenQuantityModal = () => {
-        if (!selectedConsumableMaterial) return;
+        // Recorre el Map de seleccionados y valida cada entrada antes de agregarla
+        for (const [id, cantidad] of selectedConsumables.entries()) {
+            const quantity = Number(cantidad);
+            // Descarta entradas con cantidad inválida
+            if (!Number.isInteger(quantity) || quantity < 1) continue;
 
-        setConsumableQuantity("");
-        setQuantityModalOpen(true);
-    };
-    // Actualiza la cantidad, permitiendo solo digitos, elimina cualquier carácter no numerico
-    const handleQuantityChange = (event) => {
-        setConsumableQuantity(event.target.value.replace(/\D/g, ""));
-    };
+            const material = availableConsumableMaterials.find((m) => String(m.id) === String(id));
+            // Descarta si el material ya no existe en la lista (caso defensivo)
+            if (!material) continue;
 
-    const handleAddConsumable = () => {
-         // Convierte la cantidad ingresada y el stock disponible del material seleccionado a numero
-        const quantity = Number(consumableQuantity);
-        const availableQuantity = Number(getField(
-            selectedConsumableMaterial ?? {},
-            "materialQuantity",
-            "material_quantity_available"
-        ));
-         // Valida que haya un material seleccionado y que la cantidad sea un entero entre 1 y el stock disponible
-        const quantityIsValid =
-            selectedConsumableMaterial &&
-            Number.isInteger(quantity) &&
-            quantity >= 1 &&
-            quantity <= availableQuantity;
+            const availableQty = Number(getField(material, "materialQuantity", "material_quantity_available"));
+            // Descarta si la cantidad supera el stock actual
+            if (quantity > availableQty) continue;
 
-        // Si la validación falla, no hace nada
-        if (!quantityIsValid) return;
-
-        // Agregamos el consumible a la lista, si ya existía (el mismo id y tipo), se reemplaza
-        setSelectedMaterials((prev) => [
-            ...prev.filter((item) => item.id !== selectedConsumableMaterial.id || item.tipo !== consumable_type),
-            {
-                id: selectedConsumableMaterial.id,
-                name: getField(selectedConsumableMaterial, "materialName", "material_name"),
+            toAdd.push({
+                id: material.id,
+                name: getField(material, "materialName", "material_name"),
                 placaSena: null,
                 serial: null,
                 cantidad: quantity,
                 tipo: consumable_type,
-            },
-        ]);
-        setQuantityModalOpen(false);
+            });
+        }
+
+        if (!toAdd.length) return;
+
+        setSelectedMaterials((prev) => {
+            // Quita del estado del padre los consumibles que van a ser reemplazados
+            const addedIds = new Set(toAdd.map((i) => i.id));
+            const filtered = prev.filter((item) => item.tipo !== consumable_type || !addedIds.has(item.id));
+            return [...filtered, ...toAdd];
+        });
         setMaterialModal(null);
-        setSelectedConsumableId("");
-        setConsumableQuantity("");
+        setSelectedConsumables(new Map());
     };
 
+    // Columnas para la tabla de devolutivos; cada celda usa DisabledCell para atenuar filas no seleccionadas
     const returnableColumns = [
         {
             accessorKey: "materialName",
             header: "Nombre",
-            // Muestra el nombre del material con un checkbox para seleccionarlo o deseleccionarlo
-            cell: ({ row }) => {
-                const material = row.original;
-                const isSelected = String(selectedReturnableId) === String(material.id);
-
-                return (
-                    <div className="min-w-40">
-                        <Checkbox
-                            id={`returnable-${material.id}`}
-                            name="returnableMaterial"
-                            label={<span className="text-body">{material.materialName}</span>}
-                            checked={isSelected}
-                            onChange={() => setSelectedReturnableId(isSelected ? "" : material.id)}
-                        />
-                    </div>
-                );
-            },
+            cell: ({ row }) => (
+                <DisabledCell active={selectedReturnableIds.has(row.original.id)} className="min-w-40">
+                    {row.original.materialName}
+                </DisabledCell>
+            ),
         },
-        // Las siguientes columnas (Placa Sena, Serial, Categoria y Estado) siguen el mismo patron,
-        // muestran el valor del campo correspondiente y se activan visualmente cuando la fila esta seleccionada
         {
             accessorKey: "materialBarcodeSena",
             header: "Placa Sena",
             cell: ({ row }) => (
-                <DisabledCell active={String(selectedReturnableId) === String(row.original.id)} className="min-w-36 whitespace-nowrap">
+                <DisabledCell active={selectedReturnableIds.has(row.original.id)} className="min-w-36 whitespace-nowrap">
                     {row.original.materialBarcodeSena}
                 </DisabledCell>
             ),
@@ -207,7 +217,7 @@ export default function MaterialsLoan({ setSelectedMaterials }) {
             accessorKey: "returnableMaterialSerial",
             header: "Serial",
             cell: ({ row }) => (
-                <DisabledCell active={String(selectedReturnableId) === String(row.original.id)} className="min-w-36 whitespace-nowrap">
+                <DisabledCell active={selectedReturnableIds.has(row.original.id)} className="min-w-36 whitespace-nowrap">
                     {row.original.returnableMaterialSerial}
                 </DisabledCell>
             ),
@@ -216,64 +226,49 @@ export default function MaterialsLoan({ setSelectedMaterials }) {
             accessorKey: "returnableMaterialCategory",
             header: "Categoria",
             cell: ({ row }) => (
-                <DisabledCell active={String(selectedReturnableId) === String(row.original.id)} className="min-w-36">
+                <DisabledCell active={selectedReturnableIds.has(row.original.id)} className="min-w-36">
                     {row.original.returnableMaterialCategory}
                 </DisabledCell>
             ),
         },
         {
-            accessorKey: "materialState",
-            header: "Estado",
-            cell: ({ row }) => (
-                <DisabledCell active={String(selectedReturnableId) === String(row.original.id)} className="min-w-28 text-success">
-                    {row.original.materialState}
-                </DisabledCell>
-            ),
-        },
-        {
-            id: "actions",
-            header: "Acciones",
-            cell: ({ row }) => (
-                <Button
-                    type="button"
-                    variant="primary"
-                    showIcon={false}
-                    size="sm"
-                    disabled={String(selectedReturnableId) !== String(row.original.id)}
-                    onClick={handleAddReturnable}
-                >
-                   Agregar
-                </Button>
-            ),
-        },
-    ];
-
-    const consumableColumns = [
-        {
-            accessorKey: "materialName",
-            header: "Nombre",
+            // id en lugar de accessorKey porque esta columna no representa un campo del dato sino una acción
+            id: "select",
+            header: "Seleccione",
             cell: ({ row }) => {
                 const material = row.original;
-                const isSelected = String(selectedConsumableId) === String(material.id);
-
+                const isSelected = selectedReturnableIds.has(material.id);
                 return (
-                    <div className="min-w-40">
+                    <div className="flex justify-center min-w-16">
                         <Checkbox
-                            id={`consumable-${material.id}`}
-                            name="materials"
-                            label={<span className="text-body">{getField(material, "materialName", "material_name")}</span>}
+                            id={`returnable-${material.id}`}
+                            name="returnableMaterial"
                             checked={isSelected}
-                            onChange={() => setSelectedConsumableId(isSelected ? "" : material.id)}
+                            onChange={() => toggleReturnable(material.id)}
                         />
                     </div>
                 );
             },
         },
+    ];
+
+    // Columnas para la tabla de consumibles; usa getField porque los nombres de campo pueden variar
+    const consumableColumns = [
+        {
+            accessorKey: "materialName",
+            header: "Nombre",
+            cell: ({ row }) => (
+                // Se convierte el id a string para que coincida con las claves del Map
+                <DisabledCell active={selectedConsumables.has(String(row.original.id))} className="min-w-40">
+                    {getField(row.original, "materialName", "material_name")}
+                </DisabledCell>
+            ),
+        },
         {
             accessorKey: "brandName",
             header: "Marca",
             cell: ({ row }) => (
-                <DisabledCell active={String(selectedConsumableId) === String(row.original.id)} className="min-w-28">
+                <DisabledCell active={selectedConsumables.has(String(row.original.id))} className="min-w-28">
                     {getField(row.original, "brandName", "brand_name")}
                 </DisabledCell>
             ),
@@ -282,49 +277,76 @@ export default function MaterialsLoan({ setSelectedMaterials }) {
             accessorKey: "inventoryManager",
             header: "Cuentadante",
             cell: ({ row }) => (
-                <DisabledCell active={String(selectedConsumableId) === String(row.original.id)} className="min-w-48">
+                <DisabledCell active={selectedConsumables.has(String(row.original.id))} className="min-w-48">
                     {getField(row.original, "inventoryManager", "inventory_manager_name")}
                 </DisabledCell>
             ),
         },
         {
             accessorKey: "materialQuantity",
-            header: "Cantidad",
+            header: "Cantidad disponible",
             cell: ({ row }) => (
-                <DisabledCell active={String(selectedConsumableId) === String(row.original.id)} className="min-w-36">
+                <DisabledCell active={selectedConsumables.has(String(row.original.id))} className="min-w-36 pl-16">
                     {getField(row.original, "materialQuantity", "material_quantity_available")}
                 </DisabledCell>
             ),
         },
         {
-            accessorKey: "materialLocation",
-            header: "Ubicacion",
-            cell: ({ row }) => (
-                <DisabledCell active={String(selectedConsumableId) === String(row.original.id)} className="min-w-36">
-                    {getField(row.original, "materialLocation", "material_location")}
-                </DisabledCell>
-            ),
+            // id en lugar de accessorKey porque no representa un campo del dato sino una acción
+            id: "select",
+            header: "Seleccione",
+            cell: ({ row }) => {
+                const id = String(row.original.id);
+                const isSelected = selectedConsumables.has(id);
+                return (
+                    <div className="flex justify-center min-w-16">
+                        <Checkbox
+                            id={`consumable-${row.original.id}`}
+                            name="consumableMaterial"
+                            checked={isSelected}
+                            onChange={() => toggleConsumable(row.original.id)}
+                        />
+                    </div>
+                );
+            },
         },
         {
-            id: "actions",
-            header: "Acciones",
-            cell: ({ row }) => (
-                <Button
-                    type="button"
-                    variant="primary"
-                    showIcon={false}
-                    size="sm"
-                    disabled={String(selectedConsumableId) !== String(row.original.id)}
-                    onClick={handleOpenQuantityModal}
-                >
-                    Agregar
-                </Button>
-            ),
+            // Columna de cantidad inline: solo se habilita cuando la fila está marcada con el checkbox
+            id: "quantity",
+            header: "Cantidad",
+            cell: ({ row }) => {
+                const id = String(row.original.id);
+                const isSelected = selectedConsumables.has(id);
+                return (
+                    <div className="flex justify-center min-w-24">
+                        <input
+                            type="text"
+                            inputMode="numeric"
+                            placeholder="0"
+                            // Si la fila no está seleccionada el input se deshabilita y queda vacío
+                            disabled={!isSelected}
+                            value={isSelected ? (selectedConsumables.get(id) ?? "") : ""}
+                            onChange={(e) => handleConsumableQtyChange(id, e.target.value)}
+                            className={`w-16 rounded-lg border px-2 py-1 text-center text-body
+                                ${isSelected
+                                    ? "border-border text-text-primary"
+                                    : "border-border text-text-muted opacity-40 cursor-not-allowed"
+                                }`}
+                        />
+                    </div>
+                );
+            },
         },
     ];
 
+    // El botón confirmar solo se habilita si hay al menos un elemento seleccionado con cantidad válida
+    const canConfirmReturnables = selectedReturnableIds.size > 0;
+    // spread + .values() convierte el iterador del Map a array para poder usar .some()
+    const canConfirmConsumables = [...selectedConsumables.values()].some((qty) => Number(qty) >= 1);
+
     return (
         <>
+            {/* Botones que abren el modal correspondiente según el tipo de material */}
             <div className="flex flex-col gap-4">
                 <h2 className="font-bold text-body">1. Selecciona los materiales</h2>
                 <div className="flex gap-3 justify-center">
@@ -347,62 +369,44 @@ export default function MaterialsLoan({ setSelectedMaterials }) {
                 </div>
             </div>
 
+            {/* Modal de tabla para devolutivos; solo se monta cuando materialModal === "returnable" */}
             <MaterialModal
                 title="Seleccionar material devolutivo"
                 isOpen={materialModal === "returnable"}
                 onClose={handleCloseMaterialModal}
             >
-                <DataTable data={availableReturnableMaterials} columns={returnableColumns} />
+                <div className="overflow-y-auto">
+                    <DataTable data={availableReturnableMaterials} columns={returnableColumns} />
+                </div>
+
+                <div className="mt-4 pt-4 border-t border-brand flex justify-end">
+                    <IconButton
+                        disabled={!canConfirmReturnables}
+                        onClick={handleConfirmReturnables}
+                    >
+                        Confirmar
+                    </IconButton>
+                </div>
             </MaterialModal>
 
+            {/* Modal de tabla para consumibles; solo se monta cuando materialModal === "consumable" */}
             <MaterialModal
                 title="Seleccionar material de consumo"
                 isOpen={materialModal === "consumable"}
                 onClose={handleCloseMaterialModal}
             >
-                <DataTable data={availableConsumableMaterials} columns={consumableColumns} />
-            </MaterialModal>
+                <div className="overflow-y-auto">
+                    <DataTable data={availableConsumableMaterials} columns={consumableColumns} />
+                </div>
 
-            <MaterialModal
-                isOpen={quantityModalOpen}
-                onClose={handleCloseQuantityModal}
-                compact
-            >
-                <div className="flex flex-col gap-4">
-                    <h2 className="text-h3 font-bold">
-                        Cantidad de material de consumo
-                    </h2>
-                    <p className="text-body text-text-primary">
-                        Digita la cantidad a prestar de {selectedConsumableMaterial?.materialName}.
-                        Disponible: {selectedConsumableMaterial?.materialQuantity ?? 0}.
-                    </p>
-                    <Input
-                        label="Cantidad"
-                        type="text"
-                        placeholder="Cantidad"
-                        className="max-w-72 mx-auto"
-                        value={consumableQuantity}
-                        onChange={handleQuantityChange}
-                    />
-                    <div className="flex justify-center gap-3">
-                        <Button
-                            type="button"
-                            variant="secondary"
-                            size="sm"
-                            onClick={handleCloseQuantityModal}
-                        >
-                            Cancelar
-                        </Button>
-                        <Button
-                            type="button"
-                            variant="primary"
-                            size="sm"
-                            showIcon={false}
-                            onClick={handleAddConsumable}
-                        >
-                            Agregar
-                        </Button>
-                    </div>
+                <div className="mt-4 pt-4 gap-3 border-t border-brand flex justify-end">
+                    <IconButton
+                        variant="outline"
+                        disabled={!canConfirmConsumables}
+                        onClick={handleConfirmConsumables}
+                    >
+                        Confirmar
+                    </IconButton>
                 </div>
             </MaterialModal>
         </>
