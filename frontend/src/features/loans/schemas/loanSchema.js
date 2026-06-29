@@ -32,8 +32,7 @@ export const loanSchema = z
 
     loanUserLender: z
       .string()
-      .min(3, "El nombre debe de tener mínimo 3 caracteres")
-      .max(60, "El nombre es demasiado largo"),
+      .min(1, "Debe de seleccionar un cuentadante"),
 
     loanStudentsGroup: z
       .string()

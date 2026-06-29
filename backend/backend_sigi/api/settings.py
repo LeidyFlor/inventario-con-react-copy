@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'backend_sigi.modules.users',
     'backend_sigi.modules.materials',
+    'backend_sigi.modules.loans',
     'corsheaders',
 ]
 AUTH_USER_MODEL = 'users.Users' #Para usar el models de users propio
@@ -151,6 +152,8 @@ STATIC_URL = 'static/'
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:5173',   # host de react
 ]
+
+FRONTEND_URL = 'http://localhost:5173'
 
 # Cache - Redis Cloud
 CACHES = {

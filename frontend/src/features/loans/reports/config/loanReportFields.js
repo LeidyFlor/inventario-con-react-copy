@@ -8,7 +8,7 @@ export const loanReportFields = [
         default: true,
     },
     {
-        key: "loanAssocietedMaterials",
+        key: "loanMaterials",
         label: "Materiales asociados",
         default: true,
     },

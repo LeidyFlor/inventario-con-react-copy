@@ -34,21 +34,31 @@ export default function buildReportDataset({
         selectedFields.map((field) => {
             const value = loan[field.key];
 
-            // ✅ Formateo de fechas ISO del backend → "DD/MM/YYYY, HH:MM a. m./p. m."
-            // Las fechas reales vienen como "2025-08-25T08:15:23.651+00:00" (ISO 8601).
-            // El mock de loans.js usa "25/8/2025" pero la API real envía ISO.
-            // Se detecta el formato ISO y se convierte al formato legible colombiano.
+            // Materiales asociados: array → texto "Nombre (x cant.tipo), ..."
+            if (field.key === "loanMaterials" && Array.isArray(value)) {
+                return value
+                    .map((m) => {
+                        const name = m.name ?? m.material_name ?? "";
+                        const qty  = m.cantidad ?? m.quantity_loaned ?? 1;
+                        const tipo = m.tipo ?? m.material_type ?? "";
+                        return `${name} (x${qty} ${tipo})`;
+                    })
+                    .join(", ") || "—";
+            }
+
+            // Fechas ISO → formato colombiano "DD/MM/YYYY"
             if (
                 typeof value === "string" &&
-                /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(value)
+                /^\d{4}-\d{2}-\d{2}/.test(value)
             ) {
-                return new Date(value).toLocaleString("es-CO", {
-                    day:    "2-digit",
-                    month:  "2-digit",
-                    year:   "numeric",
-                    hour:   "2-digit",
-                    minute: "2-digit",
-                });
+                const d = new Date(value);
+                if (!isNaN(d)) {
+                    return d.toLocaleDateString("es-CO", {
+                        day:   "2-digit",
+                        month: "2-digit",
+                        year:  "numeric",
+                    });
+                }
             }
 
             return value ?? "";

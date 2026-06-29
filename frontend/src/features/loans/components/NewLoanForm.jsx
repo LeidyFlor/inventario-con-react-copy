@@ -1,82 +1,130 @@
-import { Input, Button, IconButton, Select } from "@/shared"
+import { Input, Button, IconButton, Select, Textarea } from "@/shared"
 import React, { useState, useEffect } from "react";
-import { getUserName, getLoanTypes } from "@/features/loans/services/selectService.js";
+import { getUserName, getLoanTypes, getLenders } from "@/features/loans/services/selectService.js";
 import { loanSchema } from "../schemas/loanSchema";
 import { FilePlus2 } from "lucide-react"
 import MaterialsLoan from "./MaterialsLoan";
+import { createLoan, createIdentityToken, verifyToken } from "../services/loanService";
+import { useNavigate } from "react-router-dom";
+import { Alert } from "@/shared/components/utils/alert";
 
 export default function NewLoanForm() {
+    const navigate = useNavigate();
+
     const [formData, setFormData] = useState({
-        materialType: "",
         loanUserRequester: "",
-        loanUserLender: "",
+        loanUserLender:    "",
         loanStudentsGroup: "",
-        loanDateOut: "",
+        loanDateOut:       "",
         loanJustification: "",
-        loanDateIn: "",
-        loanType: "",
+        loanDateIn:        "",
+        loanType:          "",
     });
-    const [errors, setErrors] = useState({});
-    // useState que me trae el arreglo mediante el get en servicios
-    const [userName, setUserName] = useState([]);
-    const [loanTypes, setLoanTypes] = useState([]);
+    const [errors, setErrors]               = useState({});
+    const [userName, setUserName]           = useState([]);
+    const [lenders, setLenders]             = useState([]);
+    const [loanTypes, setLoanTypes]         = useState([]);
     const [selectedMaterials, setSelectedMaterials] = useState([]);
+
+    // Estado del flujo de confirmación de identidad
+    const [identityToken, setIdentityToken]         = useState(null)   // UUID devuelto por el backend
+    const [identityConfirmed, setIdentityConfirmed] = useState(false)
+    const [identityLoading, setIdentityLoading]     = useState(false)
+    const [identityError, setIdentityError]         = useState("")
 
     useEffect(() => {
         getUserName().then(setUserName);
         getLoanTypes().then(setLoanTypes);
-    },[]); //los [] es para que al menos se ejecute una vez, no tiene dependencia
+        getLenders().then(setLenders);
+    }, []); //los [] es para que al menos se ejecute una vez, no tiene dependencia
 
     const handleChange = (e) => {
-        // Se obtiene el nombre del campo y su valor
-        const { name, value } = e.target; //target es lo que viene cuando se escribe
-
-        setFormData((prev) => ({
-            //Se copian todos los valores anteriores del estado
-            ...prev,
-
-            //Se actualiza unicamente lo que cambió
-            [name]: value,
-        }));
+        const { name, value } = e.target;
+        setFormData((prev) => ({ ...prev, [name]: value }));
+        // Si cambia el prestador, resetear la confirmación de identidad
+        if (name === "loanUserLender") {
+            setIdentityToken(null);
+            setIdentityConfirmed(false);
+            setIdentityError("");
+        }
     };
-    // ==================================================
-    //              Handle Submit
-    // ==================================================
-    /*
-        Función que se ejecuta cuando se envía el formulario
-    */
 
-    const handleSubmit = (e) => {
-
-        e.preventDefault();
-        //Se valida el objeto formData usando el esquema definido con Zod
-        // safeParse devuelve un objeto indicando si la validacion fue exitosa o no
-        const result = loanSchema.safeParse(formData);
-
-        //Si la validacion falla
-        if (!result.success) {
-            const fieldErrors = {};
-
-            //Zod devuelve los errores en un arreglo llamado issues
-            //se recorren para asociar cada error a su campo correspondiente
-            result.error.issues.forEach((issue) => {
-                const field = issue.path[0]
-
-
-                //Se guarda el mensaje de error en el objeto fieldErrors
-                fieldErrors[field] = issue.message;
-            });
-
-            //Se actualiza el estado de errores para mostrarlos en el formulario
-            setErrors(fieldErrors);
-            //Se detiene la ejecucion porque el formulario tiene errores
+    // Genera el token y lo envía por correo al prestador
+    const handleConfirmIdentity = async () => {
+        if (!formData.loanUserLender) {
+            setIdentityError("Selecciona primero un usuario prestador.");
             return;
         }
-        //Si la validacion es exitosa se limpian los errores anteriores
+        setIdentityLoading(true);
+        setIdentityError("");
+        try {
+            const res = await createIdentityToken(formData.loanUserLender);
+            setIdentityToken(res.token);
+            setIdentityConfirmed(false);
+        } catch {
+            setIdentityError("No se pudo enviar el correo de confirmación.");
+        } finally {
+            setIdentityLoading(false);
+        }
+    };
+
+    // Verifica si el prestador ya abrió el link del correo
+    const handleCheckIdentity = async () => {
+        if (!identityToken) return;
+        setIdentityLoading(true);
+        setIdentityError("");
+        try {
+            const res = await verifyToken(identityToken);
+            if (res.is_confirmed) {
+                setIdentityConfirmed(true);
+            } else {
+                setIdentityError("El prestador aún no ha confirmado. Intenta de nuevo.");
+            }
+        } catch {
+            setIdentityError("Error al verificar la confirmación.");
+        } finally {
+            setIdentityLoading(false);
+        }
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+
+        const result = loanSchema.safeParse(formData);
+
+        if (!result.success) {
+            const fieldErrors = {};
+            result.error.issues.forEach((issue) => {
+                fieldErrors[issue.path[0]] = issue.message;
+            });
+            setErrors(fieldErrors);
+            return;
+        }
+
+        if (selectedMaterials.length === 0) {
+            setErrors((prev) => ({ ...prev, materials: "Debes agregar al menos un material." }));
+            return;
+        }
+
         setErrors({});
-        //result.data contiene los datos ya validados por Zod
-        console.log("Usuario valido:", result.data);
-    }
+
+        // Convierte selectedMaterials al formato que espera el backend
+        const items = selectedMaterials.map((m) => ({
+            material_id:     m.id,
+            material_type:   m.tipo === "Devolutivo" ? "returnable" : "consumable",
+            quantity_loaned: m.cantidad,
+        }));
+
+        try {
+            await createLoan(formData, items, identityConfirmed ? identityToken : null);
+            await Alert.success("Préstamo creado", "El préstamo fue registrado correctamente.");
+            navigate("/dashboard/loan-list");
+        } catch (err) {
+            console.error("Error al crear préstamo:", err);
+            Alert.error("Error al crear préstamo", "Verifica los datos e intenta de nuevo.");
+            // El formulario se preserva para que el usuario pueda corregir sin perder lo ingresado
+        }
+    };
 
     return (
        <div className="flex flex-col place-items-center justify-items-center relative px-4">
@@ -85,7 +133,7 @@ export default function NewLoanForm() {
             <div className="bg-gradient-container-green border-4 border-border-green-container p-4 md:p-5 rounded-4xl w-full max-w-4xl overflow-hidden">
 
                 {/* Título */}
-                <div className="mb-4 max-w-max">
+                <div className="mb-1 max-w-max">
                     <h1 className="text-gradient-title text-h3 pb-0.5 flex items-center gap-3">
                         <FilePlus2 className="text-brand"/>
                         Nuevo préstamo
@@ -118,23 +166,65 @@ export default function NewLoanForm() {
                             />
                         </div>
 
-                        {/*  Usuario prestador */}
-                        <div className="flex flex-col gap-4">
+                        {/*  Usuario prestador + confirmación de identidad */}
+                        <div className="flex flex-col gap-3">
                             <h2 className="font-bold text-body">3. Usuario prestador</h2>
-                            <div className="flex flex-row items-center w-full gap-3">
-                                <Input
-                                    placeholder="Nombre del prestador"
-                                    name="loanUserLender"
-                                    value={formData.loanUserLender}
-                                    onChange={handleChange}
-                                    error={errors.loanUserLender}
-                                />
-                                <div className="whitespace-nowrap">
-                                    <Button variant="outline" size="sm">
-                                        Confirmar identidad
+                            <Select
+                                name="loanUserLender"
+                                options={lenders}
+                                value={formData.loanUserLender}
+                                onChange={handleChange}
+                                error={errors.loanUserLender}
+                            />
+
+                            {/* Botones de identidad */}
+                            <div className="flex gap-2 flex-wrap">
+                                {!identityToken ? (
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={handleConfirmIdentity}
+                                        disabled={identityLoading || !formData.loanUserLender}
+                                    >
+                                        {identityLoading ? "Enviando..." : "Confirmar identidad"}
                                     </Button>
-                                </div>
+                                ) : identityConfirmed ? (
+                                    <span className="text-sm font-semibold text-brand">
+                                        ✓ Identidad confirmada
+                                    </span>
+                                ) : (
+                                    <>
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={handleCheckIdentity}
+                                            disabled={identityLoading}
+                                        >
+                                            {identityLoading ? "Verificando..." : "Ya confirmé"}
+                                        </Button>
+                                        <Button
+                                            type="button"
+                                            variant="secondary"
+                                            size="sm"
+                                            onClick={handleConfirmIdentity}
+                                            disabled={identityLoading}
+                                        >
+                                            Reenviar correo
+                                        </Button>
+                                    </>
+                                )}
                             </div>
+
+                            {identityError && (
+                                <p className="text-sm text-red-500">{identityError}</p>
+                            )}
+                            {identityToken && !identityConfirmed && (
+                                <p className="text-sm text-text-muted">
+                                    Se envió un link al prestador. Cuando lo abra, presiona "Ya confirmé".
+                                </p>
+                            )}
                         </div>
                     </div>
 
@@ -151,7 +241,7 @@ export default function NewLoanForm() {
                                 onChange={handleChange}
                                 error={errors.loanStudentsGroup}
                             />
-                            <Input
+                            <Textarea
                                 placeholder="Justificación de uso"
                                 name="loanJustification"
                                 label="Justificacion de uso"

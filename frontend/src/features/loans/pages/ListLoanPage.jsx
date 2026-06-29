@@ -1,20 +1,33 @@
 import DataTable from "@/shared/components/DataTable"
 import { loansColumns } from "../table/loansColumns"
 import LoanRowActions from "../components/LoanRowActions"
-import { loans } from "../data/loans"
 import { Button } from "@/shared/"
 import { Link } from "react-router-dom"
 import { ClipboardList } from "lucide-react"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import ReportConfigModal from "../reports/components/ReportLoanModal"
+import { getLoans } from "../services/loanService"
+import { Ping } from "ldrs/react"
+import "ldrs/react/Ping.css"
 
 export default function ListLoanPage() {
-    const [loanList, setLoanList] = useState(loans)
+    const [loanList, setLoanList]   = useState([])
+    const [loading, setLoading]     = useState(true)
     const [isReportModalOpen, setIsReportModalOpen] = useState(false)
 
-    const handleRemoveLoan = (loanId) => {
-        setLoanList((prev) => prev.filter((item) => item.id !== loanId))
-    }
+    useEffect(() => {
+        getLoans()
+            .then(setLoanList)
+            .catch(console.error)
+            .finally(() => setLoading(false))
+    }, [])
+
+    if (loading) return (
+        <div className="flex flex-col place-items-center gap-2 mt-20">
+            <Ping size="45" speed="1.5" color="#56B526" />
+            <p className="text-text-muted text-center">Cargando préstamos...</p>
+        </div>
+    )
 
     const columns = [
         ...loansColumns.slice(0, -1),

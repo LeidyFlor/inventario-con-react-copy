@@ -1,10 +1,9 @@
 // Iconos usados en los botones de acciones
-import { Pencil, Eye, X } from "lucide-react";
-
+import { Pencil, Eye, X, EllipsisVertical } from "lucide-react";
 
 // Hook de React Router para navegar programáticamente entre rutas
-import { useNavigate } from "react-router-dom";
-import { IconButtonReal } from "@/shared";
+import { useNavigate, Link } from "react-router-dom";
+import { IconButtonReal, Dropdown, DropdownContent, DropdownItem, DropdownTrigger } from "@/shared";
 
 
 // Componente que renderiza las acciones de cada fila de préstamo
@@ -23,7 +22,7 @@ export default function LoanRowActions({ loan, onRemove }) {
 
   return (
       <div className="flex gap-2">
-        <IconButtonReal
+        {/* <IconButtonReal
             onClick={handleEdit}
             variant="outline"
             ariaLabel="Editar préstamo"
@@ -40,7 +39,7 @@ export default function LoanRowActions({ loan, onRemove }) {
             iconSize={18}
         >
             <Eye size={18} />
-        </IconButtonReal>
+        </IconButtonReal> */}
         {onRemove && (
             <IconButtonReal
                 onClick={() => onRemove?.()}
@@ -52,6 +51,43 @@ export default function LoanRowActions({ loan, onRemove }) {
                 <X size={18} />
             </IconButtonReal>
         )}
+          {/* Icono de usuario */}
+          <div className="">
+              <Dropdown>
+                  <DropdownTrigger>
+                      <IconButtonReal arialLabel="Devolucion/aprobar prestamos" variant="outline" hitSize={40}
+                          iconSize={18}>
+
+                          <EllipsisVertical size={18}/>
+
+                      </IconButtonReal>
+                  </DropdownTrigger>
+
+                  <DropdownContent className="right-0 w-48">
+                      <DropdownItem>
+                          <Link to={`/dashboard/loans/${loan.id}/view`} className="block w-full">
+                              Ver préstamo
+                          </Link>
+                      </DropdownItem>
+                      <DropdownItem>
+                          <Link to ={`/dashboard/loans/${loan.id}/edit`} className="block w-full">
+                              Editar préstamo
+                          </Link>
+                      </DropdownItem>
+                      <DropdownItem>
+                          <Link to="user-create" className="block w-full">
+                              Devolver préstamo
+                          </Link>
+                      </DropdownItem>
+                      <DropdownItem>
+                          <Link to="user-list" className="block w-full">
+                              Aceptar retorno de préstamo
+                          </Link>
+                      </DropdownItem>
+                  </DropdownContent>
+              </Dropdown>
+          </div>
+          
       </div>
   );
 }
