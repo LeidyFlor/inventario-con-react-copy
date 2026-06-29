@@ -1,14 +1,22 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button, Checkbox, IconButton } from "@/shared";
 import DataTable from "@/shared/components/DataTable";
-import { materials } from "@/features/consumable-material/data/materials";
-import { returnableMaterial } from "@/features/returnable-material/data/retrunableMaterial";
 import { ArrowLeft, CheckCheck } from "lucide-react";
+import { getMaterials } from "@/features/consumable-material/services/materialService";
+import { getReturnables } from "@/features/returnable-material/services/returnableService";
 
 // Constantes para evitar escribir estos strings directamente en la lógica
 const available = "Disponible";
 const returnable_type = "Devolutivo";
 const consumable_type = "Consumo";
+
+// Etiquetas legibles para las categorías de devolutivos
+const CATEGORY_LABELS = {
+    herramienta:       "Herramienta",
+    maquinaria_equipos: "Maquinaria y equipos",
+    muebles_enseres:   "Muebles y enseres",
+};
+const formatCategory = (value) => CATEGORY_LABELS[value] ?? value;
 
 // Busca el valor de un campo en un objeto probando varios posibles nombres de clave,
 // útil porque los datos locales y los del backend pueden usar nombres distintos para el mismo campo
@@ -60,39 +68,98 @@ function DisabledCell({ active, children, className = "" }) {
 }
 
 // Componente del paso 1 del préstamo: permite elegir materiales devolutivos y consumibles
-export default function MaterialsLoan({ setSelectedMaterials }) {
+export default function MaterialsLoan({ selectedMaterials, setSelectedMaterials }) {
     // Controla qué modal de tabla está abierto: "returnable" | "consumable" | null
     const [materialModal, setMaterialModal] = useState(null);
-    // Set con los IDs de devolutivos marcados; se usa Set para que .has() sea eficiente
-    const [selectedReturnableIds, setSelectedReturnableIds] = useState(new Set());
+    // Map donde la clave es el ID del devolutivo y el valor es la cantidad seleccionada
+    // Para herramienta sin placa la cantidad es editable; para los demás siempre es 1
+    const [selectedReturnableIds, setSelectedReturnableIds] = useState(new Map());
     // Map donde la clave es el ID del consumible (string) y el valor es la cantidad ingresada
     const [selectedConsumables, setSelectedConsumables] = useState(new Map());
+    // Datos reales de la API
+    const [availableReturnableMaterials, setAvailableReturnableMaterials] = useState([]);
+    const [availableConsumableMaterials, setAvailableConsumableMaterials] = useState([]);
 
-    // Solo devolutivos activos y en estado "Disponible"
-    const availableReturnableMaterials = returnableMaterial.filter((material) =>
-        material.is_active && material.materialState === available
-    );
+    useEffect(() => {
+        // Devolutivos: activos y con material_state === null (disponible = no tiene estado de baja)
+        getReturnables().then((data) => {
+            setAvailableReturnableMaterials(
+                data.filter((m) => m.is_active && m.material_quantity_available > 0)
+            );
+        }).catch(console.error);
 
-    // Solo consumibles activos con cantidad disponible mayor a 0
-    const availableConsumableMaterials = materials.filter((material) => {
-        const availableQuantity = Number(getField(material, "materialQuantity", "material_quantity_available"));
-        return material.is_active && availableQuantity > 0;
-    });
+        // Consumibles: activos con stock disponible mayor a 0
+        getMaterials().then((data) => {
+            setAvailableConsumableMaterials(
+                data.filter((m) => {
+                    const qty = Number(getField(m, "materialQuantity", "material_quantity_available"));
+                    return m.is_active && qty > 0;
+                })
+            );
+        }).catch(console.error);
+    }, []);
 
-    // Abre el modal del tipo indicado y limpia las selecciones anteriores
+    // Abre el modal pre-cargando los materiales que ya fueron confirmados antes
     const handleOpenMaterialModal = (type) => {
         setMaterialModal(type);
-        setSelectedReturnableIds(new Set());
-        setSelectedConsumables(new Map());
+        if (type === "returnable") {
+            const preSelected = new Map();
+            selectedMaterials
+                .filter((m) => m.tipo === returnable_type)
+                .forEach((m) => preSelected.set(m.id, m.cantidad));
+            setSelectedReturnableIds(preSelected);
+        } else {
+            const preSelected = new Map();
+            selectedMaterials
+                .filter((m) => m.tipo === consumable_type)
+                .forEach((m) => preSelected.set(String(m.id), m.cantidad));
+            setSelectedConsumables(preSelected);
+        }
     };
 
     const handleCloseMaterialModal = () => setMaterialModal(null);
 
-    // Agrega el ID al Set si no estaba, lo quita si ya estaba (toggle)
+    // Marca/desmarca un devolutivo; al marcar inicializa cantidad en 1
     const toggleReturnable = (id) => {
         setSelectedReturnableIds((prev) => {
-            const next = new Set(prev);
-            next.has(id) ? next.delete(id) : next.add(id);
+            const next = new Map(prev);
+            next.has(id) ? next.delete(id) : next.set(id, 1);
+            return next;
+        });
+    };
+
+    // Actualiza la cantidad de un devolutivo herramienta sin placa.
+    // Clampea inmediatamente en onChange para que nunca se pueda teclear más del máximo.
+    // Permite vacío temporalmente (el blur lo corrige a 1).
+    const handleReturnableQtyChange = (id, rawValue) => {
+        const digits = rawValue.replace(/\D/g, "");
+        if (!digits) {
+            // Vacío permitido mientras el usuario borra para reescribir
+            setSelectedReturnableIds((prev) => {
+                const next = new Map(prev);
+                next.set(id, "");
+                return next;
+            });
+            return;
+        }
+        const item   = availableReturnableMaterials.find((m) => m.id === id);
+        const maxQty = item?.material_quantity_available ?? 1;
+        const num    = Number(digits);
+        const clamped = Math.min(Math.max(1, num), maxQty);
+        setSelectedReturnableIds((prev) => {
+            const next = new Map(prev);
+            next.set(id, clamped);
+            return next;
+        });
+    };
+
+    // Si el usuario sale del input con el campo vacío, se restaura a 1
+    const handleReturnableQtyBlur = (id) => {
+        setSelectedReturnableIds((prev) => {
+            const raw = prev.get(id);
+            if (raw !== "" && raw !== undefined) return prev; // ya tiene valor válido, no hacer nada
+            const next = new Map(prev);
+            next.set(id, 1);
             return next;
         });
     };
@@ -131,27 +198,26 @@ export default function MaterialsLoan({ setSelectedMaterials }) {
     };
 
     const handleConfirmReturnables = () => {
-        // Construye el array de devolutivos seleccionados con el formato estándar del préstamo
         const toAdd = availableReturnableMaterials
             .filter((item) => selectedReturnableIds.has(item.id))
             .map((item) => ({
-                id: item.id,
-                name: item.materialName,
-                placaSena: item.materialBarcodeSena,
-                serial: item.returnableMaterialSerial,
-                cantidad: 1,
-                tipo: returnable_type,
+                id:       item.id,
+                name:     getField(item, "materialName", "material_name"),
+                placaSena: getField(item, "materialBarcodeSena", "material_barcode_sena") || null,
+                serial:   getField(item, "returnableMaterialSerial", "material_serial") || null,
+                // Usa la cantidad del Map; para no-herramienta o con placa siempre es 1
+                cantidad: selectedReturnableIds.get(item.id) ?? 1,
+                tipo:     returnable_type,
             }));
 
         if (!toAdd.length) return;
 
         setSelectedMaterials((prev) => {
-            // Quita del estado del padre los devolutivos que ya existían con el mismo ID para no duplicarlos
             const filtered = prev.filter((item) => item.tipo !== returnable_type || !selectedReturnableIds.has(item.id));
             return [...filtered, ...toAdd];
         });
         setMaterialModal(null);
-        setSelectedReturnableIds(new Set());
+        setSelectedReturnableIds(new Map());
     };
 
     const handleConfirmConsumables = () => {
@@ -196,47 +262,79 @@ export default function MaterialsLoan({ setSelectedMaterials }) {
     // Columnas para la tabla de devolutivos; cada celda usa DisabledCell para atenuar filas no seleccionadas
     const returnableColumns = [
         {
-            accessorKey: "materialName",
+            accessorKey: "material_name",
             header: "Nombre",
             cell: ({ row }) => (
                 <DisabledCell active={selectedReturnableIds.has(row.original.id)} className="min-w-40">
-                    {row.original.materialName}
+                    {getField(row.original, "material_name", "materialName")}
                 </DisabledCell>
             ),
         },
         {
-            accessorKey: "materialBarcodeSena",
+            accessorKey: "material_barcode_sena",
             header: "Placa Sena",
             cell: ({ row }) => (
                 <DisabledCell active={selectedReturnableIds.has(row.original.id)} className="min-w-36 whitespace-nowrap">
-                    {row.original.materialBarcodeSena}
+                    {getField(row.original, "material_barcode_sena", "materialBarcodeSena") || "—"}
                 </DisabledCell>
             ),
         },
         {
-            accessorKey: "returnableMaterialSerial",
+            accessorKey: "material_serial",
             header: "Serial",
             cell: ({ row }) => (
                 <DisabledCell active={selectedReturnableIds.has(row.original.id)} className="min-w-36 whitespace-nowrap">
-                    {row.original.returnableMaterialSerial}
+                    {getField(row.original, "material_serial", "returnableMaterialSerial") || "—"}
                 </DisabledCell>
             ),
         },
         {
-            accessorKey: "returnableMaterialCategory",
-            header: "Categoria",
+            accessorKey: "material_category",
+            header: "Categoría",
             cell: ({ row }) => (
                 <DisabledCell active={selectedReturnableIds.has(row.original.id)} className="min-w-36">
-                    {row.original.returnableMaterialCategory}
+                    {formatCategory(getField(row.original, "material_category", "returnableMaterialCategory"))}
                 </DisabledCell>
             ),
         },
         {
-            // id en lugar de accessorKey porque esta columna no representa un campo del dato sino una acción
+            id: "quantity",
+            header: "Cantidad",
+            cell: ({ row }) => {
+                const item       = row.original;
+                const isSelected = selectedReturnableIds.has(item.id);
+                const category   = getField(item, "material_category", "returnableMaterialCategory");
+                const placa      = getField(item, "material_barcode_sena", "materialBarcodeSena");
+                const maxQty     = item.material_quantity_available ?? 1;
+                // Solo herramienta sin placa puede tener cantidad > 1
+                const isEditable = isSelected && category === "herramienta" && !placa;
+
+                if (!isSelected) {
+                    return <span className="block min-w-16 text-center text-text-muted opacity-40">—</span>;
+                }
+                if (!isEditable) {
+                    return <span className="block min-w-16 text-center py-3">1</span>;
+                }
+                return (
+                    <div className="flex items-center gap-1 justify-center min-w-20">
+                        <input
+                            type="text"
+                            inputMode="numeric"
+                            value={selectedReturnableIds.get(item.id) ?? 1}
+                            onChange={(e) => handleReturnableQtyChange(item.id, e.target.value)}
+                            onBlur={() => handleReturnableQtyBlur(item.id)}
+                            className="w-14 rounded-lg border border-border px-2 py-1 text-center text-body text-text-primary"
+                        />
+                        <span className="text-text-muted text-sm whitespace-nowrap">/ {maxQty}</span>
+                    </div>
+                );
+            },
+        },
+        {
             id: "select",
             header: "Seleccione",
             cell: ({ row }) => {
-                const material = row.original;
+                const material   = row.original;
                 const isSelected = selectedReturnableIds.has(material.id);
                 return (
                     <div className="flex justify-center min-w-16">
@@ -339,8 +437,11 @@ export default function MaterialsLoan({ setSelectedMaterials }) {
         },
     ];
 
-    // El botón confirmar solo se habilita si hay al menos un elemento seleccionado con cantidad válida
-    const canConfirmReturnables = selectedReturnableIds.size > 0;
+    // El botón confirmar solo se habilita si hay al menos un devolutivo seleccionado
+    // y todas las cantidades son >= 1
+    const canConfirmReturnables =
+        selectedReturnableIds.size > 0 &&
+        [...selectedReturnableIds.values()].every((qty) => Number(qty) >= 1);
     // spread + .values() convierte el iterador del Map a array para poder usar .some()
     const canConfirmConsumables = [...selectedConsumables.values()].some((qty) => Number(qty) >= 1);
 
@@ -353,7 +454,7 @@ export default function MaterialsLoan({ setSelectedMaterials }) {
                     <Button
                         type="button"
                         variant="primary"
-                        size="md"
+                        size="sm"
                         onClick={() => handleOpenMaterialModal("returnable")}
                     >
                         Devolutivo
@@ -361,7 +462,7 @@ export default function MaterialsLoan({ setSelectedMaterials }) {
                     <Button
                         type="button"
                         variant="primary"
-                        size="md"
+                        size="sm"
                         onClick={() => handleOpenMaterialModal("consumable")}
                     >
                         Consumible

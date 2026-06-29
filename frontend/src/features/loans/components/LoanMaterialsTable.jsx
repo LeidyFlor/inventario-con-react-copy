@@ -102,9 +102,9 @@ export default function LoanMaterialsTable({
             id: "actions",
             header: () => <span className="block min-w-12"></span>,
             cell: ({ row }) => (
-                <div className="flex min-w-12">
+                <div className="flex min-w-12 hover:text-error">
                     <IconButtonReal
-                        label="Remover"
+                        label="Quitar"
                         variant="outline"
                         onClick={() => onRemoveMaterial?.(row.original.id)}
                     >

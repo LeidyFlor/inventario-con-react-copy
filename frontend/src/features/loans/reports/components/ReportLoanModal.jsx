@@ -1,14 +1,8 @@
-// Hook para manejo de estado local en componentes funcionales
-import { useState } from "react";
-
-// Configuración de campos disponibles para el reporte
+import { useState, useEffect } from "react";
 import { loanReportFields } from "../config/loanReportFields";
-
-// Caso de uso que orquesta la generación del reporte
 import { generateLoanReport } from "../services/generateLoanReport";
-
-// Componentes UI reutilizables (design system)
 import { Button, Input, Select, Checkbox } from "@/shared";
+import { Alert } from "@/shared/components/utils/alert";
 
 // Componente modal para configuración de reportes de préstamos
 export default function ReportLoanModal({ isOpen, onClose }) {
@@ -25,6 +19,18 @@ export default function ReportLoanModal({ isOpen, onClose }) {
         () => loanReportFields.filter((f) => f.default),
     );
 
+    // Resetea el estado cada vez que el modal se abre, evitando
+    // estados "sucios" entre sesiones o recargas en caliente de Vite
+    useEffect(() => {
+        if (isOpen) {
+            setFormat("");
+            setScope("all");
+            setLoanStudentsGroup("");
+            setLoanUserRequester("");
+            setSelectedFields(loanReportFields.filter((f) => f.default));
+        }
+    }, [isOpen]);
+
     if (!isOpen) return null;
 
     const handleFieldToggle = (field) => {
@@ -36,23 +42,36 @@ export default function ReportLoanModal({ isOpen, onClose }) {
         }
     };
 
-    const handleGenerateReport = () => {
-        // Validación explícita: si el usuario no seleccionó formato, se le avisa.
-        // Esto cubre el caso de presionar "Generar reporte" con el placeholder activo.
+    const handleGenerateReport = async () => {
         if (!format) {
-            alert("Por favor selecciona un formato (PDF o Excel) antes de generar el reporte.");
+            Alert.error("Formato requerido", "Selecciona un formato (PDF o Excel) antes de generar el reporte.");
+            return;
+        }
+        if (selectedFields.length === 0) {
+            Alert.error("Campos requeridos", "Selecciona al menos un campo para el reporte.");
             return;
         }
 
-        generateLoanReport({
-            format,
-            selectedFields,
-            scope,
-            loanStudentsGroup,
-            loanUserRequester,
-        });
-
-        onClose();
+        try {
+            Alert.loading("Generando reporte...");
+            await generateLoanReport({
+                format,
+                selectedFields,
+                scope,
+                loanStudentsGroup,
+                loanUserRequester,
+            });
+            Alert.close();
+            await Alert.success("Reporte generado", "El archivo fue descargado correctamente.");
+            onClose();
+        } catch (err) {
+            Alert.close();
+            if (err.message === "sin_datos") {
+                Alert.error("Sin datos", "No hay préstamos que coincidan con los filtros seleccionados.");
+            } else {
+                Alert.error("Error", "No se pudo generar el reporte. Intenta de nuevo.");
+            }
+        }
     };
 
     return (

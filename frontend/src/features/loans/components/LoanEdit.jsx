@@ -1,88 +1,103 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
-import { Button, IconButton, Input, Textarea } from "@/shared";
+import { useNavigate, useParams, useBlocker } from "react-router-dom";
+import { Button, IconButton, Input, Select, Textarea } from "@/shared";
 import { ClipboardList, Pencil } from "lucide-react";
-import { getUserName } from "../services/selectService.js";
 import { loanSchema } from "../schemas/loanSchema";
-import { loans } from "../data/loans";
 import LoanMaterialsTable from "../components/LoanMaterialsTable";
+import { getLoan, updateLoan } from "../services/loanService";
+import { getUserName } from "../services/selectService";
+import { Alert } from "@/shared/components/utils/alert";
+import { Ping } from "ldrs/react";
+import "ldrs/react/Ping.css";
 
 export default function LoanEditPage() {
-  // Hooks de navegación y parámetros de ruta
   const navigate = useNavigate();
   const { id } = useParams();
 
-  // Busca el préstamo que se va a editar en los datos de ejemplo
-  const loan = loans.find((loanItem) => loanItem.id === Number(id));
-
-  // Opciones para el select de usuario solicitante
-  const [userNameOptions, setUserNameOptions] = useState([]);
-
-  // Errores de validación del formulario
-  const [errors, setErrors] = useState({});
+  const [loan, setLoan]           = useState(null);
+  const [loading, setLoading]     = useState(true);
+  const [errors, setErrors]       = useState({});
+  const [isDirty, setIsDirty]     = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [formData, setFormData]   = useState({});
+  const [materials, setMaterials] = useState([]);
+  const [userOptions, setUserOptions] = useState([]);
 
-  // Estado local del formulario con valores iniciales del préstamo
-  const [formData, setFormData] = useState(() => ({
-    idLoan: loan?.idLoan ?? "",
-    loanUserRequester: loan?.loanUserRequester ?? "",
-    loanUserLender: loan?.loanUserLender ?? "",
-    loanDateOut: loan?.loanDateOut ? loan.loanDateOut.slice(0, 10) : "",
-    loanDateIn: loan?.loanDateIn ? loan.loanDateIn.slice(0, 10) : "",
-    loanJustification: loan?.loanJustification ?? "",
-    loanType: loan?.loanType ?? "",
-    loanStatus: loan?.loanStatus ?? "",
-    loanStudentsGroup: String(loan?.loanStudentsGroup ?? ""),
-  }));
+  const blocker = useBlocker(
+    ({ currentLocation, nextLocation }) =>
+      isDirty && currentLocation.pathname !== nextLocation.pathname
+  );
 
-  // Materiales asociados al préstamo, con posibilidad de eliminar ítems
-  const [materials, setMaterials] = useState(() => loan?.loanMaterials ?? []);
-
-  // Carga las opciones de nombre de usuario al montar la página
   useEffect(() => {
-    getUserName().then((data) =>
-      setUserNameOptions(
-        data.map((item) => ({ label: item.label, value: item.label }))
-      )
-    );
-  }, []);
+    if (blocker.state === "blocked") {
+      Alert.warning("¿Salir sin guardar?", "Los cambios no guardados se perderán.")
+        .then((result) => {
+          if (result.isConfirmed) {
+            setIsDirty(false);
+            blocker.proceed();
+          } else {
+            blocker.reset();
+          }
+        });
+    }
+  }, [blocker]);
 
-  // Maneja cambios de campos del formulario
+  useEffect(() => {
+    Promise.all([getLoan(id), getUserName()])
+      .then(([data, users]) => {
+        setLoan(data);
+        setMaterials(data.loanMaterials ?? []);
+        setUserOptions(users);
+        setFormData({
+          idLoan:            data.idLoan,
+          loanUserRequester: data.loanUserRequester,
+          loanUserLender:    data.loanUserLender,
+          loanDateOut:       data.loanDateOut ? data.loanDateOut.slice(0, 10) : "",
+          loanDateIn:        data.loanDateIn  ? data.loanDateIn.slice(0, 10)  : "",
+          loanJustification: data.loanJustification,
+          loanType:          data.loanType,
+          loanStatus:        data.loanStatus,
+          loanStudentsGroup: String(data.loanStudentsGroup ?? ""),
+        });
+      })
+      .catch(console.error)
+      .finally(() => setLoading(false));
+  }, [id]);
+
+  if (loading) return (
+    <div className="flex flex-col place-items-center gap-2 mt-20">
+      <Ping size="45" speed="1.5" color="#56B526" />
+      <p className="text-text-muted text-center">Cargando préstamo...</p>
+    </div>
+  );
+  if (!loan) return <p>Préstamo no encontrado</p>;
+
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
+    setIsDirty(true);
   };
 
-  // Remueve un material de la lista de materiales del préstamo
   const handleRemoveMaterial = (materialId) => {
-    setMaterials((prev) => prev.filter((material) => material.id !== materialId));
+    setMaterials((prev) => prev.filter((m) => m.id !== materialId));
   };
 
-  // Actualiza la cantidad de un material en la tabla editable
   const handleQuantityChange = (materialId, newQuantity) => {
     setMaterials((prev) =>
-      prev.map((material) =>
-        material.id === materialId
-          ? { ...material, cantidad: newQuantity }
-          : material
-      )
+      prev.map((m) => m.id === materialId ? { ...m, cantidad: newQuantity } : m)
     );
   };
 
-  // Valida y guarda el formulario de edición
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     const result = loanSchema.safeParse({
       loanUserRequester: formData.loanUserRequester,
-      loanUserLender: formData.loanUserLender,
+      loanUserLender:    formData.loanUserLender,
       loanJustification: formData.loanJustification,
-      loanType: formData.loanType,
-      loanDateOut: formData.loanDateOut,
-      loanDateIn: formData.loanDateIn,
+      loanType:          formData.loanType,
+      loanDateOut:       formData.loanDateOut,
+      loanDateIn:        formData.loanDateIn,
       loanStudentsGroup: formData.loanStudentsGroup,
     });
 
@@ -97,17 +112,16 @@ export default function LoanEditPage() {
 
     setErrors({});
 
-    const updatedLoan = {
-      ...loan,
-      ...formData,
-      loanMaterials: materials,
-      loanDateOut: formData.loanDateOut,
-      loanDateIn: formData.loanDateIn,
-    };
-
-    console.log("Guardar préstamo:", updatedLoan);
-    setIsEditModalOpen(false);
-    navigate(-1);
+    try {
+      await updateLoan(id, formData);
+      setIsDirty(false);
+      setIsEditModalOpen(false);
+      await Alert.success("Cambios guardados", "El préstamo fue actualizado correctamente.");
+      navigate(-1);
+    } catch (err) {
+      console.error("Error al guardar préstamo:", err);
+      Alert.error("Error al guardar", "No se pudieron guardar los cambios. Intenta de nuevo.");
+    }
   };
 
   return (
@@ -124,21 +138,18 @@ export default function LoanEditPage() {
 
           <div className="w-fit">
             <Button
-              variant="primary"
+              variant="warning"
               size="sm"
               type="button"
               onClick={() => setIsEditModalOpen(true)}
             >
-              Editar materiales
+              Editar datos préstamo
             </Button>
           </div>
         </div>
 
-        {/* Formulario principal dividido en dos columnas: datos del préstamo y materiales */}
         <div className="block">
           <div className="w-full max-w-full mx-auto lg:mx-0 lg:min-w-0">
-
-            {/* Tabla de materiales del préstamo. editable=true habilita cantidades y botón para eliminar filas */}
             <LoanMaterialsTable
               materials={materials}
               editable
@@ -169,35 +180,29 @@ export default function LoanEditPage() {
                   variant="isEdit"
                 />
 
-                <Input
+                <Select
                   label="Usuario solicitante"
                   name="loanUserRequester"
+                  options={userOptions}
                   value={formData.loanUserRequester}
                   onChange={handleChange}
-                  options={userNameOptions}
                   error={errors.loanUserRequester}
                   variant="isEdit"
                 />
 
                 <Input
                   label="Usuario prestador"
-                  name="loanUserLender"
                   value={formData.loanUserLender}
-                  onChange={handleChange}
-                  error={errors.loanUserLender}
-                  variant="isEdit"
                   disabled
+                  variant="isEdit"
                 />
 
                 <Input
                   label="Fecha de salida"
                   type="date"
-                  name="loanDateOut"
                   value={formData.loanDateOut}
-                  onChange={handleChange}
-                  error={errors.loanDateOut}
-                  variant="isEdit"
                   disabled
+                  variant="isEdit"
                 />
 
                 <Input

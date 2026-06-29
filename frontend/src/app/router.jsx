@@ -2,7 +2,7 @@ import { createBrowserRouter, Navigate } from "react-router-dom";
 import MainLayout from "@/shared/layouts/MainLayout";
 import { CreateUserPage, EditUserPage, ListUserPage, ViewUserPage } from "@/features/users";
 import { CreateBrandPage, ListBrandPage, EditBrandPage } from "@/features/brands";
-import { CreateLoanPage, ReturnLoan, ApproveReturnLoan, ListLoanPage, ViewLoanPage, LoanEditPage } from "@/features/loans";
+import { CreateLoanPage, ReturnLoan, ApproveReturnLoan, ListLoanPage, ViewLoanPage, LoanEditPage, ConfirmIdentityPage } from "@/features/loans";
 import { CreateTaskPage } from "@/features/tasks";
 import { CreateConsumablePage, ListMaterialPage, ViewMaterialPage , EditConsumablePage} from "@/features/consumable-material";
 import { CreateReturnablePage, EditReturnablePage, ListReturnablePage, ViewReturnablePage } from "@/features/returnable-material";
@@ -17,6 +17,11 @@ const router = createBrowserRouter([
         path: "/",
         //Por defecto lleva al auth
         element: <Navigate to="/auth" replace />,
+    },
+    {
+        // Página pública: el prestador llega aquí desde el link del correo de confirmación
+        path: "/confirm-identity",
+        element: <ConfirmIdentityPage />,
     },
     {
         path: "/auth",

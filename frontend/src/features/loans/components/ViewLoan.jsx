@@ -1,16 +1,32 @@
 import { ViewDetailCard, Button } from "@/shared/";
 import { ClipboardList } from "lucide-react";
-import { useState } from "react";
-import { loans } from "../data/loans";
+import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import LoanMaterialsTable from "../components/LoanMaterialsTable";
+import { getLoan } from "../services/loanService";
+import { Ping } from "ldrs/react";
+import "ldrs/react/Ping.css";
 
 export default function ViewLoan() {
     const navigate = useNavigate();
     const { id } = useParams();
 
-    const loan = loans.find(l => l.id === Number(id));
+    const [loan, setLoan]       = useState(null)
+    const [loading, setLoading] = useState(true)
 
+    useEffect(() => {
+        getLoan(id)
+            .then(setLoan)
+            .catch(console.error)
+            .finally(() => setLoading(false))
+    }, [id])
+
+    if (loading) return (
+        <div className="flex flex-col place-items-center gap-2 mt-20">
+            <Ping size="45" speed="1.5" color="#56B526" />
+            <p className="text-text-muted text-center">Cargando préstamo...</p>
+        </div>
+    )
     if (!loan) return <p>Préstamo no encontrado</p>;
 
     const handleEdit = () => {
