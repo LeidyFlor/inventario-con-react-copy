@@ -2,19 +2,22 @@ import { Input, Button, IconButton, Select } from "@/shared"
 import { useState, useEffect } from "react";
 import { getUserTypes, getTaskState, getUserName } from "@/features/tasks/services/selectService";
 import { tasksSchema } from "../schemas/tasksSchema";
-import { Settings, Pencil } from "lucide-react";
+import { Settings, ChevronLeft, ChevronRight } from "lucide-react";
 import { tasks } from "../data/tasks";
 import TaskEditModal from "./TaskEditModal";
 
+// Cuantas cards se muestran por pagina en la columna derecha
+const CARDS_PER_PAGE = 2;
+
 export default function TaskForm() {
     const [formData, setFormData] = useState({
-        userName: "",            
-        userType: "",           
-        taskName: "",            
-        taskDescription: "",     
-        taskState: "",           
-        taskDateStart: "",       
-        taskDateEnd: "",         
+        userName: "",
+        userType: "",
+        taskName: "",
+        taskDescription: "",
+        taskState: "",
+        taskDateStart: "",
+        taskDateEnd: "",
     });
     const [errors, setErrors] = useState({});
     const [userTypes, setUserTypes] = useState([]);
@@ -23,8 +26,10 @@ export default function TaskForm() {
     const [taskList, setTaskList] = useState(tasks);
     const [selectedTask, setSelectedTask] = useState(null);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    // Página actual de la lista de cards; se reinicia cuando cambia el filtro
+    const [currentPage, setCurrentPage] = useState(0);
 
-    // Carga los datos de los selects solo una vez al montar el componente.
+    // Carga los datos de los selects solo una vez al montar el componente
     // Estos datos sirven para mostrar las opciones de usuario, tipo de usuario
     // y estado de tarea en los campos del formulario.
     useEffect(() => {
@@ -34,21 +39,33 @@ export default function TaskForm() {
     }, []);
 
     // Tareas a mostrar en pantalla según el filtro de usuario y tipo de usuario.
-    // No usamos useMemo aquí para que quede más simple y fácil de entender.
+    // No usamos useMemo aqui para que quede más simple y facil de entender
     const displayedTasks = taskList.filter((task) => {
         if (formData.userName && task.userName !== formData.userName) return false;
         if (formData.userType && task.userType !== formData.userType) return false;
         return true;
     });
 
+    // Total de paginas según cuantas tareas pasen el filtro
+    const totalPages = Math.ceil(displayedTasks.length / CARDS_PER_PAGE);
+
+    // Las 3 cards que corresponden a la pagina actual
+    const pagedTasks = displayedTasks.slice(
+        currentPage * CARDS_PER_PAGE,
+        currentPage * CARDS_PER_PAGE + CARDS_PER_PAGE
+    );
+
     const handleChange = (e) => {
         // Se obtiene el nombre del campo y su valor
         const { name, value, type, checked } = e.target;
 
+        // Al cambiar el filtro se vuelve a la primera página para no quedar en una página inexistente
+        if (name === "userName" || name === "userType") setCurrentPage(0);
+
         setFormData((prev) => ({
             // Se copian todos los valores anteriores del estado
             ...prev,
-            // Se actualiza únicamente el campo que cambió
+            // Se actualiza unicamente el campo que cambio
             [name]: type === "checkbox" ? checked : value,
         }));
     };
@@ -89,8 +106,13 @@ export default function TaskForm() {
         // Si la validación es exitosa se limpian los errores anteriores
         setErrors({});
 
-        // result.data contiene los datos ya validados por Zod
-        console.log("Usuario valido:", result.data);
+        // Se agrega la nueva tarea al final de la lista con un ID único.
+        // No se cambia de página automáticamente: el usuario permanece donde estaba.
+        const newTask = {
+            ...result.data,
+            id: Date.now(),
+        };
+        setTaskList((prev) => [...prev, newTask]);
     };
 
     const handleOpenEditModal = (task) => {
@@ -108,6 +130,22 @@ export default function TaskForm() {
         handleCloseEditModal();
     };
 
+    // Color dinámico según estado; definido fuera del map para no recrearlo en cada render
+    const stateColor = {
+        "Pendiente":   "text-text-muted",
+        "En progreso": "text-boton-fill-color-secondary",
+        "Completada":  "text-success",
+        "Cancelada":   "text-error",
+    };
+
+    // Formatea fecha ISO a DD/MM/AAAA
+    const formatDate = (iso) => {
+        const d = new Date(iso);
+        return d.toLocaleDateString("es-CO", {
+            day: "2-digit", month: "2-digit", year: "numeric"
+        });
+    };
+
     return (
         <div className="w-full flex justify-center relative">
 
@@ -120,7 +158,7 @@ export default function TaskForm() {
                     {/* Título */}
                     <div className="flex flex-col max-w-max mx-auto mb-2">
                         <div className="flex items-center gap-2 pb-0.5">
-                            <Settings size={24} className="text-brand" />
+                            <Settings className="text-brand" />
                             <h1 className="text-gradient-title text-h2">Gestión de tareas</h1>
                         </div>
                         <div className="h-0.5 bg-gradiant-title-line w-full"></div>
@@ -216,7 +254,6 @@ export default function TaskForm() {
                             error={errors.taskDateEnd}
                         />
 
-
                     <div className="w-full flex justify-center">
                         <IconButton
                             variant="primary"
@@ -229,38 +266,21 @@ export default function TaskForm() {
 
                 </form>
 
-                {/*Columna derecha — Tarjetas de tareas*/}
+                {/* Columna derecha — Tarjetas de tareas con paginación, sin scroll vertical */}
+                <div className="w-full flex flex-col gap-3">
 
-                <div className="w-full flex flex-col gap-2 h-auto overflow-y-visible lg:h-0 lg:min-h-full">
+                    {displayedTasks.length > 0 ? (
+                        <>
+                            {/* Lista de cards; el padding y gap se redujeron respecto al diseño original
+                                para que las 3 cards de la página actual caben sin necesidad de scroll */}
+                            <div className="flex flex-col gap-3">
+                                {pagedTasks.map((task) => (
+                                    <div key={task.id} className="flex flex-col w-full rounded-2xl border-2 border-primary-300 bg-surface p-3 gap-2">
 
-                    {/* Contenedor de tarjetas con scroll */}
-                    <div className="flex flex-col gap-2 overflow-y-auto w-full flex-1 min-h-0 pr-1">
-                        {displayedTasks && displayedTasks.length > 0 ? (
-                            displayedTasks.map((task) => {
-
-                                // Color dinámico según estado
-                                const stateColor = {
-                                    "Pendiente":   "text-text-muted",
-                                    "En progreso": "text-boton-fill-color-secondary",
-                                    "Completada":  "text-success",
-                                    "Cancelada":   "text-error",
-                                }[task.taskState] ?? "text-color-text-primary";
-
-                                // Formatea fecha ISO a DD/MM/AAAA
-                                const formatDate = (iso) => {
-                                    const d = new Date(iso);
-                                    return d.toLocaleDateString("es-CO", {
-                                        day: "2-digit", month: "2-digit", year: "numeric"
-                                    });
-                                };
-
-                                return (
-                                   <div key={task.id} className="flex flex-col w-full rounded-2xl border-2 border-primary-300 bg-surface p-4 gap-4">
-
-                                        <div className="grid grid-cols-1 md:grid-cols-[45%_55%] gap-4 items-start">
+                                        <div className="grid grid-cols-1 md:grid-cols-[45%_55%] gap-3 items-start">
                                             {/* Columna izquierda: título + fechas */}
-                                            <div className="flex flex-col gap-2 bg-primary-50 w-full p-3 rounded-xl">
-                                                <h3 className="font-bold text-base to-background-image-text-gradient">
+                                            <div className="flex flex-col gap-1 bg-primary-50 w-full p-2.5 rounded-xl">
+                                                <h3 className="font-bold text-sm to-background-image-text-gradient">
                                                     Tarea: {task.taskName}
                                                 </h3>
 
@@ -272,7 +292,7 @@ export default function TaskForm() {
                                                 </div>
                                                 <div className="flex items-center gap-2">
                                                     <span className="text-sm text-pri">Estado:</span>
-                                                    <span className={`text-sm font-medium ${stateColor}`}>
+                                                    <span className={`text-sm font-medium ${stateColor[task.taskState] ?? "text-color-text-primary"}`}>
                                                         {task.taskState}
                                                     </span>
                                                 </div>
@@ -284,15 +304,16 @@ export default function TaskForm() {
                                                 </div>
                                             </div>
 
-                                            {/* Columna derecha: descripción */}
-                                            <div className="flex flex-col gap-2 w-full bg-color-background p-3 rounded-xl">
+                                            {/* Columna derecha: descripción; max-h reducido a la mitad del original (h-24 -> h-16)
+                                                para bajar la altura total de la card */}
+                                            <div className="flex flex-col gap-1 w-full bg-color-background p-2.5 rounded-xl">
                                                 <div className="flex items-center gap-2">
                                                     <span className="font-bold text-sm text-text-primary">Descripción:</span>
                                                 </div>
                                                 {(() => {
                                                     const scroll = task.taskDescription && task.taskDescription.length > 20;
                                                     return (
-                                                        <p className={`text-sm ${scroll ? 'overflow-y-auto max-h-24' : ''}`}>
+                                                        <p className={`text-sm ${scroll ? 'overflow-y-auto max-h-16' : ''}`}>
                                                             {task.taskDescription}
                                                         </p>
                                                     );
@@ -300,24 +321,54 @@ export default function TaskForm() {
                                             </div>
                                         </div>
 
-                                        <div className="w-full flex justify-end mt-2">
+                                        <div className="w-full flex justify-end">
                                             <Button type="button" variant="warning" size="md" onClick={() => handleOpenEditModal(task)}>
                                                 Editar
                                             </Button>
                                         </div>
                                     </div>
-                                );
-                            })
-                        ) : (
-                            <div className="flex items-center justify-center p-8 text-center">
-                                <p className="text-text-muted">
-                                    {formData.userName || formData.userType 
-                                        ? "No hay tareas disponibles para la selección actual"
-                                        : "Selecciona un usuario o tipo de usuario para ver sus tareas"}
-                                </p>
+                                ))}
                             </div>
-                        )}
-                    </div>
+
+                            {/* Controles de paginación; solo se muestran si hay más de una página */}
+                            {totalPages > 1 && (
+                                <div className="flex items-center justify-center gap-4 mt-1">
+                                    {/* Botón página anterior; deshabilitado en la primera página */}
+                                    <button
+                                        type="button"
+                                        onClick={() => setCurrentPage((p) => p - 1)}
+                                        disabled={currentPage === 0}
+                                        className="p-1 rounded-full text-brand disabled:opacity-30 disabled:cursor-not-allowed hover:bg-primary-50 transition-colors"
+                                    >
+                                        <ChevronLeft size={28} />
+                                    </button>
+
+                                    {/* Indicador de página actual sobre el total */}
+                                    <span className="text-sm text-text-muted">
+                                        {currentPage + 1} / {totalPages}
+                                    </span>
+
+                                    {/* Botón página siguiente; deshabilitado en la última página */}
+                                    <button
+                                        type="button"
+                                        onClick={() => setCurrentPage((p) => p + 1)}
+                                        disabled={currentPage === totalPages - 1}
+                                        className="p-1 rounded-full text-brand disabled:opacity-30 disabled:cursor-not-allowed hover:bg-primary-50 transition-colors"
+                                    >
+                                        <ChevronRight size={28} />
+                                    </button>
+                                </div>
+                            )}
+                        </>
+                    ) : (
+                        <div className="flex items-center justify-center p-8 text-center">
+                            <p className="text-text-muted">
+                                {formData.userName || formData.userType
+                                    ? "No hay tareas disponibles para la selección actual"
+                                    : "Selecciona un usuario o tipo de usuario para ver sus tareas"}
+                            </p>
+                        </div>
+                    )}
                 </div>
             </div>
             {/*

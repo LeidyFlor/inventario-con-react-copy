@@ -7,10 +7,11 @@ import { Alert } from "@/shared";
 import { createUser } from "../services/userService.js";
 import { useNavigate } from "react-router-dom";
 import { GroupCreateModalPage } from "@/features/groups";
+import TaskCreateModal from "./TaskCreateModal";
 
 export default function UserRegisterForm() {
     const navigate = useNavigate();
-    const [formData, setFormData] = useState({
+    const [formData, setFormData] = useState({  
         userDocument: "",
         First_name: "",
         Last_name: "",
@@ -33,6 +34,8 @@ export default function UserRegisterForm() {
     const [userTypes, setUserTypes] = useState([]);
     // Modal para crear grupo al vuelo
     const [groupModalOpen, setGroupModalOpen] = useState(false);
+    // Modal para agregar tarea al vuelo
+    const [taskModalOpen, setTaskModalOpen] = useState(false);
 
     useEffect(() => {
         getDocumentTypes().then(setDocumentTypes);
@@ -301,6 +304,7 @@ export default function UserRegisterForm() {
                                 variant="primary"
                                 size="sm"
                                 type="button"
+                                onClick={() => setTaskModalOpen(true)}
                             >
                                 Agregar tarea
                             </Button>
@@ -332,6 +336,24 @@ export default function UserRegisterForm() {
                                 setUserTypes(prev => [...prev, newGroup])
                                 setFormData(prev => ({ ...prev, userType: String(newGroup.value) }))
                                 setGroupModalOpen(false)
+                            }}
+                        />
+                    </div>
+                </div>
+            )}
+
+            {taskModalOpen && (
+                <div
+                    className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+                    onClick={() => setTaskModalOpen(false)}
+                >
+                    <div onClick={(e) => e.stopPropagation()}>
+                        <TaskCreateModal
+                            onClose={() => setTaskModalOpen(false)}
+                            onTaskCreated={(newTask) => {
+                                // Aquí se decide qué hacer con la tarea creada,
+                                // por ejemplo guardarla en una lista de tareas pendientes del usuario
+                                console.log("Tarea creada:", newTask)
                             }}
                         />
                     </div>
