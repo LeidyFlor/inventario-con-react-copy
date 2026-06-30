@@ -12,6 +12,7 @@ from .serializers import (
     LoanCreateSerializer,
     LoanUpdateSerializer,
     LoanReturnSerializer,
+    AcceptReturnSerializer,
     IdentityTokenCreateSerializer,
     IdentityConfirmSerializer,
 )
@@ -93,6 +94,7 @@ class LoanViewSet(viewsets.ViewSet):
 
     # ──────────────────────────────────────────────────────────────
     # RETURN  POST /api/loans/{id}/return/
+    # Cualquier usuario activo puede registrar la devolución
     # ──────────────────────────────────────────────────────────────
     @action(detail=True, methods=['post'], url_path='return')
     def return_loan(self, request, pk=None):
@@ -116,6 +118,47 @@ class LoanViewSet(viewsets.ViewSet):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
         loan = serializer.save(loan=loan)
+        return Response(LoanDetailSerializer(loan).data)
+
+    # ──────────────────────────────────────────────────────────────
+    # ACCEPT RETURN  POST /api/loans/{id}/accept-return/
+    # Solo cuentadantes activos pueden aceptar la devolución
+    # ──────────────────────────────────────────────────────────────
+    @action(detail=True, methods=['post'], url_path='accept-return')
+    def accept_return(self, request, pk=None):
+        # Verificar que el usuario logueado sea cuentadante activo
+        if not (request.user.is_accountant and request.user.is_active):
+            return Response(
+                {'error': 'Solo un cuentadante activo puede aceptar la devolución.'},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        try:
+            loan = Loan.objects.select_related(
+                'loan_user_requester', 'loan_user_lender', 'returned_by', 'accepted_by'
+            ).prefetch_related(
+                'items__consumable_material', 'items__returnable_material'
+            ).get(pk=pk)
+        except Loan.DoesNotExist:
+            return Response({'error': 'Préstamo no encontrado.'}, status=status.HTTP_404_NOT_FOUND)
+
+        if not loan.returned_at:
+            return Response(
+                {'error': 'El préstamo aún no ha sido devuelto.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if loan.accepted_at:
+            return Response(
+                {'error': 'La devolución de este préstamo ya fue aceptada.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        serializer = AcceptReturnSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        loan = serializer.save(loan=loan, accepted_by=request.user)
         return Response(LoanDetailSerializer(loan).data)
 
     # ──────────────────────────────────────────────────────────────

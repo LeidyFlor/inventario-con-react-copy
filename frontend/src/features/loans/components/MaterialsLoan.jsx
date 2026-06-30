@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Button, Checkbox, IconButton } from "@/shared";
+import { Button, Checkbox, IconButton, Input } from "@/shared";
 import DataTable from "@/shared/components/DataTable";
 import { ArrowLeft, CheckCheck } from "lucide-react";
 import { getMaterials } from "@/features/consumable-material/services/materialService";
@@ -317,14 +317,16 @@ export default function MaterialsLoan({ selectedMaterials, setSelectedMaterials 
                 }
                 return (
                     <div className="flex items-center gap-1 justify-center min-w-20">
-                        <input
-                            type="text"
-                            inputMode="numeric"
-                            value={selectedReturnableIds.get(item.id) ?? 1}
-                            onChange={(e) => handleReturnableQtyChange(item.id, e.target.value)}
-                            onBlur={() => handleReturnableQtyBlur(item.id)}
-                            className="w-14 rounded-lg border border-border px-2 py-1 text-center text-body text-text-primary"
-                        />
+                        <div className="w-14">
+                            <Input
+                                type="text"
+                                inputMode="numeric"
+                                variant="isEdit"
+                                value={selectedReturnableIds.get(item.id) ?? 1}
+                                onChange={(e) => handleReturnableQtyChange(item.id, e.target.value)}
+                                onBlur={() => handleReturnableQtyBlur(item.id)}
+                            />
+                        </div>
                         <span className="text-text-muted text-sm whitespace-nowrap">/ {maxQty}</span>
                     </div>
                 );
@@ -417,20 +419,17 @@ export default function MaterialsLoan({ selectedMaterials, setSelectedMaterials 
                 const isSelected = selectedConsumables.has(id);
                 return (
                     <div className="flex justify-center min-w-24">
-                        <input
-                            type="text"
-                            inputMode="numeric"
-                            placeholder="0"
-                            // Si la fila no está seleccionada el input se deshabilita y queda vacío
-                            disabled={!isSelected}
-                            value={isSelected ? (selectedConsumables.get(id) ?? "") : ""}
-                            onChange={(e) => handleConsumableQtyChange(id, e.target.value)}
-                            className={`w-16 rounded-lg border px-2 py-1 text-center text-body
-                                ${isSelected
-                                    ? "border-border text-text-primary"
-                                    : "border-border text-text-muted opacity-40 cursor-not-allowed"
-                                }`}
-                        />
+                        <div className="w-16">
+                            <Input
+                                type="text"
+                                inputMode="numeric"
+                                placeholder="0"
+                                variant="isEdit"
+                                disabled={!isSelected}
+                                value={isSelected ? (selectedConsumables.get(id) ?? "") : ""}
+                                onChange={(e) => handleConsumableQtyChange(id, e.target.value)}
+                            />
+                        </div>
                     </div>
                 );
             },

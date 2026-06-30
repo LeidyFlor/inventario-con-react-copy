@@ -49,6 +49,10 @@ class LoanItemReadSerializer(serializers.ModelSerializer):
             'material_type',
             'quantity_loaned',
             'quantity_returned',
+            'item_state',
+            'quantity_bueno',
+            'quantity_danado',
+            'quantity_perdido',
             'is_returned',
         ]
 
@@ -87,8 +91,11 @@ class LoanListSerializer(serializers.ModelSerializer):
     Devuelve snake_case consistente con el resto del proyecto.
     El frontend mapea los campos en loanService.js igual que en materiales/usuarios.
     """
-    loan_user_requester = serializers.SerializerMethodField()
-    loan_user_lender    = serializers.SerializerMethodField()
+    loan_user_requester    = serializers.SerializerMethodField()
+    loan_user_requester_id = serializers.SerializerMethodField()
+    loan_user_lender       = serializers.SerializerMethodField()
+    returned_by_name       = serializers.SerializerMethodField()
+    accepted_by_name       = serializers.SerializerMethodField()
 
     class Meta:
         model  = Loan
@@ -96,6 +103,7 @@ class LoanListSerializer(serializers.ModelSerializer):
             'id',
             'loan_code',
             'loan_user_requester',
+            'loan_user_requester_id',
             'loan_user_lender',
             'loan_students_group',
             'loan_justification',
@@ -104,6 +112,16 @@ class LoanListSerializer(serializers.ModelSerializer):
             'loan_date_in',
             'loan_status',
             'identity_confirmed',
+            # devolución
+            'returned_by',
+            'returned_by_name',
+            'returned_at',
+            'return_observations',
+            # aceptación
+            'accepted_by',
+            'accepted_by_name',
+            'accepted_at',
+            'accept_observations',
             'created_at',
             'updated_at',
         ]
@@ -112,8 +130,23 @@ class LoanListSerializer(serializers.ModelSerializer):
         u = obj.loan_user_requester
         return f"{u.first_name} {u.last_name}".strip() or u.email
 
+    def get_loan_user_requester_id(self, obj):
+        return obj.loan_user_requester_id
+
     def get_loan_user_lender(self, obj):
         u = obj.loan_user_lender
+        return f"{u.first_name} {u.last_name}".strip() or u.email
+
+    def get_returned_by_name(self, obj):
+        if not obj.returned_by:
+            return None
+        u = obj.returned_by
+        return f"{u.first_name} {u.last_name}".strip() or u.email
+
+    def get_accepted_by_name(self, obj):
+        if not obj.accepted_by:
+            return None
+        u = obj.accepted_by
         return f"{u.first_name} {u.last_name}".strip() or u.email
 
 
@@ -293,24 +326,60 @@ class LoanUpdateSerializer(serializers.ModelSerializer):
         return value
 
 
-# 
+#
 # Devolución parcial o total
-# 
+#
 
 class ReturnItemSerializer(serializers.Serializer):
-    """Un ítem dentro del payload de devolución."""
+    """
+    Un ítem dentro del payload de devolución.
+    Para ítems de cantidad > 1 sin placa SENA se puede enviar 'states'
+    en lugar de 'item_state' para distribuir el estado por cantidad.
+    """
     loan_item_id      = serializers.IntegerField()
     quantity_returned = serializers.IntegerField(min_value=0)
+    # Modo simple: un solo estado para todo el ítem
+    item_state = serializers.ChoiceField(
+        choices=['bueno', 'dañado', 'perdido'],
+        required=False,
+    )
+    # Modo distribución: { "bueno": N, "danado": N, "perdido": N } (sin tilde en "danado")
+    states = serializers.DictField(
+        child=serializers.IntegerField(min_value=0),
+        required=False,
+    )
+
+    def validate(self, data):
+        if 'states' in data:
+            s       = data['states']
+            bueno   = s.get('bueno',   0)
+            danado  = s.get('danado',  0)
+            perdido = s.get('perdido', 0)
+            total   = bueno + danado + perdido
+            if total != data['quantity_returned']:
+                raise serializers.ValidationError({
+                    'states': (
+                        f'La suma de estados ({total}) debe coincidir '
+                        f'con quantity_returned ({data["quantity_returned"]}).'
+                    )
+                })
+        elif 'item_state' not in data:
+            data['item_state'] = 'bueno'
+        return data
 
 
 class LoanReturnSerializer(serializers.Serializer):
     """
     Registra la devolución de materiales de un préstamo.
-    Acepta una lista de ítems con su cantidad devuelta.
-    Actualiza loan_status automáticamente al finalizar.
+    - returned_by: ID del usuario que devuelve (default: solicitante del préstamo)
+    - items: lista de ítems con cantidad devuelta y estado
+    - return_observations: nota opcional
     """
-    items = ReturnItemSerializer(many=True)
-    note  = serializers.CharField(required=False, allow_blank=True, max_length=500)
+    returned_by         = serializers.PrimaryKeyRelatedField(
+        queryset=Users.objects.filter(is_active=True)
+    )
+    items               = ReturnItemSerializer(many=True)
+    return_observations = serializers.CharField(required=False, allow_blank=True, max_length=500)
 
     def validate_items(self, value):
         if not value:
@@ -319,7 +388,11 @@ class LoanReturnSerializer(serializers.Serializer):
 
     @transaction.atomic
     def save(self, loan):
-        items_data = self.validated_data['items']
+        from django.utils import timezone
+
+        items_data          = self.validated_data['items']
+        returned_by         = self.validated_data['returned_by']
+        return_observations = self.validated_data.get('return_observations', '')
 
         for item_data in items_data:
             try:
@@ -333,6 +406,28 @@ class LoanReturnSerializer(serializers.Serializer):
 
             new_returned = item_data['quantity_returned']
 
+            # ── Determinar estado e distribución ─────────────────────────────
+            if 'states' in item_data:
+                s        = item_data['states']
+                bueno    = s.get('bueno',   0)
+                danado   = s.get('danado',  0)
+                perdido  = s.get('perdido', 0)
+                # Estado consolidado: el más grave presente
+                if perdido > 0:
+                    item_state = 'perdido'
+                elif danado > 0:
+                    item_state = 'dañado'
+                else:
+                    item_state = 'bueno'
+                qty_bueno   = bueno
+                qty_danado  = danado
+                qty_perdido = perdido
+            else:
+                item_state  = item_data.get('item_state', 'bueno')
+                qty_bueno   = None
+                qty_danado  = None
+                qty_perdido = None
+
             if new_returned > loan_item.quantity_loaned:
                 raise serializers.ValidationError(
                     {'quantity_returned': f'No se puede devolver más de {loan_item.quantity_loaned} unidades.'}
@@ -341,28 +436,39 @@ class LoanReturnSerializer(serializers.Serializer):
             delta = new_returned - loan_item.quantity_returned
 
             if loan_item.material_type == 'returnable':
-                # Devolutivo: obligatorio devolver — se descuenta de material_quantity_loaned
                 loan_item.quantity_returned = new_returned
-                loan_item.save(update_fields=['quantity_returned'])
+                loan_item.item_state        = item_state
+                loan_item.quantity_bueno    = qty_bueno
+                loan_item.quantity_danado   = qty_danado
+                loan_item.quantity_perdido  = qty_perdido
+                loan_item.save(update_fields=[
+                    'quantity_returned', 'item_state',
+                    'quantity_bueno', 'quantity_danado', 'quantity_perdido',
+                ])
 
                 if delta > 0:
                     ReturnableMaterial.objects.filter(pk=loan_item.returnable_material_id).update(
                         material_quantity_loaned=loan_item.returnable_material.material_quantity_loaned - delta
                     )
-
             else:
-                # Consumible: devolución opcional — si se devuelven unidades no usadas,
-                # se suman de vuelta al stock. Si delta == 0 no se hace nada.
+                # Consumible: devolución opcional
                 if delta > 0:
                     loan_item.quantity_returned = new_returned
-                    loan_item.save(update_fields=['quantity_returned'])
+                    loan_item.item_state        = item_state
+                    loan_item.quantity_bueno    = qty_bueno
+                    loan_item.quantity_danado   = qty_danado
+                    loan_item.quantity_perdido  = qty_perdido
+                    loan_item.save(update_fields=[
+                        'quantity_returned', 'item_state',
+                        'quantity_bueno', 'quantity_danado', 'quantity_perdido',
+                    ])
                     ConsumableMaterial.objects.filter(pk=loan_item.consumable_material_id).update(
                         material_quantity=loan_item.consumable_material.material_quantity + delta
                     )
 
-        # Recalcula el estado del préstamo
-        all_items    = loan.items.all()
-        all_returned = all(item.is_returned for item in all_items)
+        # Recalcula estado del préstamo
+        all_items     = loan.items.all()
+        all_returned  = all(item.is_returned for item in all_items)
         some_returned = any(
             item.quantity_returned > 0
             for item in all_items
@@ -374,7 +480,32 @@ class LoanReturnSerializer(serializers.Serializer):
         elif some_returned:
             loan.loan_status = 'devolucion_parcial'
 
-        loan.save(update_fields=['loan_status', 'updated_at'])
+        loan.returned_by         = returned_by
+        loan.returned_at         = timezone.now()
+        loan.return_observations = return_observations
+        loan.save(update_fields=['loan_status', 'returned_by', 'returned_at', 'return_observations', 'updated_at'])
+        return loan
+
+
+#
+# Aceptación de devolución
+#
+
+class AcceptReturnSerializer(serializers.Serializer):
+    """
+    Un cuentadante activo confirma la devolución ya registrada.
+    Registra automáticamente quién acepta (usuario logueado) y cuándo.
+    """
+    accept_observations = serializers.CharField(required=False, allow_blank=True, max_length=500)
+
+    @transaction.atomic
+    def save(self, loan, accepted_by):
+        from django.utils import timezone
+
+        loan.accepted_by          = accepted_by
+        loan.accepted_at          = timezone.now()
+        loan.accept_observations  = self.validated_data.get('accept_observations', '')
+        loan.save(update_fields=['accepted_by', 'accepted_at', 'accept_observations', 'updated_at'])
         return loan
 
 

@@ -18,29 +18,43 @@ function mapItem(item) {
         serial:           item.serial       ?? null,
         cantidad:         item.quantity_loaned,
         cantidadDevuelta: item.quantity_returned,
+        itemState:        item.item_state   ?? "bueno",
+        qtyBueno:         item.quantity_bueno   ?? null,
+        qtyDanado:        item.quantity_danado  ?? null,
+        qtyPerdido:       item.quantity_perdido ?? null,
         tipo:             item.material_type === "consumable" ? "Consumo" : "Devolutivo",
         isReturned:       item.is_returned,
     }
 }
 
 // Mapea un préstamo de snake_case → camelCase
-// para que los componentes lo reciban igual que el mock de loans.js
 function mapLoan(loan) {
     return {
-        id:                  loan.id,
-        idLoan:              loan.loan_code,
-        loanUserRequester:   loan.loan_user_requester,
-        loanUserLender:      loan.loan_user_lender,
-        loanStudentsGroup:   loan.loan_students_group,
-        loanJustification:   loan.loan_justification,
-        loanType:            loan.loan_type,
-        loanDateOut:         loan.loan_date_out,
-        loanDateIn:          loan.loan_date_in,
-        loanStatus:          loan.loan_status,
-        identityConfirmed:   loan.identity_confirmed,
-        createdAt:           loan.created_at,
-        updatedAt:           loan.updated_at,
-        loanMaterials:       (loan.loan_materials ?? []).map(mapItem),
+        id:                   loan.id,
+        idLoan:               loan.loan_code,
+        loanUserRequester:    loan.loan_user_requester,
+        requesterId:          loan.loan_user_requester_id ?? null,
+        loanUserLender:       loan.loan_user_lender,
+        loanStudentsGroup:    loan.loan_students_group,
+        loanJustification:    loan.loan_justification,
+        loanType:             loan.loan_type,
+        loanDateOut:          loan.loan_date_out,
+        loanDateIn:           loan.loan_date_in,
+        loanStatus:           loan.loan_status,
+        identityConfirmed:    loan.identity_confirmed,
+        // devolución
+        returnedById:         loan.returned_by        ?? null,
+        returnedByName:       loan.returned_by_name   ?? null,
+        returnedAt:           loan.returned_at         ?? null,
+        returnObservations:   loan.return_observations ?? "",
+        // aceptación
+        acceptedById:         loan.accepted_by        ?? null,
+        acceptedByName:       loan.accepted_by_name   ?? null,
+        acceptedAt:           loan.accepted_at         ?? null,
+        acceptObservations:   loan.accept_observations ?? "",
+        createdAt:            loan.created_at,
+        updatedAt:            loan.updated_at,
+        loanMaterials:        (loan.loan_materials ?? []).map(mapItem),
     }
 }
 
@@ -121,25 +135,49 @@ export async function updateLoan(id, formData) {
     return mapLoan(data)
 }
 
-//  POST /api/loans/{id}/return/ ─
-// items: [{ loan_item_id, quantity_returned }]
-// note: observación opcional del solicitante
+//  POST /api/loans/{id}/return/
+// returnedBy: ID del usuario que devuelve
+// items: [{ loan_item_id, quantity_returned, item_state }]
+// returnObservations: observación opcional
 
-export async function returnLoan(id, items, note = "") {
+export async function returnLoan(id, { returnedBy, items, returnObservations = "" }) {
     const response = await fetch(`${API_URL}/loans/${id}/return/`, {
         method: "POST",
         headers: {
             Authorization:  `Bearer ${getToken()}`,
             "Content-Type": "application/json",
         },
-        body: JSON.stringify({ items, note }),
+        body: JSON.stringify({
+            returned_by:         returnedBy,
+            items,
+            return_observations: returnObservations,
+        }),
     })
     if (!response.ok) {
         const error = await response.json()
         throw new Error(JSON.stringify(error))
     }
-    const data = await response.json()
-    return mapLoan(data)
+    return mapLoan(await response.json())
+}
+
+//  POST /api/loans/{id}/accept-return/
+// acceptObservations: observación opcional del cuentadante
+// (accepted_by se toma automáticamente del usuario logueado en el backend)
+
+export async function acceptReturn(id, { acceptObservations = "" } = {}) {
+    const response = await fetch(`${API_URL}/loans/${id}/accept-return/`, {
+        method: "POST",
+        headers: {
+            Authorization:  `Bearer ${getToken()}`,
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ accept_observations: acceptObservations }),
+    })
+    if (!response.ok) {
+        const error = await response.json()
+        throw new Error(JSON.stringify(error))
+    }
+    return mapLoan(await response.json())
 }
 
 // POST /api/loans/verify-token/

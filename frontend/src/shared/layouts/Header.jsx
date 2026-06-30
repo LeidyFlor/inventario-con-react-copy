@@ -69,7 +69,7 @@ export default function Header( { onMenuToggle } ) {
                 await logout()
                 navigate("/auth")
             } catch (error) {
-                console.error("Error al cerrar sesión:", error)
+                Alert.error("Error al cerrar sesión", error)
                 // Igual navegamos aunque falle el backend
                 sessionStorage.removeItem("token")
                 navigate("/auth")

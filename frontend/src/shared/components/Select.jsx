@@ -5,7 +5,8 @@ export default function Select({
     value,
     onChange,
     options = [],
-    variant = "default"
+    variant = "default",
+    ...props
 }) {
     const variants = {
         default: "rounded-2xl border-2 border-input-border text-medium  bg-input-fill placeholder-text-muted hover:border-2 hover:border-focus-border focus:outline-none focus:ring-1 focus:ring-focus-ring",
@@ -33,6 +34,7 @@ export default function Select({
                 name={name}
                 value={value}
                 onChange={onChange}
+                {...props}
                 className={`
                     w-full
                     h-10
