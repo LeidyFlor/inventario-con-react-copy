@@ -75,12 +75,12 @@ export default function LoanRowActions({ loan, onRemove }) {
                           </Link>
                       </DropdownItem>
                       <DropdownItem>
-                          <Link to="user-create" className="block w-full">
+                          <Link to={`/dashboard/loans/${loan.id}/return`} className="block w-full">
                               Devolver préstamo
                           </Link>
                       </DropdownItem>
                       <DropdownItem>
-                          <Link to="user-list" className="block w-full">
+                          <Link to={`/dashboard/loans/${loan.id}/accept-return`} className="block w-full">
                               Aceptar retorno de préstamo
                           </Link>
                       </DropdownItem>

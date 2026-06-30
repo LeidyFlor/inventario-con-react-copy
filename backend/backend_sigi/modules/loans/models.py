@@ -72,6 +72,26 @@ class Loan(models.Model):
         related_name='loan',
     )
 
+    # ── Devolución ────────────────────────────────────────────────────────────
+    returned_by          = models.ForeignKey(
+        Users,
+        on_delete=models.SET_NULL,
+        null=True, blank=True,
+        related_name='loans_returned',
+    )
+    returned_at          = models.DateTimeField(null=True, blank=True)
+    return_observations  = models.TextField(blank=True, default='')
+
+    # ── Aceptación de devolución ───────────────────────────────────────────────
+    accepted_by          = models.ForeignKey(
+        Users,
+        on_delete=models.SET_NULL,
+        null=True, blank=True,
+        related_name='loans_accepted',
+    )
+    accepted_at          = models.DateTimeField(null=True, blank=True)
+    accept_observations  = models.TextField(blank=True, default='')
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -139,8 +159,24 @@ class LoanItem(models.Model):
         related_name='loan_items',
     )
 
+    ITEM_STATE_CHOICES = [
+        ('bueno',   'Bueno'),
+        ('dañado',  'Dañado'),
+        ('perdido', 'Perdido'),
+    ]
+
     quantity_loaned   = models.PositiveIntegerField()
     quantity_returned = models.PositiveIntegerField(default=0)
+    item_state        = models.CharField(
+        max_length=10,
+        choices=ITEM_STATE_CHOICES,
+        default='bueno',
+    )
+    # Distribución de estados para herramientas sin placa con cantidad > 1
+    # Solo se llena cuando el ítem se devuelve con distribución; None = usa item_state simple
+    quantity_bueno   = models.PositiveIntegerField(null=True, blank=True)
+    quantity_danado  = models.PositiveIntegerField(null=True, blank=True)
+    quantity_perdido = models.PositiveIntegerField(null=True, blank=True)
 
     # ── Campos calculados ──────────────────────────────────────────────────────
 
