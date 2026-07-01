@@ -133,7 +133,7 @@ export default function ConsumableRegisterForm() {
                     </div>
                     {/* Inputs */}
                     <div className="grid grid-cols-1 md:grid-cols-2 md:gap-10">
-                        <div className="flex flex-col gap-3">
+                        <div className="flex flex-col gap-2">
                             <Input
                                 placeholder="Placa Sena"
                                 name= "materialBarcodeSena"
@@ -149,6 +149,7 @@ export default function ConsumableRegisterForm() {
                                 value={formData.brandName}
                                 onChange={handleChange}
                                 error={errors.brandName}
+                                required
                             />
                             <Input
                                 placeholder="Nombre del elemento"
@@ -157,6 +158,7 @@ export default function ConsumableRegisterForm() {
                                 value={formData.materialName}
                                 onChange={handleChange}
                                 error={errors.materialName}
+                                required
                             />
                             <Textarea
                                 className="mb-3 mb:mb-0"
@@ -166,10 +168,11 @@ export default function ConsumableRegisterForm() {
                                 value={formData.materialDescription}
                                 onChange={handleChange}
                                 error={errors.materialDescription}
+                                required
                             />
 
                         </div>
-                        <div className="flex flex-col gap-3">
+                        <div className="flex flex-col gap-2">
                             <Select
                                 label="Seleccione cuentadante"
                                 options={userName}
@@ -177,6 +180,7 @@ export default function ConsumableRegisterForm() {
                                 value={formData.inventoryManager}
                                 onChange={handleChange}
                                 error={errors.inventoryManager}
+                                required
                             />
                             <Input
                                 placeholder="Cantidad"
@@ -186,6 +190,7 @@ export default function ConsumableRegisterForm() {
                                 value={formData.materialQuantity}
                                 onChange={handleChange}
                                 error={errors.materialQuantity}
+                                required
                             />
                             <Input
                                 placeholder="Valor unitario"
@@ -195,6 +200,7 @@ export default function ConsumableRegisterForm() {
                                 value={formData.materialUnitPrice}
                                 onChange={handleChange}
                                 error={errors.materialUnitPrice}
+                                required
                             />
                             <Input
                                 placeholder="Ubicación"

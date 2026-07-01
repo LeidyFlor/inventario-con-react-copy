@@ -56,7 +56,7 @@ export default function ViewUserPage(){
                 estado={user.is_active}
                 onEdit={handleEdit}
                 topActions={
-                    <div className="flex gap-4">
+                    <div className="flex gap-4 mb-3">
                         <Button variant="primary" size="sm"><p className="hidden md:block">Agregar tarea</p></Button>
                         <Button variant="ghost" size="sm"><ListTodo size={16} /><p className="hidden md:block">Tareas</p></Button>
                         <Button

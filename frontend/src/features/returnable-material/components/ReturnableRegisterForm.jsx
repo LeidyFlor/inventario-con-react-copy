@@ -146,6 +146,7 @@ export default function ReturnableRegisterForm() {
                                 value={formData.materialBarcodeSena}
                                 onChange={handleChange}
                                 error={errors.materialBarcodeSena}
+                                required
                             />
                             <Input
                                 label="Serial"
@@ -163,6 +164,7 @@ export default function ReturnableRegisterForm() {
                                 value={formData.materialName}
                                 onChange={handleChange}
                                 error={errors.materialName}
+                                required
                             />
                             <Select
                                 label="Cuentadante"
@@ -171,6 +173,7 @@ export default function ReturnableRegisterForm() {
                                 value={formData.inventoryManager}
                                 onChange={handleChange}
                                 error={errors.inventoryManager}
+                                required
                             />
                             <Textarea
                                 label="Descripción"
@@ -179,6 +182,7 @@ export default function ReturnableRegisterForm() {
                                 value={formData.materialDescription}
                                 onChange={handleChange}
                                 error={errors.materialDescription}
+                                required
                             />
                         </div>
 
@@ -191,6 +195,7 @@ export default function ReturnableRegisterForm() {
                                 value={formData.returnableMaterialCategory}
                                 onChange={handleChange}
                                 error={errors.returnableMaterialCategory}
+                                required
                             />
                             <Select
                                 label="Marca"
@@ -199,6 +204,7 @@ export default function ReturnableRegisterForm() {
                                 value={formData.brandName}
                                 onChange={handleChange}
                                 error={errors.brandName}
+                                required
                             />
                             <Input
                                 label="Modelo"
@@ -216,6 +222,7 @@ export default function ReturnableRegisterForm() {
                                 value={formData.materialUnitPrice}
                                 onChange={handleChange}
                                 error={errors.materialUnitPrice}
+                                required
                             />
                             {/* Cantidad editable solo para herramienta sin placa */}
                             {formData.returnableMaterialCategory === "herramienta" && !formData.materialBarcodeSena?.trim() && (

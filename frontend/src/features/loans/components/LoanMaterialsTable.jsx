@@ -1,6 +1,6 @@
 import { X } from "lucide-react";
 import DataTable from "@/shared/components/DataTable";
-import { IconButtonReal } from "@/shared";
+import { IconButtonReal, Input } from "@/shared";
 
 // Recibe el array loanMaterials de loans.js y lo muestra en la tabla
 // Cada item ya tiene: { id, name, placaSena, serial, cantidad, tipo }
@@ -66,21 +66,23 @@ export default function LoanMaterialsTable({
 
                 return (
                     <div className="flex min-w-20 justify-center">
-                        <input
-                            type="text"
-                            inputMode="numeric"
-                            value={row.original.cantidad ?? ""}
-                            onChange={(event) => {
-                                // Mantener controlado como string antes de parsear
-                                const value = event.target.value.replace(/\D/g, "");
-                                const parsed = value === "" ? "" : Number(value);
-                                onQuantityChange?.(
-                                    row.original.id,
-                                    value === "" || Number.isNaN(parsed) ? 0 : parsed
-                                );
-                            }}
-                            className="w-16 rounded-xl border border-border px-3 py-2 text-center text-body text-text-primary"
-                        />
+                        <div className="w-16">
+                            <Input
+                                type="text"
+                                inputMode="numeric"
+                                variant="isEdit"
+                                value={row.original.cantidad ?? ""}
+                                onChange={(event) => {
+                                    // Mantener controlado como string antes de parsear
+                                    const value = event.target.value.replace(/\D/g, "");
+                                    const parsed = value === "" ? "" : Number(value);
+                                    onQuantityChange?.(
+                                        row.original.id,
+                                        value === "" || Number.isNaN(parsed) ? 0 : parsed
+                                    );
+                                }}
+                            />
+                        </div>
                     </div>
                 );
             },

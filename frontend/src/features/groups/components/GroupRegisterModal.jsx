@@ -73,6 +73,7 @@ export default function GroupRegisterModal({ onClose, onGroupCreated }) {
                         value={groupName}
                         onChange={(e) => setGroupName(e.target.value)}
                         error={error}
+                        required
                     />
 
                     <div className="flex gap-3">

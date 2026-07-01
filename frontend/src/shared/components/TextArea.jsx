@@ -6,6 +6,7 @@ export default function Textarea({
     className = "", //para definir ancho del contenedor
     error,
     variant = "default",
+    required,
     ...props
     // porps son las propiedades de un componenete. rows controla el tamaño del textarea
 }) {
@@ -37,7 +38,7 @@ export default function Textarea({
                     `}
                 >
                     {label}
-
+                    {required && <span className="text-error ml-0.5 text-small">*</span>}
                 </label>
             )}
 

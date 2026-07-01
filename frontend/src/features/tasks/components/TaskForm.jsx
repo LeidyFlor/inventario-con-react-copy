@@ -144,6 +144,7 @@ export default function TaskForm() {
                         value={formData.userName}
                         onChange={handleChange}
                         error={errors.userName}
+                        required
                     />
 
                     <Select
@@ -153,6 +154,7 @@ export default function TaskForm() {
                         value={formData.userType}
                         onChange={handleChange}
                         error={errors.userType}
+                        required
                     />
 
                     <div className="flex gap-6 flex-wrap justify-center lg:justify-start">
@@ -174,6 +176,7 @@ export default function TaskForm() {
                         value={formData.taskName}
                         onChange={handleChange}
                         error={errors.taskName}
+                        required
                     />
 
                     <Input
@@ -183,6 +186,7 @@ export default function TaskForm() {
                         value={formData.taskDescription}
                         onChange={handleChange}
                         error={errors.taskDescription}
+                        required
                     />
 
                     <Select
@@ -192,17 +196,19 @@ export default function TaskForm() {
                         value={formData.taskState}
                         onChange={handleChange}
                         error={errors.taskState}
+                        required
                     />
+                    
                         <Input
                             placeholder="DD/MM/AAAA"
                             type="date"
                             name="taskDateStart"
                             label="Fecha inicio"
                             className="shrink-0"
-                            labelInside
                             value={formData.taskDateStart}
                             onChange={handleChange}
                             error={errors.taskDateStart}
+                            required
                         />
                         <Input
                             placeholder="DD/MM/AAAA"
@@ -210,10 +216,10 @@ export default function TaskForm() {
                             name="taskDateEnd"
                             label="Fecha Fin"
                             className="shrink-0"
-                            labelInside
                             value={formData.taskDateEnd}
                             onChange={handleChange}
                             error={errors.taskDateEnd}
+                            required
                         />
 
 
