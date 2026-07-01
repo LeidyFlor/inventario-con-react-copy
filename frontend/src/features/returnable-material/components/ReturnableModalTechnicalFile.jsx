@@ -1,5 +1,5 @@
 import { X } from "lucide-react";
-import { TechnicalFilesInput } from "@/shared";
+import { TechnicalFilesInput, IconButtonReal } from "@/shared";
 
 export default function TechnicalFilesModal({
     isOpen,
@@ -24,12 +24,13 @@ export default function TechnicalFilesModal({
                         Fichas técnicas
                     </h2>
 
-                    <button
+                    <IconButtonReal
+                        variant="outline"
                         onClick={onClose}
-                        className="hover:text-emerald-700 transition"
+                        arialLabel="Cerrar"
                     >
-                        <X size={28} /> 
-                    </button>
+                        <X size={28} />
+                    </IconButtonReal>
 
                 </div>
 

@@ -105,18 +105,14 @@ export default function Header( { onMenuToggle } ) {
                     <div className="flex items-center  h-fit">
                         {/* Solo se muestra en mobil */}
                         <div ref={searchRef} className="flex items-center">
-                            <button
-                                type="button"
+                            <IconButtonReal
+                                variant="outline"
+                                arialLabel="Buscar"
                                 className={`md:hidden ${searchOpen ? "hidden" : "flex"}`}
                                 onClick={() => setSearchOpen(!searchOpen)}
                             >
-                                <IconButtonReal as="div" label="Buscar" arialLabel="Ícono buscar" variant="primary">
-
-                                    <Search />
-
-                                </IconButtonReal>
-                            
-                            </button>
+                                <Search />
+                            </IconButtonReal>
 
                             {/* SearchField: en mobile depende del estado, en md+ siempre visible */}
                             <div className={`${searchOpen ? "flex" : "hidden"} md:flex`}>

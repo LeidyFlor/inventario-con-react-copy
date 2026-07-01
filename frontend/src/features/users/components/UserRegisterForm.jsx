@@ -133,7 +133,7 @@ export default function UserRegisterForm() {
                 <form className="grid grid-cols-1 w-fit items-center justify-center gap-2 " onSubmit={handleSubmit} noValidate>
                     {/* noValidate es para quitar las validaciones automaticas de html del navegador */}
                     {/* Inputs */}
-                    <div className="lg:grid lg:grid-cols-3 md:grid md:grid-cols-2 gap-x-6 gap-y-2 my-0 mx-auto grid grid-cols-1 items-start">
+                    <div className="lg:grid lg:grid-cols-3 md:grid md:grid-cols-2 gap-x-6 gap-y-1 my-0 mx-auto grid grid-cols-1 items-start">
                         <Select
                             label="Tipo de documento"
                             name="userDocumentType"
@@ -141,6 +141,7 @@ export default function UserRegisterForm() {
                             value={formData.userDocumentType}
                             onChange={handleChange}
                             error={errors.userDocumentType}
+                            required
                         />
                         <div className="flex flex-col place-items-center md:row-span-2 lg:col-start-2 lg:row-start-1 lg:row-span-2">
                             <h2 className="font-bold text-medium">
@@ -167,6 +168,7 @@ export default function UserRegisterForm() {
                             value={formData.userDocument}
                             onChange={handleChange}
                             error={errors.userDocument}
+                            required
                         />
                         {/* Grupo: select + botón crear al lado */}
                         <div className="flex flex-col gap-1 w-80">
@@ -174,6 +176,7 @@ export default function UserRegisterForm() {
                                 <MultiSelect
                                     label="Grupo"
                                     name="userType"
+                                    required
                                     options={userTypes}
                                     value={formData.userType}
                                     //como este componente no tiene target se debe configurar el dormato de envío del array
@@ -198,9 +201,6 @@ export default function UserRegisterForm() {
 
                                 </div>
                             </div>
-                            {errors.userType && (
-                                <span className="text-red-800 text-sm">{errors.userType}</span>
-                            )}
                         </div>
                         <Input
                             placeholder="Dirección"
@@ -209,6 +209,7 @@ export default function UserRegisterForm() {
                             value={formData.userAddres}
                             onChange={handleChange}
                             error={errors.userAddres}
+                            required
                         />
                         <Input
                             placeholder="Nombre(s)"
@@ -216,7 +217,8 @@ export default function UserRegisterForm() {
                             label="Nombre(s)"
                             value={formData.First_name}
                             onChange={handleChange}
-                            error={errors.userName}
+                            error={errors.First_name}
+                            required
                         />
                         <Input
                             placeholder="Apellido(s)"
@@ -224,7 +226,8 @@ export default function UserRegisterForm() {
                             label="Apellido(s)"
                             value={formData.Last_name}
                             onChange={handleChange}
-                            error={errors.userName}
+                            error={errors.Last_name}
+                            required
                         />
                         <Input
                             placeholder="Número telefónico"
@@ -234,6 +237,7 @@ export default function UserRegisterForm() {
                             value={formData.userTel}
                             onChange={handleChange}
                             error={errors.userTel}
+                            required
                         />
                         <Input
                             placeholder="Número telefónico 2"
@@ -252,6 +256,7 @@ export default function UserRegisterForm() {
                             value={formData.userEmail}
                             onChange={handleChange}
                             error={errors.userEmail}
+                            required
                         />
                         <Input
                             placeholder="Confirmar correo electrónico"
@@ -278,6 +283,7 @@ export default function UserRegisterForm() {
                                 value={formData.userDateStart}
                                 onChange={handleChange}
                                 error={errors.userDateStart}
+                                required
                             />
                             {/* Fecha fin usuario */}
                             <Input
@@ -287,6 +293,7 @@ export default function UserRegisterForm() {
                                 value={formData.userDateEnd}
                                 onChange={handleChange}
                                 error={errors.userDateEnd}
+                                required
                             />
                         
                         <div className="flex place-self-center -items-center justify-center align-middle gap-3">

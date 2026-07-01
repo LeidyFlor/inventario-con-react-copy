@@ -52,6 +52,7 @@ export default function BrandRegisterForm({ onClose, onCreated }) {
                         onChange={(e) => { setName(e.target.value); setError("") }}
                         name="name"
                         error={error}
+                        required
                     />
                     <div className="flex gap-3">
                         <Button variant="secondary" size="sm" type="button" onClick={onClose}>

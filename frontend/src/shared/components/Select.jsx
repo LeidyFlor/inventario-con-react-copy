@@ -6,6 +6,7 @@ export default function Select({
     onChange,
     options = [],
     variant = "default",
+    required,
     ...props
 }) {
     const variants = {
@@ -27,6 +28,7 @@ export default function Select({
                     `}
                 >
                     {label}
+                    {required && <span className="text-error ml-0.5 text-small">*</span>}
                 </label>
             )}
 

@@ -9,7 +9,8 @@ export default function MultiSelect({
     value = [],
     onChange,
     error,
-    variant = "default"
+    variant = "default",
+    required
 }) {
     const variants = {
         default: "rounded-2xl border-2 border-input-border text-medium text-text-primary bg-input-fill placeholder-text-muted hover:border-2 hover:border-focus-border focus:outline-none focus:ring-1 focus:ring-focus-ring",
@@ -43,6 +44,8 @@ export default function MultiSelect({
                 ${error ? "text-error" : "text-text-primary" }
                 `}>
                 {label}
+                    {required && <span className="text-error ml-0.5 text-small">*</span>}
+
                 </label>
             )}
             {/* campo que abre el dropdown */}

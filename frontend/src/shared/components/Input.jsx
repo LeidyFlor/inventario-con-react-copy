@@ -8,6 +8,7 @@ export default function Input({
     error,
     variant = "default",
     value,
+    required,
     ...props
     // porps son las propiedades de un componenete. Y label para que por defecto el campo sea tipo texto
 }) {
@@ -40,6 +41,7 @@ export default function Input({
                     `}
                     >
                     {label}
+                    {required && <span className="text-error ml-0.5 text-small">*</span>}
 
                 </label>
             )}

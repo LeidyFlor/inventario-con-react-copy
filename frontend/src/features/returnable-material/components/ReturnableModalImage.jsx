@@ -1,5 +1,5 @@
 import { X } from "lucide-react";
-import { Button, FileInput } from "@/shared";
+import { Button, FileInput, IconButtonReal } from "@/shared";
 
 export default function ImageModal({
     isOpen,
@@ -26,12 +26,13 @@ export default function ImageModal({
                         Imagen del elemento
                     </h2>
 
-                    <button
+                    <IconButtonReal
+                        variant="outline"
                         onClick={onClose}
-                        className="hover:text-emerald-700 transition"
+                        arialLabel="Cerrar"
                     >
                         <X size={28} />
-                    </button>
+                    </IconButtonReal>
 
                 </div>
 
