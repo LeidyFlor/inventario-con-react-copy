@@ -45,17 +45,25 @@ export function ReportConfigModal({ isOpen, onClose }) {
 
     // Handler principal para generar el reporte
     const handleGenerateReport = async () => {
-        // Invoca el caso de uso con la configuración actual
-        await generateUserReport({
-            format,
-            selectedFields,
-            scope,
-            userDocument,
-        });
-        Alert.success("Reporte generado", "El archivo fue descargado exitosamente")
-
-        // Cierra el modal después de generar el reporte
-        onClose();
+        try {
+            Alert.loading("Generando reporte...");
+            await generateUserReport({
+                format,
+                selectedFields,
+                scope,
+                userDocument,
+            });
+            Alert.close();
+            await Alert.success("Reporte generado", "El archivo fue descargado exitosamente");
+            onClose();
+        } catch (err) {
+            Alert.close();
+            if (err.message === "sin_datos") {
+                Alert.error("Sin resultados", "No se encontraron usuarios con ese filtro.");
+            } else {
+                Alert.error("Error", "No se pudo generar el reporte.");
+            }
+        }
     };
 
     return (

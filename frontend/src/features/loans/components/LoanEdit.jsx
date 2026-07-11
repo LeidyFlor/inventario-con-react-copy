@@ -113,13 +113,16 @@ export default function LoanEditPage() {
     setErrors({});
 
     try {
+      Alert.loading("Guardando cambios...");
       await updateLoan(id, formData);
       setIsDirty(false);
       setIsEditModalOpen(false);
+      Alert.close();
       await Alert.success("Cambios guardados", "El préstamo fue actualizado correctamente.");
       navigate(-1);
     } catch (err) {
       console.error("Error al guardar préstamo:", err);
+      Alert.close();
       Alert.error("Error al guardar", "No se pudieron guardar los cambios. Intenta de nuevo.");
     }
   };

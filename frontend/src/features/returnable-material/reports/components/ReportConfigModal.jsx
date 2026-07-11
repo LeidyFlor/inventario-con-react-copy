@@ -48,6 +48,7 @@ export function ReportConfigModal({ isOpen, onClose }) {
     // Handler principal para generar el reporte
     const handleGenerateReport = async () => {
         try {
+            Alert.loading("Generando reporte...");
             await generateReturnableReport({
                 format,
                 selectedFields,
@@ -55,9 +56,11 @@ export function ReportConfigModal({ isOpen, onClose }) {
                 materialBarcodeSena,
                 materialName,
             });
-            Alert.success("Reporte generado", "El archivo fue descargado exitosamente.");
+            Alert.close();
+            await Alert.success("Reporte generado", "El archivo fue descargado exitosamente.");
             onClose();
         } catch (err) {
+            Alert.close();
             if (err.message === "sin_datos") {
                 Alert.error("Sin resultados", "No se encontraron materiales con ese filtro.");
             } else {

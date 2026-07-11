@@ -16,11 +16,14 @@ export default function BrandRegisterForm({ onClose, onCreated }) {
         }
         setSaving(true)
         try {
+            Alert.loading("Creando marca...")
             const newBrand = await createBrand(name.trim())
             onCreated(newBrand)
+            Alert.close()
             await Alert.success("Marca creada", `"${newBrand.name}" fue registrada correctamente.`)
             onClose()
         } catch (err) {
+            Alert.close()
             try {
                 const errObj = JSON.parse(err.message)
                 const first = Object.values(errObj)[0]

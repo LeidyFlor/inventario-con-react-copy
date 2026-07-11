@@ -22,5 +22,5 @@ export { default as SearchField } from "./components/SerchField.jsx";
 export { default as DashboardLayout } from "./layouts/DashboardLayout.jsx";
 export { default as Carousel } from "./components/Carousel.jsx";
 export { default as ProtectedRoute } from "./components/auth/ProtectedRoute.jsx";
-export { Alert } from "./components/utils/alert.js";
+export { Alert, TIMER } from "./components/utils/alert.js";
 //Exporta layout y components

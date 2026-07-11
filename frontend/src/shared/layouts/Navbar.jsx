@@ -1,11 +1,18 @@
 import { Drill, ClipboardList, Router, ToolCase, Cable, Settings, LogOut } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
+import { useState } from "react";
 import { IconButtonReal, Dropdown, DropdownContent, DropdownItem, DropdownTrigger, Button } from "@/shared";
 import { logout } from "@/features/auth/services/logoutService.js";
 import { Alert } from "@/shared";
+import ReportLoanModal from "@/features/loans/reports/components/ReportLoanModal";
+import { ReportConfigModal as ReportConsumableModal } from "@/features/consumable-material/reports/components/ReportConfigModal";
+import { ReportConfigModal as ReportReturnableModal } from "@/features/returnable-material/reports/components/ReportConfigModal";
 
 export default function Navbar( { isOpen, onClose }){
     const navigate = useNavigate()
+    const [loanReportOpen, setLoanReportOpen] = useState(false)
+    const [consumableReportOpen, setConsumableReportOpen] = useState(false)
+    const [returnableReportOpen, setReturnableReportOpen] = useState(false)
     // handle de logout
     const handleLogOut = async () => {
         const result = await Alert.confirm("Cierre de sesión", "¿Está seguro que desea cerrar sesión?")
@@ -22,6 +29,7 @@ export default function Navbar( { isOpen, onClose }){
         }
     };
     return(
+        <>
         <nav className={`
             fixed 
             h-full
@@ -62,9 +70,9 @@ export default function Navbar( { isOpen, onClose }){
                                         </Link>
                                     </DropdownItem>
                                     <DropdownItem>
-                                        <Link to="/auth" className="block w-full">
+                                        <button className="block w-full text-left" onClick={() => setLoanReportOpen(true)}>
                                             Generar reporte de préstamo
-                                        </Link>
+                                        </button>
                                     </DropdownItem>
                                     
 
@@ -97,9 +105,9 @@ export default function Navbar( { isOpen, onClose }){
                                         </Link>
                                     </DropdownItem>
                                     <DropdownItem>
-                                        <Link to="/auth" className="block w-full">
+                                        <button className="block w-full text-left" onClick={() => setReturnableReportOpen(true)}>
                                             Generar reporte material devolutivo
-                                        </Link>
+                                        </button>
                                     </DropdownItem>
 
                                 </DropdownContent>
@@ -131,9 +139,9 @@ export default function Navbar( { isOpen, onClose }){
                                         </Link>
                                     </DropdownItem>
                                     <DropdownItem>
-                                        <Link to="/auth" className="block w-full">
+                                        <button className="block w-full text-left" onClick={() => setConsumableReportOpen(true)}>
                                             Generar reporte material de consumo
-                                        </Link>
+                                        </button>
                                     </DropdownItem>
                                 </DropdownContent>
                             </Dropdown>
@@ -181,5 +189,10 @@ export default function Navbar( { isOpen, onClose }){
                     </div>
 
         </nav>
+
+        <ReportLoanModal isOpen={loanReportOpen} onClose={() => setLoanReportOpen(false)} />
+        <ReportConsumableModal isOpen={consumableReportOpen} onClose={() => setConsumableReportOpen(false)} />
+        <ReportReturnableModal isOpen={returnableReportOpen} onClose={() => setReturnableReportOpen(false)} />
+        </>
     )
 }

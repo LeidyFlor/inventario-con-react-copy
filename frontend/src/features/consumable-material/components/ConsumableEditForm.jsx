@@ -105,11 +105,14 @@ export default function ConsumableEditForm() {
         }
         setSaving(true);
         try {
+            Alert.loading("Guardando cambios...");
             await updateMaterial(id, formData, isActive, materialImage);
             setIsDirty(false);
+            Alert.close();
             await Alert.success("Material actualizado", "Los cambios se guardaron correctamente.");
             navigate(-1);
         } catch (err) {
+            Alert.close();
             try {
                 const errObj = JSON.parse(err.message);
                 const first = Object.values(errObj)[0];

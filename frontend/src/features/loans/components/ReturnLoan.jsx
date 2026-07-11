@@ -166,15 +166,18 @@ export default function ReturnLoan() {
         });
 
         try {
+            Alert.loading("Registrando devolución...");
             await returnLoan(id, {
                 returnedBy:         Number(returnedBy),
                 items,
                 returnObservations: observations,
             });
+            Alert.close();
             await Alert.success("Devolución registrada", "El préstamo fue devuelto correctamente.");
             navigate("/dashboard/loan-list");
         } catch (err) {
             console.error(err);
+            Alert.close();
             Alert.error("Error al registrar", "No se pudo registrar la devolución. Verifica los datos.");
         }
     };

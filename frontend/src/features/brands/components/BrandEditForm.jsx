@@ -16,11 +16,14 @@ export default function BrandEditForm({ brand, onClose, onUpdated }) {
         }
         setSaving(true)
         try {
+            Alert.loading("Actualizando marca...")
             const updated = await updateBrand(brand.id, name.trim())
             onUpdated(updated)
+            Alert.close()
             await Alert.success("Marca actualizada", `"${updated.name}" fue actualizada correctamente.`)
             onClose()
         } catch (err) {
+            Alert.close()
             try {
                 const errObj = JSON.parse(err.message)
                 const first = Object.values(errObj)[0]
