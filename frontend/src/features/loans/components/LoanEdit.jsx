@@ -4,7 +4,7 @@ import { Button, IconButton, Input, Select, Textarea } from "@/shared";
 import { ClipboardList, Pencil } from "lucide-react";
 import { loanSchema } from "../schemas/loanSchema";
 import LoanMaterialsTable from "../components/LoanMaterialsTable";
-import { getLoan, updateLoan } from "../services/loanService";
+import { getLoan, updateLoan, removeLoanItem } from "../services/loanService";
 import { getUserName } from "../services/selectService";
 import { Alert } from "@/shared/components/utils/alert";
 import { Ping } from "ldrs/react";
@@ -71,6 +71,22 @@ export default function LoanEditPage() {
     </div>
   );
   if (!loan) return <p>Préstamo no encontrado</p>;
+  //En caso de que el prestamo este finalizado o espera de aceptacio por el cuentadante este no se podra editar, se crea una pequena seccion html mostrando el mensaje
+  const BLOCKED_STATUSES = ['finalizado', 'en_espera_aceptacion'];
+  if (BLOCKED_STATUSES.includes(loan.loanStatus)) {
+    return (
+      <div className="flex flex-col items-center justify-center gap-4 mt-20 text-center">
+        <ClipboardList size={48} className="text-brand" />
+        <h2 className="text-h3 font-semibold">Este préstamo no se puede editar</h2>
+        <p className="text-text-muted">
+          {loan.loanStatus === 'finalizado'
+            ? 'El préstamo ya está finalizado.'
+            : 'El préstamo está en espera de aceptación por el cuentadante.'}
+        </p>
+        <Button variant="secondary" onClick={() => navigate(-1)}>Volver</Button>
+      </div>
+    );
+  }
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -78,8 +94,33 @@ export default function LoanEditPage() {
     setIsDirty(true);
   };
 
-  const handleRemoveMaterial = (materialId) => {
-    setMaterials((prev) => prev.filter((m) => m.id !== materialId));
+  const handleRemoveMaterial = async (materialId) => {
+    if (materials.length <= 1) {
+      Alert.error("No permitido", "El préstamo debe tener al menos un material.");
+      return;
+    }
+
+    const confirm = await Alert.confirm(
+      "¿Quitar material?",
+      "El material será devuelto a su inventario correspondiente.",
+    );
+    if (!confirm.isConfirmed) return;
+
+    try {
+      Alert.loading("Quitando material...");
+      const updated = await removeLoanItem(id, materialId);
+      setMaterials(updated.loanMaterials ?? []);
+      Alert.close();
+      await Alert.success("Material devuelto", "El material fue regresado al inventario correctamente.");
+    } catch (err) {
+      Alert.close();
+      try {
+        const parsed = JSON.parse(err.message);
+        Alert.error("Error", parsed.error ?? "No se pudo quitar el material.");
+      } catch {
+        Alert.error("Error", "No se pudo quitar el material.");
+      }
+    }
   };
 
   const handleQuantityChange = (materialId, newQuantity) => {

@@ -5,7 +5,9 @@ from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 
-from .models import IdentityToken, Loan
+from django.db import transaction
+from .models import IdentityToken, Loan, LoanItem
+from backend_sigi.modules.materials.models import ConsumableMaterial, ReturnableMaterial
 from .serializers import (
     LoanListSerializer,
     LoanDetailSerializer,
@@ -171,6 +173,53 @@ class LoanViewSet(viewsets.ViewSet):
 
         loan = serializer.save(loan=loan, accepted_by=request.user)
         return Response(LoanDetailSerializer(loan).data)
+
+    # ──────────────────────────────────────────────────────────────
+    # REMOVE ITEM  DELETE /api/loans/{id}/items/{item_id}/
+    # Elimina un ítem del préstamo y restaura el inventario.
+    # Solo permitido en préstamos activos o con devolución parcial.
+    # ──────────────────────────────────────────────────────────────
+    @action(detail=True, methods=['delete'], url_path=r'items/(?P<item_id>[0-9]+)')
+    @transaction.atomic
+    def remove_item(self, request, pk=None, item_id=None):
+        BLOCKED_STATUSES = ['finalizado', 'en_espera_aceptacion']
+
+        try:
+            loan = Loan.objects.get(pk=pk)
+        except Loan.DoesNotExist:
+            return Response({'error': 'Préstamo no encontrado.'}, status=status.HTTP_404_NOT_FOUND)
+
+        if loan.loan_status in BLOCKED_STATUSES:
+            return Response(
+                {'error': 'No se puede modificar un préstamo finalizado o en espera de aceptación.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            item = LoanItem.objects.select_related(
+                'consumable_material', 'returnable_material'
+            ).get(pk=item_id, loan=loan)
+        except LoanItem.DoesNotExist:
+            return Response({'error': 'Ítem no encontrado en este préstamo.'}, status=status.HTTP_404_NOT_FOUND)
+
+        if loan.items.count() <= 1:
+            return Response(
+                {'error': 'El préstamo debe tener al menos un material.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Restaurar inventario según tipo de material
+        if item.material_type == 'consumable':
+            ConsumableMaterial.objects.filter(pk=item.consumable_material_id).update(
+                material_quantity=item.consumable_material.material_quantity + item.quantity_loaned
+            )
+        else:
+            ReturnableMaterial.objects.filter(pk=item.returnable_material_id).update(
+                material_quantity_loaned=item.returnable_material.material_quantity_loaned - item.quantity_loaned
+            )
+
+        item.delete()
+        return Response(LoanDetailSerializer(loan).data, status=status.HTTP_200_OK)
 
     # ──────────────────────────────────────────────────────────────
     # VERIFY TOKEN  POST /api/loans/verify-token/
