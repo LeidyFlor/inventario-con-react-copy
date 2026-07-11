@@ -180,6 +180,21 @@ export async function acceptReturn(id, { acceptObservations = "" } = {}) {
     return mapLoan(await response.json())
 }
 
+// DELETE /api/loans/{id}/items/{itemId}/
+// Elimina un ítem del préstamo y restaura su inventario
+
+export async function removeLoanItem(loanId, itemId) {
+    const response = await fetch(`${API_URL}/loans/${loanId}/items/${itemId}/`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${getToken()}` },
+    })
+    if (!response.ok) {
+        const error = await response.json()
+        throw new Error(JSON.stringify(error))
+    }
+    return mapLoan(await response.json())
+}
+
 // POST /api/loans/verify-token/
 // Comprueba si el token fue confirmado — llámalo cuando el usuario presiona "Ya confirmé"
 // ANTES de crear el préstamo (no necesita loan ID)
