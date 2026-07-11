@@ -99,11 +99,14 @@ export default function ApproveReturnLoan() {
             return;
         }
         try {
+            Alert.loading("Aceptando retorno...");
             await acceptReturn(id, { acceptObservations: observations });
+            Alert.close();
             await Alert.success("Retorno aceptado", "La devolución fue aceptada correctamente.");
             navigate("/dashboard/loan-list");
         } catch (err) {
             console.error(err);
+            Alert.close();
             Alert.error("No se pudo aceptar la devolución", err);
         }
     };

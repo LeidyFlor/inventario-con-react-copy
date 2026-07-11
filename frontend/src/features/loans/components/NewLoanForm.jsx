@@ -116,11 +116,14 @@ export default function NewLoanForm() {
         }));
 
         try {
+            Alert.loading("Creando préstamo...");
             await createLoan(formData, items, identityConfirmed ? identityToken : null);
+            Alert.close();
             await Alert.success("Préstamo creado", "El préstamo fue registrado correctamente.");
             navigate("/dashboard/loan-list");
         } catch (err) {
             console.error("Error al crear préstamo:", err);
+            Alert.close();
             Alert.error("Error al crear préstamo", "Verifica los datos e intenta de nuevo.");
             // El formulario se preserva para que el usuario pueda corregir sin perder lo ingresado
         }

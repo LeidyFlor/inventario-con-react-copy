@@ -64,11 +64,14 @@ export default function ReturnableRegisterForm() {
 
         try {
             setLoading(true)
+            Alert.loading("Creando material...")
             await createReturnable(result.data)
-            Alert.success("Material creado", "El material devolutivo fue registrado correctamente")
+            Alert.close()
+            await Alert.success("Material creado", "El material devolutivo fue registrado correctamente")
             navigate("/dashboard/returnable-material-list")
         } catch (err) {
             // Muestra el error real del backend para facilitar el diagnóstico
+            Alert.close()
             Alert.error("Error al crear el material", err.message || "No se pudo crear el material.")
             console.error("Error backend:", err)
         } finally {

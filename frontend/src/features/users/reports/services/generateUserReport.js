@@ -1,4 +1,3 @@
-import { Alert } from "@/shared";
 //Funte de datos de usuarios (mock o fuente centralizada)
 import { getUsers } from "../../services/userService";
 
@@ -29,8 +28,7 @@ export async function generateUserReport({
 
   //Validacion: evita generar archivos vacios
   if (!rows.length) {
-    Alert.error("No hay datos para generar el reporte.");
-    return; //Corte de ejecucion
+    throw new Error("sin_datos");
   }
 
   //Generaficon de timestamps para nombres unicos de archivo (YYYY-MM-DD)

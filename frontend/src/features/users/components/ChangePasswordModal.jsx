@@ -59,10 +59,13 @@ export default function ChangePasswordModal({ onClose }) {
 
         try {
             setLoading(true)
+            Alert.loading("Guardando cambios...")
             await changePassword(formData)
+            Alert.close()
             await Alert.success("Contraseña actualizada", "Tu contraseña fue cambiada correctamente.")
             onClose()
         } catch (error) {
+            Alert.close()
             const msg = error?.error || error?.password_actual?.[0] || "No se pudo cambiar la contraseña."
             Alert.error("Error", msg)
         } finally {
