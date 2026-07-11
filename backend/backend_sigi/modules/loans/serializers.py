@@ -494,8 +494,10 @@ class LoanReturnSerializer(serializers.Serializer):
                         material_quantity=loan_item.consumable_material.material_quantity + delta
                     )
 
-        # Recalcula estado del préstamo
-        all_items       = loan.items.all()
+        # Recalcula estado del préstamo.
+        # Se usa una query directa (no loan.items.all()) para evitar leer
+        # el caché de prefetch_related del view, que tendría datos anteriores al update.
+        all_items       = LoanItem.objects.filter(loan=loan)
         all_returned    = all(item.is_returned for item in all_items)
         has_returnables = any(item.material_type == 'returnable' for item in all_items)
         some_returned   = any(

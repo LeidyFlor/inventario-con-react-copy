@@ -1,12 +1,45 @@
-from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.db import models
 from django.core.validators import RegexValidator, MinLengthValidator
 from django.utils import timezone
 from django.contrib.auth.models import Group
 
+
+class UserManager(BaseUserManager):
+    """
+    Manager personalizado para que create_superuser use email en lugar de username.
+    AbstractUser sigue teniendo el campo username; se setea igual al email para
+    no violar la restricción unique del campo heredado.
+    """
+
+    def create_user(self, email, password=None, **extra_fields):
+        if not email:
+            raise ValueError('El correo electrónico es obligatorio.')
+        email = self.normalize_email(email)
+        extra_fields.setdefault('username', email)
+        user = self.model(email=email, **extra_fields)
+        user.set_password(password)
+        user.save(using=self._db)
+        return user
+
+    def create_superuser(self, email, password=None, **extra_fields):
+        extra_fields.setdefault('is_staff',     True)
+        extra_fields.setdefault('is_superuser', True)
+        extra_fields.setdefault('is_active',    True)
+        extra_fields.setdefault('username',     email)
+        # Valores por defecto para los campos requeridos del modelo
+        extra_fields.setdefault('user_document', '0000000000')
+        extra_fields.setdefault('user_addres',   'Sin dirección')
+        extra_fields.setdefault('user_tel',      '0000000000')
+        extra_fields.setdefault('user_date_end', timezone.now() + timezone.timedelta(days=3650))
+        return self.create_user(email, password, **extra_fields)
+
+
 # Create your models here.
 class Users(AbstractUser):
-    email = models.EmailField(unique=True) # eamil debe ser unico
+    objects = UserManager()
+
+    email = models.EmailField(unique=True) # email debe ser único
     USERNAME_FIELD = 'email' # Django usa email para autenticar
     REQUIRED_FIELDS = []      # quita username de los campos requeridos
 

@@ -209,7 +209,7 @@ export default function LoanEditPage() {
                 />
 
                 <Input
-                  label="Fecha de entrega"
+                  label="Fecha estimada de entrega"
                   type="date"
                   name="loanDateIn"
                   value={formData.loanDateIn}
