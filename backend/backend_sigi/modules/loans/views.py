@@ -113,6 +113,12 @@ class LoanViewSet(viewsets.ViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
+        if loan.accepted_at:
+            return Response(
+                {'error': 'La devolución ya fue aceptada por el cuentadante y no puede modificarse.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
         serializer = LoanReturnSerializer(data=request.data)
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -142,9 +148,14 @@ class LoanViewSet(viewsets.ViewSet):
         except Loan.DoesNotExist:
             return Response({'error': 'Préstamo no encontrado.'}, status=status.HTTP_404_NOT_FOUND)
 
-        if not loan.returned_at:
+        if loan.loan_status != 'en_espera_aceptacion':
+            if loan.loan_status == 'finalizado':
+                return Response(
+                    {'error': 'Este préstamo ya está finalizado.'},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
             return Response(
-                {'error': 'El préstamo aún no ha sido devuelto.'},
+                {'error': 'Solo se puede aceptar la devolución cuando todos los materiales devolutivos han sido devueltos.'},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 

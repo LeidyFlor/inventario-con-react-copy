@@ -34,10 +34,11 @@ class Loan(models.Model):
     ]
 
     LOAN_STATUSES = [
-        ('activo',             'Activo'),
-        ('finalizado',         'Finalizado'),
-        ('devolucion_parcial', 'Devolución parcial'),
-        ('pendiente',          'Pendiente'),
+        ('activo',                  'Activo'),
+        ('devolucion_parcial',      'Devolución parcial'),
+        ('en_espera_aceptacion',    'En espera de aceptación'),
+        ('finalizado',              'Finalizado'),
+        ('pendiente',               'Pendiente'),
     ]
 
     # Código visible (AAA000000001 …) — se genera automáticamente en save()
