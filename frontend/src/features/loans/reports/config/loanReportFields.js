@@ -19,7 +19,7 @@ export const loanReportFields = [
     },
     {
         key: "loanDateIn",
-        label: "Fecha de entrega",
+        label: "Fecha estimada de entrega",
         default: true,
     },
     {

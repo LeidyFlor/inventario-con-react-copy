@@ -274,7 +274,7 @@ export default function NewLoanForm() {
                                 </div>
                                 <div className="flex-1 min-w-0 w-0">
                                     <Input
-                                        label="Fecha de entrega"
+                                        label="Fecha estimada de entrega"
                                         type="date"
                                         name="loanDateIn"
                                         value={formData.loanDateIn}

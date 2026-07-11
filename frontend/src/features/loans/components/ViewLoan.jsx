@@ -96,7 +96,7 @@ export default function ViewLoan() {
                     <ViewDetailCard fields={[
                         { label: "ID préstamo",         value: loan.idLoan },
                         { label: "Fecha de salida",     value: formatDate(loan.loanDateOut) },
-                        { label: "Fecha de entrega",    value: formatDate(loan.loanDateIn) },
+                        { label: "Fecha estimada de entrega",    value: formatDate(loan.loanDateIn) },
                         { label: "Usuario solicitante", value: loan.loanUserRequester },
                         { label: "Usuario prestador",   value: loan.loanUserLender },
                         { 
