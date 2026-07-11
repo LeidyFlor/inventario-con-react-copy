@@ -386,6 +386,34 @@ class LoanReturnSerializer(serializers.Serializer):
             raise serializers.ValidationError('Debes indicar al menos un ítem a devolver.')
         return value
 
+    def validate(self, data):
+        items = data.get('items', [])
+        if not items:
+            return data
+
+        # Consulta cuáles de los ítems enviados son devolutivos (una sola query)
+        item_ids = [item['loan_item_id'] for item in items]
+        returnable_ids = set(
+            LoanItem.objects.filter(
+                pk__in=item_ids,
+                returnable_material__isnull=False,
+            ).values_list('pk', flat=True)
+        )
+
+        # Solo valida si hay devolutivos en el payload — los consumibles con qty=0 son válidos
+        if returnable_ids:
+            any_returnable_with_qty = any(
+                item['quantity_returned'] > 0
+                for item in items
+                if item['loan_item_id'] in returnable_ids
+            )
+            if not any_returnable_with_qty:
+                raise serializers.ValidationError(
+                    {'items': 'Debes devolver al menos una unidad de los materiales devolutivos.'}
+                )
+
+        return data
+
     @transaction.atomic
     def save(self, loan):
         from django.utils import timezone
@@ -467,16 +495,19 @@ class LoanReturnSerializer(serializers.Serializer):
                     )
 
         # Recalcula estado del préstamo
-        all_items     = loan.items.all()
-        all_returned  = all(item.is_returned for item in all_items)
-        some_returned = any(
+        all_items       = loan.items.all()
+        all_returned    = all(item.is_returned for item in all_items)
+        has_returnables = any(item.material_type == 'returnable' for item in all_items)
+        some_returned   = any(
             item.quantity_returned > 0
             for item in all_items
             if item.material_type == 'returnable'
         )
 
         if all_returned:
-            loan.loan_status = 'finalizado'
+            # Préstamos con devolutivos esperan confirmación del cuentadante.
+            # Préstamos solo con consumibles finalizan directamente (no hay nada que aceptar).
+            loan.loan_status = 'en_espera_aceptacion' if has_returnables else 'finalizado'
         elif some_returned:
             loan.loan_status = 'devolucion_parcial'
 
@@ -505,7 +536,8 @@ class AcceptReturnSerializer(serializers.Serializer):
         loan.accepted_by          = accepted_by
         loan.accepted_at          = timezone.now()
         loan.accept_observations  = self.validated_data.get('accept_observations', '')
-        loan.save(update_fields=['accepted_by', 'accepted_at', 'accept_observations', 'updated_at'])
+        loan.loan_status          = 'finalizado'
+        loan.save(update_fields=['accepted_by', 'accepted_at', 'accept_observations', 'loan_status', 'updated_at'])
         return loan
 
 
