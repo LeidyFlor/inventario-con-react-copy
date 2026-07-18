@@ -1,10 +1,10 @@
-import { Input, Button, IconButton, Select } from "@/shared"
+import { Input, Button, IconButton, Select, Alert, Textarea } from "@/shared"
 import { useState, useEffect } from "react";
 import { getUserTypes, getTaskState, getUserName } from "@/features/tasks/services/selectService";
 import { tasksSchema } from "../schemas/tasksSchema";
 import { Settings, ChevronLeft, ChevronRight } from "lucide-react";
-import { tasks } from "../data/tasks";
 import TaskEditModal from "./TaskEditModal";
+import { createTask, getTasks } from "@/features/tasks/services/taskService";
 
 // Cuantas cards se muestran por pagina en la columna derecha
 const CARDS_PER_PAGE = 2;
@@ -23,7 +23,7 @@ export default function TaskForm() {
     const [userTypes, setUserTypes] = useState([]);
     const [taskState, setTaskState] = useState([]);
     const [userName, setUserNameState] = useState([]);
-    const [taskList, setTaskList] = useState(tasks);
+    const [taskList, setTaskList] = useState([]);
     const [selectedTask, setSelectedTask] = useState(null);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     // Página actual de la lista de cards; se reinicia cuando cambia el filtro
@@ -33,16 +33,19 @@ export default function TaskForm() {
     // Estos datos sirven para mostrar las opciones de usuario, tipo de usuario
     // y estado de tarea en los campos del formulario.
     useEffect(() => {
-        getUserTypes().then((data) => setUserTypes(data.map((item) => ({ label: item.label, value: item.label }))));
-        getTaskState().then((data) => setTaskState(data.map((item) => ({ label: item.label, value: item.label }))));
-        getUserName().then((data) => setUserNameState(data.map((item) => ({ label: item.label, value: item.label }))));
+        // Los servicios ya devuelven { label, value } con el ID correcto
+        getUserTypes().then(setUserTypes).catch(console.error);
+        getTaskState().then(setTaskState).catch(console.error);
+        getUserName().then(setUserNameState).catch(console.error);
+        // Carga todas las tareas existentes al montar el componente
+        getTasks().then(setTaskList).catch(console.error);
     }, []);
 
-    // Tareas a mostrar en pantalla según el filtro de usuario y tipo de usuario.
-    // No usamos useMemo aqui para que quede más simple y facil de entender
+    // Tareas a mostrar en pantalla según el filtro de usuario o grupo.
+    // Las tareas del backend incluyen los campos `user` (id) y `group` (id).
     const displayedTasks = taskList.filter((task) => {
-        if (formData.userName && task.userName !== formData.userName) return false;
-        if (formData.userType && task.userType !== formData.userType) return false;
+        if (formData.userName && String(task.user) !== String(formData.userName)) return false;
+        if (formData.userType && String(task.group) !== String(formData.userType)) return false;
         return true;
     });
 
@@ -56,63 +59,59 @@ export default function TaskForm() {
     );
 
     const handleChange = (e) => {
-        // Se obtiene el nombre del campo y su valor
         const { name, value, type, checked } = e.target;
 
         // Al cambiar el filtro se vuelve a la primera página para no quedar en una página inexistente
         if (name === "userName" || name === "userType") setCurrentPage(0);
 
-        setFormData((prev) => ({
-            // Se copian todos los valores anteriores del estado
-            ...prev,
-            // Se actualiza unicamente el campo que cambio
-            [name]: type === "checkbox" ? checked : value,
-        }));
+        setFormData((prev) => {
+            const updated = {
+                ...prev,
+                [name]: type === "checkbox" ? checked : value,
+            };
+            // Exclusión mutua: seleccionar usuario limpia grupo y viceversa
+            if (name === "userName" && value) updated.userType = "";
+            if (name === "userType" && value) updated.userName = "";
+            return updated;
+        });
     };
 
     // ==================================================
     //              Handle Submit
     // ==================================================
-    /*
-        Se ejecuta cuando el usuario envía el formulario.
-    */
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
 
-        // safeParse valida el objeto formData según el esquema Zod
-        // Devuelve { success: true, data } o { success: false, error }
         const result = tasksSchema.safeParse(formData);
 
-        // Si la validación falla
         if (!result.success) {
             const fieldErrors = {};
-
-            // Zod devuelve los errores en un arreglo llamado "issues"
-            // Se recorren para asociar cada error a su campo correspondiente
             result.error.issues.forEach((issue) => {
-                const field = issue.path[0];
-
-                // Se guarda el mensaje de error en el objeto fieldErrors
-                fieldErrors[field] = issue.message;
+                fieldErrors[issue.path[0]] = issue.message;
             });
-
-            // Se actualiza el estado de errores para mostrarlos en el formulario
             setErrors(fieldErrors);
-
-            // Se detiene la ejecución porque el formulario tiene errores
             return;
         }
 
-        // Si la validación es exitosa se limpian los errores anteriores
         setErrors({});
 
-        // Se agrega la nueva tarea al final de la lista con un ID único.
-        // No se cambia de página automáticamente: el usuario permanece donde estaba.
-        const newTask = {
-            ...result.data,
-            id: Date.now(),
-        };
-        setTaskList((prev) => [...prev, newTask]);
+        try {
+            Alert.loading("Asignando tarea...");
+            const newTask = await createTask(result.data);
+            Alert.close();
+            await Alert.success("Tarea asignada", "La tarea fue registrada exitosamente");
+            setTaskList((prev) => [...prev, newTask]);
+            setCurrentPage(0);
+        } catch (error) {
+            Alert.close();
+            try {
+                const parsed = JSON.parse(error.message);
+                const msg = Object.values(parsed).flat()[0] ?? "No se pudo registrar la tarea.";
+                Alert.error("Error al asignar tarea", msg);
+            } catch {
+                Alert.error("Error al asignar tarea", "No se pudo registrar la tarea.");
+            }
+        }
     };
 
     const handleOpenEditModal = (task) => {
@@ -125,17 +124,31 @@ export default function TaskForm() {
         setIsEditModalOpen(false);
     };
 
+    // updatedTask viene del backend en snake_case; reemplaza la tarea en la lista por ID
     const handleSaveTask = (updatedTask) => {
-        setTaskList((prev) => prev.map((task) => task.id === updatedTask.id ? updatedTask : task));
+        setTaskList((prev) => prev.map((t) => t.id === updatedTask.id ? updatedTask : t));
         handleCloseEditModal();
     };
 
+    // Etiqueta dinámica del subtítulo según la selección actual
+    const assigneeLabel = (() => {
+        if (formData.userName) {
+            const found = userName.find(u => String(u.value) === String(formData.userName))
+            return `Usuario: ${found?.label ?? "—"}`
+        }
+        if (formData.userType) {
+            const found = userTypes.find(g => String(g.value) === String(formData.userType))
+            return `Grupo: ${found?.label ?? "—"}`
+        }
+        return "Usuario: —"
+    })()
+
     // Color dinámico según estado; definido fuera del map para no recrearlo en cada render
     const stateColor = {
-        "Pendiente":   "text-text-muted",
-        "En progreso": "text-boton-fill-color-secondary",
-        "Completada":  "text-success",
-        "Cancelada":   "text-error",
+        "pendiente":   "text-text-muted",
+        "en_progreso": "text-boton-fill-color-secondary",
+        "completada":  "text-success",
+        "cancelada":   "text-error",
     };
 
     // Formatea fecha ISO a DD/MM/AAAA
@@ -150,13 +163,13 @@ export default function TaskForm() {
         <div className="w-full flex justify-center relative">
 
             {/* Layout responsivo: en móvil una columna; en lg mantiene columna fija + contenido */}
-            <div className="grid grid-cols-1 lg:grid-cols-[420px_1fr] gap-6 mt-3 w-full max-w-7xl mx-auto px-4">
+            <div className="grid grid-cols-1 lg:grid-cols-[420px_1fr] gap-4 w-full max-w-7xl mx-auto px-4">
 
                 {/* Columna izquierda — Formulario*/}
-                <form className="flex flex-col items-center lg:items-start gap-4 w-full sm:w-80 mx-auto lg:mx-0" onSubmit={handleSubmit} noValidate>
+                <form className="flex flex-col items-center lg:items-start gap-1 w-80 md:w-fit mx-auto lg:mx-0" onSubmit={handleSubmit} noValidate>
 
                     {/* Título */}
-                    <div className="flex flex-col max-w-max mx-auto mb-2">
+                    <div className="flex flex-col max-w-max mx-auto">
                         <div className="flex items-center gap-2 pb-0.5">
                             <Settings className="text-brand" />
                             <h1 className="text-gradient-title text-h2">Gestión de tareas</h1>
@@ -164,110 +177,122 @@ export default function TaskForm() {
                         <div className="h-0.5 bg-gradiant-title-line w-full"></div>
                     </div>
 
-                    {/* Sección usuario  */}
+                    {/* Sección usuario — muestra la selección actual dinámicamente */}
                     <div className="flex flex-col items-center w-fit lg:self-center">
-                        <h2 className="font-bold text-body mb-2">Usuario: Pepito Perez</h2>
-                        {/* Línea verde con width al 200% para que se extienda más allá del título y quede más estético */}
-                        <div className="h-0.5 bg-border-line-subtitle w-[200%]"></div>
+                        <h2 className="font-bold text-body mb-1">{assigneeLabel}</h2>
+                        <div className="h-0.5 bg-border-line-subtitle w-[100%]"></div>
                     </div>
 
-                    <p className="w-full sm:w-80 text-small text-text-primary">
+                    <p className="w-full text-small text-text-primary">
                         Seleccione tipo de usuario o usuario individual para asignar o consultar tareas
                     </p>
+                    <div className="grid grid-cols-2 gap-x-2 gap-y-1">
+                        <Select
+                            label="Seleccione usuario"
+                            name="userName"
+                            options={userName}
+                            value={formData.userName}
+                            onChange={handleChange}
+                            error={errors.userName}
+                            required
+                        />
 
-                    <Select
-                        label="Seleccione usuario"
-                        name="userName"
-                        options={userName}
-                        value={formData.userName}
-                        onChange={handleChange}
-                        error={errors.userName}
-                        required
-                    />
-
-                    <Select
-                        label="Seleccione tipo de usuario"
-                        name="userType"
-                        options={userTypes}
-                        value={formData.userType}
-                        onChange={handleChange}
-                        error={errors.userType}
-                        required
-                    />
-
-                    <div className="flex gap-6 flex-wrap justify-center lg:justify-start">
-                        <Button variant="primary" size="sm">Nuevo grupo</Button>
+                        <Select
+                            label="Seleccione tipo de usuario"
+                            name="userType"
+                            options={userTypes}
+                            value={formData.userType}
+                            onChange={handleChange}
+                            error={errors.userType}
+                            required
+                        />
                         <Button variant="primary" size="sm">Nuevo usuario</Button>
+                        <Button variant="primary" size="sm">Nuevo grupo</Button>
+
                     </div>
 
-                    {/* Sección agregar tarea */}
-                    <div className="flex flex-col items-center w-fit lg:self-center">
-                        <h2 className="font-bold text-body mb-2">Agregar tarea</h2>
-                        {/* Línea verde con width al 320% para que se extienda más allá del título y quede más estético */}
-                        <div className="block h-0.5 bg-border-line-subtitle w-[320%]"></div>
-                    </div>
 
-                    <Input
-                        label="Nombre de la tarea"
-                        placeholder="Nombre de la tarea"
-                        name="taskName"
-                        value={formData.taskName}
-                        onChange={handleChange}
-                        error={errors.taskName}
-                        required
-                    />
+                    {/* Sección agregar tarea — en tablet se muestra en 2 columnas */}
+                    <div className="w-80 flex flex-col md:w-auto md:grid md:grid-cols-2 md:gap-x-6 md:gap-y-1">
 
-                    <Input
-                        label="Descripción de la tarea"
-                        placeholder="Descripción de la tarea"
-                        name="taskDescription"
-                        value={formData.taskDescription}
-                        onChange={handleChange}
-                        error={errors.taskDescription}
-                        required
-                    />
+                        {/* Subtítulo — ocupa las 2 columnas en tablet */}
+                        <div className="flex flex-col items-center w-fit mx-auto md:col-span-2">
+                            <h2 className="font-bold text-body mb-1">Agregar tarea</h2>
+                            <div className="block h-0.5 bg-border-line-subtitle w-[320%] self-center"></div>
+                        </div>
 
-                    <Select
-                        label="Estado tarea"
-                        name="taskState"
-                        options={taskState}
-                        value={formData.taskState}
-                        onChange={handleChange}
-                        error={errors.taskState}
-                        required
-                    />
-                    
+                        {/* Columna 1 */}
+                        <Input
+                            label="Nombre de la tarea"
+                            placeholder="Nombre de la tarea"
+                            name="taskName"
+                            value={formData.taskName}
+                            onChange={handleChange}
+                            error={errors.taskName}
+                            required
+                        />
+
+
+                        {/* Columna 1 */}
+                        <Select
+                            label="Estado tarea"
+                            name="taskState"
+                            options={taskState}
+                            value={formData.taskState}
+                            onChange={handleChange}
+                            error={errors.taskState}
+                            required
+                        />
+
+                        {/* Columna 2 */}
                         <Input
                             placeholder="DD/MM/AAAA"
                             type="date"
                             name="taskDateStart"
                             label="Fecha inicio"
-                            className="shrink-0"
                             value={formData.taskDateStart}
                             onChange={handleChange}
                             error={errors.taskDateStart}
                             required
                         />
+
+                        {/* Columna 1 */}
                         <Input
                             placeholder="DD/MM/AAAA"
                             type="date"
                             name="taskDateEnd"
                             label="Fecha Fin"
-                            className="shrink-0"
                             value={formData.taskDateEnd}
                             onChange={handleChange}
                             error={errors.taskDateEnd}
                             required
                         />
+                        {/* Se le coloca rows 3 para que solo ocupe tres filas */}
+                        <div className="col-span-2">
+                            <Textarea
+                                label="Descripción de la tarea"
+                                placeholder="Descripción de la tarea"
+                                name="taskDescription"
+                                value={formData.taskDescription}
+                                onChange={handleChange}
+                                error={errors.taskDescription}
+                                rows= {3}
+                                required
+                            />
 
-                    <div className="w-full flex justify-center">
-                        <IconButton
-                            variant="primary"
-                            size="md"
-                            type="submit"
-                        >
-                            Asignar
-                        </IconButton>
+                        </div>
+
+                        {/* Botón — ocupa las 2 columnas en tablet */}
+                        <div className="w-full flex justify-center md:justify-end md:col-span-2">
+                            <IconButton
+                                variant="primary"
+                                size="md"
+                                type="submit"
+                            >
+                                Asignar
+                            </IconButton>
+                        </div>
+
                     </div>
 
                 </form>
@@ -287,40 +312,39 @@ export default function TaskForm() {
                                             {/* Columna izquierda: título + fechas */}
                                             <div className="flex flex-col gap-1 bg-primary-50 w-full p-2.5 rounded-xl">
                                                 <h3 className="font-bold text-sm to-background-image-text-gradient">
-                                                    Tarea: {task.taskName}
+                                                    Tarea: {task.task_name}
                                                 </h3>
 
                                                 <div className="flex items-center gap-2">
-                                                    <span className="text-sm">Usuario:</span>
+                                                    <span className="text-sm">{task.user_name ? "Usuario:" : "Grupo:"}</span>
                                                     <span className="text-sm font-medium">
-                                                        {task.userType}
+                                                        {task.user_name ?? task.group_name}
                                                     </span>
                                                 </div>
                                                 <div className="flex items-center gap-2">
                                                     <span className="text-sm text-pri">Estado:</span>
-                                                    <span className={`text-sm font-medium ${stateColor[task.taskState] ?? "text-color-text-primary"}`}>
-                                                        {task.taskState}
+                                                    <span className={`text-sm font-medium ${stateColor[task.task_state] ?? "text-color-text-primary"}`}>
+                                                        {task.task_state}
                                                     </span>
                                                 </div>
                                                 <div className="flex items-center gap-2">
-                                                    <span className="text-sm text-text-color-secondary">Fecha inicio: {formatDate(task.taskDateStart)}</span>
+                                                    <span className="text-sm text-text-color-secondary">Fecha inicio: {formatDate(task.task_date_start)}</span>
                                                 </div>
                                                 <div className="flex items-center gap-2">
-                                                    <span className="text-sm text-color-text-secondary">Fecha Fin: {formatDate(task.taskDateEnd)}</span>
+                                                    <span className="text-sm text-color-text-secondary">Fecha Fin: {formatDate(task.task_date_end)}</span>
                                                 </div>
                                             </div>
 
-                                            {/* Columna derecha: descripción; max-h reducido a la mitad del original (h-24 -> h-16)
-                                                para bajar la altura total de la card */}
+                                            {/* Columna derecha: descripción */}
                                             <div className="flex flex-col gap-1 w-full bg-color-background p-2.5 rounded-xl">
                                                 <div className="flex items-center gap-2">
                                                     <span className="font-bold text-sm text-text-primary">Descripción:</span>
                                                 </div>
                                                 {(() => {
-                                                    const scroll = task.taskDescription && task.taskDescription.length > 20;
+                                                    const scroll = task.task_description && task.task_description.length > 20;
                                                     return (
                                                         <p className={`text-sm ${scroll ? 'overflow-y-auto max-h-16' : ''}`}>
-                                                            {task.taskDescription}
+                                                            {task.task_description}
                                                         </p>
                                                     );
                                                 })()}

@@ -23,7 +23,7 @@ export default function Textarea({
     // cuerpo de la funcion
     return (
         //Contenedor del textarea que se exporta con label, cuerpo y feedback message
-        <div className={`"w-full" ${className}`}>
+        <div className={`w-full ${className}`}>
             {/* Label  Por fuera*/}
             {/* LABEL. JWT evalua si tal es 1, si si lo hace  */}
             {label && (

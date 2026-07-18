@@ -8,6 +8,7 @@ import { createUser } from "../services/userService.js";
 import { useNavigate } from "react-router-dom";
 import { GroupCreateModalPage } from "@/features/groups";
 import { TaskCreateModal } from "@/features/tasks";
+import { createTaskForUser } from "@/features/tasks/services/taskService";
 
 export default function UserRegisterForm() {
     const navigate = useNavigate();
@@ -36,6 +37,8 @@ export default function UserRegisterForm() {
     const [groupModalOpen, setGroupModalOpen] = useState(false);
     // Modal para agregar tarea al vuelo
     const [taskModalOpen, setTaskModalOpen] = useState(false);
+    // Tarea pendiente: se guarda en estado hasta que el usuario sea creado
+    const [pendingTask, setPendingTask] = useState(null);
 
     useEffect(() => {
         getDocumentTypes().then(setDocumentTypes);
@@ -108,15 +111,39 @@ export default function UserRegisterForm() {
 
         try {
             Alert.loading("Creando usuario...")
-            await createUser(result.data)
+            const newUser = await createUser(result.data)
+
+            // Si hay tarea pendiente, crearla ahora que el usuario ya existe
+            let taskFailed = false
+            if (pendingTask) {
+                try {
+                    Alert.loading("Registrando tarea...")
+                    await createTaskForUser(newUser.id, pendingTask)
+                } catch {
+                    taskFailed = true
+                }
+            }
+
             Alert.close()
-            await Alert.success("Usuario creado", "La contraseña fue enviada al correo del usuario")
+            if (taskFailed) {
+                await Alert.success(
+                    "Usuario creado",
+                    "El usuario fue creado, pero la tarea no pudo registrarse. Puedes agregarla desde el perfil del usuario."
+                )
+            } else {
+                await Alert.success(
+                    "Usuario creado",
+                    pendingTask
+                        ? "El usuario y su tarea fueron registrados exitosamente"
+                        : "La contraseña fue enviada al correo del usuario"
+                )
+            }
             navigate("/dashboard/user-list")
-            
-    } catch (error) {
-        Alert.close()
-        Alert.error("Error al crear usuario", error.message)
-    }
+
+        } catch (error) {
+            Alert.close()
+            Alert.error("Error al crear usuario", error.message)
+        }
     }
 
     return (
@@ -362,12 +389,9 @@ export default function UserRegisterForm() {
                 >
                     <div onClick={(e) => e.stopPropagation()}>
                         <TaskCreateModal
+                            deferred
                             onClose={() => setTaskModalOpen(false)}
-                            onTaskCreated={(newTask) => {
-                                // Aquí se decide qué hacer con la tarea creada,
-                                // por ejemplo guardarla en una lista de tareas pendientes del usuario
-                                console.log("Tarea creada:", newTask)
-                            }}
+                            onTaskCreated={(newTask) => setPendingTask(newTask)}
                         />
                     </div>
                 </div>

@@ -1,9 +1,20 @@
-import { Input, Textarea, IconButton, Button } from "@/shared";
+import { Input, Textarea, IconButton, Button, Alert } from "@/shared";
 import { useState } from "react";
 import { FileText } from "lucide-react";
 import { taskModalSchema } from "../schemas/taskModalSchema";
 
-export default function TaskCreateModal({ onClose, onTaskCreated }) {
+/**
+ * Modal para crear una tarea.
+ *
+ * Props:
+ *   onClose       — cierra el modal
+ *   onTaskCreated — callback con los datos validados
+ *                   · deferred=true  → síncrono, el padre guarda en estado
+ *                   · deferred=false → debe ser async y lanzar en caso de error
+ *   deferred      — true cuando la tarea se guarda en estado y se envía junto
+ *                   con otro recurso (ej: creación de usuario)
+ */
+export default function TaskCreateModal({ onClose, onTaskCreated, deferred = false }) {
     const [taskData, setTaskData] = useState({
         taskName: "",
         taskDescription: "",
@@ -17,7 +28,7 @@ export default function TaskCreateModal({ onClose, onTaskCreated }) {
         setTaskData((prev) => ({ ...prev, [name]: value }));
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         const result = taskModalSchema.safeParse(taskData);
 
@@ -31,8 +42,25 @@ export default function TaskCreateModal({ onClose, onTaskCreated }) {
         }
 
         setErrors({});
-        onTaskCreated?.(result.data);
-        onClose();
+
+        // Modo diferido: sólo pasa los datos al padre (se enviarán junto con el usuario)
+        if (deferred) {
+            onTaskCreated?.(result.data);
+            onClose();
+            return;
+        }
+
+        // Modo inmediato: llama al backend directamente
+        try {
+            Alert.loading("Creando tarea...");
+            await onTaskCreated?.(result.data);
+            Alert.close();
+            await Alert.success("Tarea creada", "La tarea fue registrada exitosamente");
+            onClose();
+        } catch (error) {
+            Alert.close();
+            Alert.error("Error al crear tarea", error.message);
+        }
     };
 
     return (
@@ -92,6 +120,13 @@ export default function TaskCreateModal({ onClose, onTaskCreated }) {
                         required
                     />
                 </div>
+
+                {/* Aviso informativo solo en modo diferido (creación junto con usuario) */}
+                {deferred && (
+                    <p className="text-small text-text-muted text-center">
+                        La tarea se registrará al confirmar el registro del usuario.
+                    </p>
+                )}
 
                 <div className="flex justify-center mt-2">
                     <IconButton variant="primary" size="md" type="submit">

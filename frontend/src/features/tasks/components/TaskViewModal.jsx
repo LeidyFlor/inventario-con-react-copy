@@ -23,23 +23,32 @@ export default function TaskViewModal({ tasks = [], onClose }) {
                     <div className="flex flex-col gap-3">
                         <div className="flex flex-wrap items-baseline gap-2">
                             <span className="font-bold text-small text-text-primary">Nombre tarea:</span>
-                            <span className="text-small text-text-primary">{currentTask.taskName}</span>
+                            <span className="text-small text-text-primary">{currentTask.task_name}</span>
+                        </div>
+
+                        <div className="flex flex-wrap items-baseline gap-2">
+                            <span className="font-bold text-small text-text-primary">Asignado a:</span>
+                            <span className="text-small text-text-primary">
+                                {currentTask.user_name
+                                    ? currentTask.user_name
+                                    : `${currentTask.group_name} (grupo)`}
+                            </span>
                         </div>
 
                         <div className="flex flex-wrap items-baseline gap-2">
                             <span className="font-bold text-small text-text-primary">Fecha inicio tarea:</span>
-                            <span className="text-small text-text-primary">{formatDate(currentTask.taskDateStart)}</span>
+                            <span className="text-small text-text-primary">{formatDate(currentTask.task_date_start)}</span>
                         </div>
 
                         <div className="flex flex-wrap items-baseline gap-2">
                             <span className="font-bold text-small text-text-primary">Fecha fin tarea:</span>
-                            <span className="text-small text-text-primary">{formatDate(currentTask.taskDateEnd)}</span>
+                            <span className="text-small text-text-primary">{formatDate(currentTask.task_date_end)}</span>
                         </div>
 
                         <div className="flex flex-col gap-1">
                             <span className="font-bold text-small text-text-primary">Descripción de la tarea:</span>
                             <p className="text-small h-32 overflow-y-auto">
-                                {currentTask.taskDescription}
+                                {currentTask.task_description}
                             </p>
                         </div>
                     </div>

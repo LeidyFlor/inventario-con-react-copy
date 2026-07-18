@@ -22,13 +22,10 @@ const datePreprocess = (mensajeError) =>
 
 export const tasksSchema = z
   .object({
-    userType: z
-    .string()
-    .min(1, "Debe seleccionar un usuario"),
+    // Opcionales individualmente: el superRefine del final exige que al menos uno esté presente
+    userType: z.string(),
 
-    userName: z
-    .string()
-    .min(1, "Debe seleccionar un tipo de usuario"),
+    userName: z.string(),
 
     taskName: z
       .string()

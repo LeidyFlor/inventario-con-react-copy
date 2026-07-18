@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { Pencil } from "lucide-react";
-import { Button, Input, Select, IconButton, Textarea } from "@/shared";
+import { Button, Input, Select, IconButton, Textarea, Alert } from "@/shared";
 import { tasksSchema } from "../schemas/tasksSchema";
+import { updateTask } from "../services/taskService";
 
 export default function TaskEditModal({
     isOpen,
@@ -12,33 +13,45 @@ export default function TaskEditModal({
     taskStates,
     onSave,
 }) {
-    // Inicializamos el formulario con los valores de la tarea seleccionada.
-    // Este estado se toma solo cuando el componente se monta, por eso el modal se fuerza
-    // a remontar desde `TaskForm` usando una `key` basada en la tarea seleccionada.
+    // Los datos vienen del backend en snake_case; los mapeamos a camelCase para el formulario
     const [formData, setFormData] = useState(() => ({
-        userName: task?.userName ?? "",
-        userType: task?.userType ?? "",
-        taskName: task?.taskName ?? "",
-        taskDescription: task?.taskDescription ?? "",
-        taskState: task?.taskState ?? "",
-        taskDateStart: task?.taskDateStart ? task.taskDateStart.slice(0, 10) : "",
-        taskDateEnd: task?.taskDateEnd ? task.taskDateEnd.slice(0, 10) : "",
+        userName:        task?.user  ? String(task.user)  : "",
+        userType:        task?.group ? String(task.group) : "",
+        taskName:        task?.task_name        ?? "",
+        taskDescription: task?.task_description ?? "",
+        taskState:       task?.task_state       ?? "",
+        taskDateStart:   task?.task_date_start  ?? "",
+        taskDateEnd:     task?.task_date_end     ?? "",
     }));
     const [errors, setErrors] = useState({});
+    const [isDirty, setIsDirty] = useState(false);
 
-    // Si el modal está cerrado o no hay tarea, no renderizamos nada.
     if (!isOpen || !task) return null;
 
-    // Actualiza los valores del formulario cuando el usuario edita campos.
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
-        setFormData((prev) => ({
-            ...prev,
-            [name]: type === "checkbox" ? checked : value,
-        }));
+        setIsDirty(true);
+        setFormData((prev) => {
+            const updated = { ...prev, [name]: type === "checkbox" ? checked : value };
+            // Exclusión mutua: seleccionar usuario limpia grupo y viceversa
+            if (name === "userName" && value) updated.userType = "";
+            if (name === "userType" && value) updated.userName = "";
+            return updated;
+        });
     };
 
-    const handleSubmit = (e) => {
+    const handleClose = async () => {
+        if (isDirty) {
+            const result = await Alert.warning(
+                "¿Salir sin guardar?",
+                "Los cambios no guardados se perderán"
+            );
+            if (!result.isConfirmed) return;
+        }
+        onClose();
+    };
+
+    const handleSubmit = async (e) => {
         e.preventDefault();
 
         const result = tasksSchema.safeParse(formData);
@@ -46,25 +59,48 @@ export default function TaskEditModal({
         if (!result.success) {
             const fieldErrors = {};
             result.error.issues.forEach((issue) => {
-                const field = issue.path[0];
-                fieldErrors[field] = issue.message;
+                fieldErrors[issue.path[0]] = issue.message;
             });
             setErrors(fieldErrors);
             return;
         }
 
-        const updatedTask = {
-            ...task,
-            ...result.data,
-            taskDateStart: result.data.taskDateStart.toISOString(),
-            taskDateEnd: result.data.taskDateEnd.toISOString(),
-        };
+        // Convierte Date → YYYY-MM-DD para el backend
+        const toDateStr = (d) => {
+            if (!d) return null
+            if (d instanceof Date) return d.toISOString().slice(0, 10)
+            return String(d).slice(0, 10)
+        }
 
-        onSave(updatedTask);
+        const body = {
+            task_name:        result.data.taskName,
+            task_description: result.data.taskDescription,
+            task_state:       result.data.taskState,
+            task_date_start:  toDateStr(result.data.taskDateStart),
+            task_date_end:    toDateStr(result.data.taskDateEnd),
+        }
+        if (result.data.userName) body.user  = result.data.userName
+        if (result.data.userType) body.group = result.data.userType
+
+        try {
+            Alert.loading("Guardando cambios...")
+            const updated = await updateTask(task.id, body)
+            Alert.close()
+            await Alert.success("Tarea actualizada", "Los cambios fueron guardados exitosamente")
+            onSave(updated)
+        } catch (error) {
+            Alert.close()
+            try {
+                const parsed = JSON.parse(error.message)
+                const msg = Object.values(parsed).flat()[0] ?? "No se pudieron guardar los cambios."
+                Alert.error("Error al guardar", msg)
+            } catch {
+                Alert.error("Error al guardar", "No se pudieron guardar los cambios.")
+            }
+        }
     };
 
     return (
-        
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
             <div className="w-full max-w-3xl rounded-2xl bg-background p-6 shadow-2xl">
                 <div className="flex flex-col items-start gap-2 mb-6 max-w-max">
@@ -87,7 +123,7 @@ export default function TaskEditModal({
                             variant="isEdit"
                         />
                         <Select
-                            label="Tipo de usuario"
+                            label="Grupo"
                             name="userType"
                             value={formData.userType}
                             onChange={handleChange}
@@ -114,7 +150,6 @@ export default function TaskEditModal({
                             variant="isEdit"
                         />
 
-                        {/* Fechas: centradas horizontalmente, inputs uno al lado del otro */}
                         <div className="col-span-2 flex justify-center gap-4">
                             <Input
                                 label="Fecha inicio"
@@ -139,27 +174,21 @@ export default function TaskEditModal({
                         </div>
                     </div>
 
-                    <div>
-                        <Textarea
-                            label="Descripción de la tarea"
-                            name="taskDescription"
-                            value={formData.taskDescription}
-                            onChange={handleChange}
-                            error={errors.taskDescription}
-                        />
-                    </div>
+                    <Textarea
+                        label="Descripción de la tarea"
+                        name="taskDescription"
+                        value={formData.taskDescription}
+                        onChange={handleChange}
+                        error={errors.taskDescription}
+                    />
 
                     <div className="flex flex-row items-center justify-between gap-3 mt-4">
-                        <div className="w-fit">
-                            <Button variant="secondary" size="md" type="button" onClick={onClose}>
-                                Cancelar
-                            </Button>
-                        </div>
-                        <div className="w-fit">
-                            <IconButton variant="primary" size="md" type="submit">
-                                Guardar
-                            </IconButton>
-                        </div>
+                        <Button variant="secondary" size="md" type="button" onClick={handleClose}>
+                            Cancelar
+                        </Button>
+                        <IconButton variant="primary" size="md" type="submit">
+                            Guardar
+                        </IconButton>
                     </div>
                 </form>
             </div>

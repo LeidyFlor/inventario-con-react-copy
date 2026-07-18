@@ -7,19 +7,34 @@ import "ldrs/react/Ping.css";
 import ChangePasswordModal from "../components/ChangePasswordModal";
 import { TaskCreateModal, TaskViewModal } from "@/features/tasks";
 import { getUser } from "../services/userService";
+import { createTaskForUser, getTasksByUser, getTasksByGroup } from "@/features/tasks/services/taskService";
 
 export default function ViewUserPage() {
     const navigate = useNavigate();
     const { id } = useParams();
     const [user, setUser]         = useState(null);
     const [loading, setLoading]   = useState(true);
+    const [tasks, setTasks]       = useState([]);
     const [showPasswordModal, setShowPasswordModal]     = useState(false);
     const [createTaskModalOpen, setCreateTaskModalOpen] = useState(false);
     const [viewTaskModalOpen, setViewTaskModalOpen]     = useState(false);
 
     useEffect(() => {
         getUser(id)
-            .then(setUser)
+            .then(async (userData) => {
+                setUser(userData)
+
+                // Tareas individuales del usuario
+                const userTasks = await getTasksByUser(id).catch(() => [])
+
+                // Tareas de cada grupo al que pertenece el usuario
+                const groupTasksArrays = await Promise.all(
+                    (userData.groups ?? []).map(g => getTasksByGroup(g.id).catch(() => []))
+                )
+                const groupTasks = groupTasksArrays.flat()
+
+                setTasks([...userTasks, ...groupTasks])
+            })
             .catch(console.error)
             .finally(() => setLoading(false));
     }, [id]);
@@ -68,15 +83,15 @@ export default function ViewUserPage() {
                 }
             >
                 <ViewDetailCard fields={[
-                    { label: "Tipo de documento",  value: user.user_document_type },
-                    { label: "Número documento",   value: user.user_document },
-                    { label: "Grupo",              value: user.groups?.map(g => g.name).join(", ") },
-                    { label: "Fecha inicio",        value: formatDate(user.user_date_start) },
-                    { label: "Fecha fin",           value: formatDate(user.user_date_end) },
-                    { label: "Correo electrónico", value: user.email },
-                    { label: "Número telefónico",  value: user.user_tel },
-                    { label: "Dirección",          value: user.user_addres },
-                    { label: "Segundo teléfono",   value: user.user_tel2 },
+                    { label: "Tipo de documento",    value: user.user_document_type },
+                    { label: "Número documento",     value: user.user_document },
+                    { label: "Grupo",                value: user.groups?.map(g => g.name).join(", ") },
+                    { label: "Fecha inicio",         value: formatDate(user.user_date_start) },
+                    { label: "Fecha fin",            value: formatDate(user.user_date_end) },
+                    { label: "Correo electrónico",   value: user.email },
+                    { label: "Número telefónico",    value: user.user_tel },
+                    { label: "Dirección",            value: user.user_addres },
+                    { label: "Segundo teléfono",     value: user.user_tel2 },
                     { label: "Correo institucional", value: user.user_email2 },
                 ]} />
             </ViewPageTemplate>
@@ -89,9 +104,9 @@ export default function ViewUserPage() {
                     <div onClick={(e) => e.stopPropagation()}>
                         <TaskCreateModal
                             onClose={() => setCreateTaskModalOpen(false)}
-                            onTaskCreated={(newTask) => {
-                                // TODO: conectar al backend de tareas — pasar user.id + newTask
-                                console.log("Tarea creada para el usuario", user.id, newTask);
+                            onTaskCreated={async (newTask) => {
+                                const created = await createTaskForUser(user.id, newTask)
+                                setTasks(prev => [...prev, created])
                             }}
                         />
                     </div>
@@ -105,7 +120,7 @@ export default function ViewUserPage() {
                 >
                     <div onClick={(e) => e.stopPropagation()}>
                         <TaskViewModal
-                            tasks={[]}  // TODO: reemplazar por tareas reales del usuario cuando exista el endpoint
+                            tasks={tasks}
                             onClose={() => setViewTaskModalOpen(false)}
                         />
                     </div>
