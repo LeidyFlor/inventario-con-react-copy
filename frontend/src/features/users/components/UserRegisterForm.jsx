@@ -6,11 +6,13 @@ import { UserRoundPlus } from "lucide-react";
 import { Alert } from "@/shared";
 import { createUser } from "../services/userService.js";
 import { useNavigate } from "react-router-dom";
-import { GroupCreateModalPage } from "@/features/groups/";
+import { GroupCreateModalPage } from "@/features/groups";
+import { TaskCreateModal } from "@/features/tasks";
+import { createTaskForUser } from "@/features/tasks/services/taskService";
 
 export default function UserRegisterForm() {
     const navigate = useNavigate();
-    const [formData, setFormData] = useState({
+    const [formData, setFormData] = useState({  
         userDocument: "",
         First_name: "",
         Last_name: "",
@@ -33,6 +35,10 @@ export default function UserRegisterForm() {
     const [userTypes, setUserTypes] = useState([]);
     // Modal para crear grupo al vuelo
     const [groupModalOpen, setGroupModalOpen] = useState(false);
+    // Modal para agregar tarea al vuelo
+    const [taskModalOpen, setTaskModalOpen] = useState(false);
+    // Tarea pendiente: se guarda en estado hasta que el usuario sea creado
+    const [pendingTask, setPendingTask] = useState(null);
 
     useEffect(() => {
         getDocumentTypes().then(setDocumentTypes);
@@ -105,15 +111,39 @@ export default function UserRegisterForm() {
 
         try {
             Alert.loading("Creando usuario...")
-            await createUser(result.data)
+            const newUser = await createUser(result.data)
+
+            // Si hay tarea pendiente, crearla ahora que el usuario ya existe
+            let taskFailed = false
+            if (pendingTask) {
+                try {
+                    Alert.loading("Registrando tarea...")
+                    await createTaskForUser(newUser.id, pendingTask)
+                } catch {
+                    taskFailed = true
+                }
+            }
+
             Alert.close()
-            await Alert.success("Usuario creado", "La contraseña fue enviada al correo del usuario")
+            if (taskFailed) {
+                await Alert.success(
+                    "Usuario creado",
+                    "El usuario fue creado, pero la tarea no pudo registrarse. Puedes agregarla desde el perfil del usuario."
+                )
+            } else {
+                await Alert.success(
+                    "Usuario creado",
+                    pendingTask
+                        ? "El usuario y su tarea fueron registrados exitosamente"
+                        : "La contraseña fue enviada al correo del usuario"
+                )
+            }
             navigate("/dashboard/user-list")
-            
-    } catch (error) {
-        Alert.close()
-        Alert.error("Error al crear usuario", error.message)
-    }
+
+        } catch (error) {
+            Alert.close()
+            Alert.error("Error al crear usuario", error.message)
+        }
     }
 
     return (
@@ -314,6 +344,7 @@ export default function UserRegisterForm() {
                                 variant="primary"
                                 size="sm"
                                 type="button"
+                                onClick={() => setTaskModalOpen(true)}
                             >
                                 Agregar tarea
                             </Button>
@@ -346,6 +377,21 @@ export default function UserRegisterForm() {
                                 setFormData(prev => ({ ...prev, userType: String(newGroup.value) }))
                                 setGroupModalOpen(false)
                             }}
+                        />
+                    </div>
+                </div>
+            )}
+
+            {taskModalOpen && (
+                <div
+                    className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+                    onClick={() => setTaskModalOpen(false)}
+                >
+                    <div onClick={(e) => e.stopPropagation()}>
+                        <TaskCreateModal
+                            deferred
+                            onClose={() => setTaskModalOpen(false)}
+                            onTaskCreated={(newTask) => setPendingTask(newTask)}
                         />
                     </div>
                 </div>

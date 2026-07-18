@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'backend_sigi.modules.users',
     'backend_sigi.modules.materials',
     'backend_sigi.modules.loans',
+    'backend_sigi.modules.tasks',
     'corsheaders',
 ]
 AUTH_USER_MODEL = 'users.Users' #Para usar el models de users propio

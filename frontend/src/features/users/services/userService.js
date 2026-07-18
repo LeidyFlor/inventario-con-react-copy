@@ -10,6 +10,15 @@ export async function getUsers() {
     return response.json()
 }
 
+export async function getUser(id) {
+    const token = sessionStorage.getItem("token")
+    const response = await fetch(`${API_URL}/users/${id}/`, {
+        headers: { "Authorization": `Bearer ${token}` }
+    })
+    if (!response.ok) throw new Error("Error al obtener el usuario")
+    return response.json()
+}
+
 export async function toggleUserStatus(id, isActive) {
     const token = sessionStorage.getItem("token")
     const response = await fetch(`${API_URL}/users/${id}/`, {
