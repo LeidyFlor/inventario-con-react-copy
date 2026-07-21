@@ -6,7 +6,7 @@ import { UserRoundPlus } from "lucide-react";
 import { Alert } from "@/shared";
 import { createUser } from "../services/userService.js";
 import { useNavigate } from "react-router-dom";
-import { GroupCreateModalPage } from "@/features/groups/";
+import GroupRegisterForm from "@/features/groups/components/GroupRegisterForm";
 
 export default function UserRegisterForm() {
     const navigate = useNavigate();

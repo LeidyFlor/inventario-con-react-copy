@@ -7,6 +7,8 @@ import { CreateTaskPage } from "@/features/tasks";
 import { CreateConsumablePage, ListMaterialPage, ViewMaterialPage , EditConsumablePage} from "@/features/consumable-material";
 import { CreateReturnablePage, EditReturnablePage, ListReturnablePage, ViewReturnablePage } from "@/features/returnable-material";
 import { ListPermissionsPage } from "@/features/permissions";
+// grupos
+import { ListGroupPage } from "@/features/groups";
 import { LoginForm, LoginRestorePassword, LoginRestorePasswordCode, LoginRestoreNewPassword } from "@/features/auth";
 import { AuthLayout, DashboardLayout, ProtectedRoute } from "@/shared/";
 import { HomePage } from "@/features/home";
@@ -70,7 +72,7 @@ const router = createBrowserRouter([
             { path: "task-list", element: <h1>Listar tareas</h1> },
             { path: "task-edit", element: <h1>Editar tarea</h1> },
             { path: "task-view", element: <h1>Modal ver tarea</h1> },
-            { path: "group-create", element: <h1>modal Crear grupo</h1> },
+            { path: "group-list", element: <ListGroupPage/> },
             { path: "group-select", element: <h1>Listar grupo (secciones ajenas a grupos)</h1> },
             { path: "group-edit", element: <h1>Editar grupo</h1> },
 

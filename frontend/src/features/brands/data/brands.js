@@ -16,8 +16,8 @@ export const brands = [
         is_active: true
     },
     {
-    brandName: "Acer",
-    is_active: true
+        brandName: "Acer",
+        is_active: true
     },
     {
     brandName: "Asus",
