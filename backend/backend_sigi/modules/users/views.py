@@ -247,8 +247,18 @@ class UserViewSet(viewsets.ViewSet):
             return Response({'error': 'Usuario no encontrado'}, status=status.HTTP_404_NOT_FOUND)
 
         if request.method == 'GET':
+            # Permisos individuales (editables desde esta vista)
             perm_ids = list(user.user_permissions.values_list('id', flat=True))
-            return Response({'permissions': perm_ids})
+            # Permisos heredados de los grupos del usuario (solo lectura)
+            group_perm_ids = list(
+                Permission.objects.filter(group__user=user)
+                .values_list('id', flat=True)
+                .distinct()
+            )
+            return Response({
+                'permissions': perm_ids,
+                'group_permissions': group_perm_ids,
+            })
 
         # POST — reemplaza los permisos individuales
         permission_ids = request.data.get('permissions', [])

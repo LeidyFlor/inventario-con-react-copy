@@ -44,7 +44,8 @@ function buildGroups(allPermissions) {
 }
 
 export default function PermissionsForm({
-    initialPermissions = [], // codenames activos del grupo/usuario seleccionado
+    initialPermissions = [], // codenames individuales del usuario (editables)
+    groupPermissions = [],   // codenames heredados de grupos (solo lectura)
     allPermissions = [],     // lista completa de permisos del sistema (del backend)
     onSave,                  // función que recibe el array de codenames al guardar
     isLoading = false
@@ -67,12 +68,16 @@ export default function PermissionsForm({
     };
 
     const toggleCategory = (categoryPermissions) => {
-        const categoryKeys = categoryPermissions.map(p => p.key);
-        const allSelected = categoryKeys.every(k => selected.includes(k));
+        // Solo los permisos que NO vienen del grupo son editables
+        const editableKeys = categoryPermissions
+            .map(p => p.key)
+            .filter(k => !groupPermissions.includes(k));
+        if (editableKeys.length === 0) return;
+        const allSelected = editableKeys.every(k => selected.includes(k));
         setSelected(prev =>
             allSelected
-                ? prev.filter(k => !categoryKeys.includes(k))
-                : [...new Set([...prev, ...categoryKeys])]
+                ? prev.filter(k => !editableKeys.includes(k))
+                : [...new Set([...prev, ...editableKeys])]
         );
     };
 
@@ -124,7 +129,11 @@ export default function PermissionsForm({
 
             {/* Grupos de permisos paginados */}
             {pagedGroups.map(group => {
-                const allSelected = group.permissions.every(p => selected.includes(p.key));
+                // La categoría se considera "toda marcada" si cada permiso está
+                // en selected (individual) O en groupPermissions (heredado)
+                const allSelected = group.permissions.every(
+                    p => selected.includes(p.key) || groupPermissions.includes(p.key)
+                );
                 return (
                     <div key={group.key} className="border border-boton-fill-color-secondary rounded-3xl p-4 flex flex-col gap-3 bg-surface">
                         <Checkbox
@@ -138,18 +147,23 @@ export default function PermissionsForm({
                         />
                         <div className="w-full h-0.5 bg-background rounded-3xl" />
                         <div className="grid grid-cols-2 md:grid-cols-3 gap-2 pl-4">
-                            {group.permissions.map(permission => (
-                                <Checkbox
-                                    key={permission.key}
-                                    id={permission.key}
-                                    name={permission.key}
-                                    label={permission.label}
-                                    checked={selected.includes(permission.key)}
-                                    onChange={() => toggle(permission.key)}
-                                    disabled={!isEditing}
-                                    className="text-text-primary"
-                                />
-                            ))}
+                            {group.permissions.map(permission => {
+                                const isFromGroup = groupPermissions.includes(permission.key);
+                                return (
+                                    <Checkbox
+                                        key={permission.key}
+                                        id={permission.key}
+                                        name={permission.key}
+                                        label={permission.label}
+                                        checked={selected.includes(permission.key) || isFromGroup}
+                                        onChange={() => !isFromGroup && toggle(permission.key)}
+                                        // Permisos de grupo: siempre deshabilitados (no se gestionan aquí)
+                                        // Permisos individuales: deshabilitados solo en modo lectura
+                                        disabled={isFromGroup || !isEditing}
+                                        className={isFromGroup ? "text-text-muted" : "text-text-primary"}
+                                    />
+                                );
+                            })}
                         </div>
                     </div>
                 );

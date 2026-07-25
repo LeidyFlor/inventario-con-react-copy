@@ -37,6 +37,8 @@ export default function ListPermissionsPage() {
 
     // codenames activos del grupo/usuario seleccionado
     const [activeCodenames, setActiveCodenames] = useState([])
+    // codenames heredados de grupos (solo para usuarios individuales, solo lectura)
+    const [groupCodenames, setGroupCodenames] = useState([])
     const [loading, setLoading]   = useState(true)
     const [saving, setSaving]     = useState(false)
     const [loadingPerms, setLoadingPerms] = useState(false)
@@ -61,6 +63,7 @@ export default function ListPermissionsPage() {
         setSelectedGroupId(id)
         setSelectedUserId("") // limpiar usuario
         setActiveCodenames([])
+        setGroupCodenames([])
         if (!id) return
         setLoadingPerms(true)
         try {
@@ -78,11 +81,13 @@ export default function ListPermissionsPage() {
         setSelectedUserId(id)
         setSelectedGroupId("") // limpiar grupo
         setActiveCodenames([])
+        setGroupCodenames([])
         if (!id) return
         setLoadingPerms(true)
         try {
             const data = await getUserPermissions(id)
             setActiveCodenames(idsToCodenames(data.permissions))
+            setGroupCodenames(idsToCodenames(data.group_permissions ?? []))
         } catch {
             Alert.error("Error", "No se pudieron cargar los permisos del usuario")
         } finally {
@@ -202,6 +207,7 @@ export default function ListPermissionsPage() {
                         <PermissionsForm
                             key={selectedGroupId || selectedUserId}
                             initialPermissions={activeCodenames}
+                            groupPermissions={groupCodenames}
                             allPermissions={allPermissions}
                             onSave={handleSave}
                             isLoading={saving}
