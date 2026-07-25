@@ -176,6 +176,11 @@ export default function Navbar( { isOpen, onClose }){
                                             Gestión de tareas
                                         </Link>
                                     </DropdownItem>
+                                    <DropdownItem>
+                                    <Link to="group-list" className="block w-full">
+                                            Gestión de grupos
+                                        </Link>
+                                    </DropdownItem>
 
                                 </DropdownContent>
                             </Dropdown>

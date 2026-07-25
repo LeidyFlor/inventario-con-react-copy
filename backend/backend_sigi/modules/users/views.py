@@ -311,11 +311,16 @@ class GroupViewSet(viewsets.ViewSet):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def update(self, request, pk=None):
-        """PUT /api/groups/{id}/ — editar nombre del grupo"""
+        """PUT /api/groups/{id}/ — editar nombre y/o estado del grupo"""
         try:
             group = Group.objects.get(pk=pk)
         except Group.DoesNotExist:
-            return Response({'error': 'Grupo no encontrado'}, status=status.HTTP_404_NOT_FOUND) #partial=true modifica solo lo que le fue enviado
+            return Response({'error': 'Grupo no encontrado'}, status=status.HTTP_404_NOT_FOUND)
+        # is_active vive en GroupProfile (tabla separada), se actualiza manualmente
+        if 'is_active' in request.data:
+            profile, _ = GroupProfile.objects.get_or_create(group=group)
+            profile.is_active = request.data['is_active']
+            profile.save()
         serializer = GroupSerializer(group, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
