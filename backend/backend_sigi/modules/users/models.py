@@ -46,6 +46,8 @@ class Users(AbstractUser):
     #Para indicar el nombre exacto que se quiere en la base de datos
     class Meta:
         db_table = 'users'
+        verbose_name = 'usuario'
+        verbose_name_plural = 'usuarios'
 #permisos que el usuario pueda elegir, el CRUD convencional django ya lo tiene generado para usuarios add_, view_, change_, delete_(habilitar/deshabilitar)
         permissions = [
         ('listar_usuarios',          'Listar usuarios'),

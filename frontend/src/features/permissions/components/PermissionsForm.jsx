@@ -1,20 +1,63 @@
 // src/features/permissions/components/PermissionsForm.jsx
 
-import { useState } from "react";
-import { PERMISSIONS } from "../config/permissions.config";
-import { Checkbox, IconButton, Button } from "@/shared/"; // ajusta el path según tu estructura
+import { useState, useEffect } from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { Checkbox, IconButton, Button } from "@/shared/";
+
+const GROUPS_PER_PAGE = 3;
+
+// Mapeo de prefijos de codename → etiqueta en español (orden importa: más específico primero)
+const ACTION_LABELS = [
+    ['generar_reporte_', 'Generar reporte'],
+    ['listar_',          'Listar'],
+    ['add_',             'Crear'],
+    ['view_',            'Visualizar'],
+    ['change_',          'Actualizar'],
+    ['delete_',          'Activar/Desactivar'],
+]
+
+function getActionLabel(codename) {
+    for (const [prefix, label] of ACTION_LABELS) {
+        if (codename.startsWith(prefix)) return label
+    }
+    return codename
+}
+
+function buildGroups(allPermissions) {
+    const groupMap = {}
+    for (const perm of allPermissions) {
+        const model = perm.content_type__model
+        const plural = perm.verbose_name_plural ?? model
+        if (!groupMap[model]) {
+            groupMap[model] = {
+                key: model,
+                category: plural.charAt(0).toUpperCase() + plural.slice(1),
+                permissions: []
+            }
+        }
+        groupMap[model].permissions.push({
+            key: perm.codename,
+            label: `${getActionLabel(perm.codename)} ${plural}`
+        })
+    }
+    return Object.values(groupMap)
+}
 
 export default function PermissionsForm({
-    initialPermissions = [], // permisos que ya tiene el grupo seleccionado
-    onSave,             // función que recibe el array de permisos al guardar
+    initialPermissions = [], // codenames activos del grupo/usuario seleccionado
+    allPermissions = [],     // lista completa de permisos del sistema (del backend)
+    onSave,                  // función que recibe el array de codenames al guardar
     isLoading = false
 }) {
-    //selected - array de strings de los keys(["Usuarios_crear, "Usuarios_listar"], etc..)
     const [selected, setSelected] = useState(initialPermissions);
-    const [isEditing, setIsEditing] = useState(false); //Estado para saber si se muestran los checkbox y el guardar
+    const [isEditing, setIsEditing] = useState(false);
+    const [currentPage, setCurrentPage] = useState(0);
 
+    // Reinicia la página cuando cambia la selección de grupo/usuario
+    useEffect(() => {
+        setCurrentPage(0);
+    }, [initialPermissions]);
 
-    //Marca permisos individuales. prev es el estado anterior
     const toggle = (key) => {
         setSelected(prev =>
             prev.includes(key)
@@ -22,32 +65,37 @@ export default function PermissionsForm({
                 : [...prev, key]
         );
     };
-    // Marca o desmarca a TODOS los permisos de una carteoría. categoryKeys se queda solo con las keys string de las categorias y las almacena en un solo array
+
     const toggleCategory = (categoryPermissions) => {
         const categoryKeys = categoryPermissions.map(p => p.key);
         const allSelected = categoryKeys.every(k => selected.includes(k));
-
         setSelected(prev =>
             allSelected
-                ? prev.filter(k => !categoryKeys.includes(k)) // desmarcar todos
-                : [...new Set([...prev, ...categoryKeys])]     // marcar todos
-                //new Set elimina las llaves repetipos, cuando se une las anteirores (...prev) y las nuevas (...categoryKeys), y lo convierte en un array de nuevo con [...] rest operator
+                ? prev.filter(k => !categoryKeys.includes(k))
+                : [...new Set([...prev, ...categoryKeys])]
         );
     };
 
     const handleSave = () => {
-        onSave(selected); // le devuelve al padre el array con los keys seleccionados
-        setIsEditing(false); // vuelve a modo lectura al guardar
-    };
-
-    const handleCancel = () => {
-        setSelected(initialPermissions); // restaura los permisos originales
+        onSave(selected);
         setIsEditing(false);
     };
 
+    const handleCancel = () => {
+        setSelected(initialPermissions);
+        setIsEditing(false);
+    };
+
+    const groups = buildGroups(allPermissions);
+    const totalPages = Math.ceil(groups.length / GROUPS_PER_PAGE);
+    const pagedGroups = groups.slice(
+        currentPage * GROUPS_PER_PAGE,
+        currentPage * GROUPS_PER_PAGE + GROUPS_PER_PAGE
+    );
+
     return (
-        <div className="flex flex-col gap-6 lg:h-180 lg:overflow-y-auto">
-            {/* boton editar, solo se ve cuando no se está editando */}
+        <div className="flex flex-col gap-1">
+            {/* Botón editar — solo en modo lectura */}
             {!isEditing && (
                 <div className="self-end">
                     <Button onClick={() => setIsEditing(true)} variant="warning" size="sm">
@@ -55,7 +103,8 @@ export default function PermissionsForm({
                     </Button>
                 </div>
             )}
-            {/* ACCIONES - boton cancelar y guardar que solo se muestran al editar */}
+
+            {/* Acciones — solo al editar */}
             {isEditing && (
                 <div className="flex gap-3 justify-between place-items-center">
                     <Button onClick={handleCancel} variant="secondary" size="sm">
@@ -73,44 +122,65 @@ export default function PermissionsForm({
                 </div>
             )}
 
-            {PERMISSIONS.map(group => {
-                //allSelected prmite que el checkbox superior elija todos los campos del crud
+            {/* Grupos de permisos paginados */}
+            {pagedGroups.map(group => {
                 const allSelected = group.permissions.every(p => selected.includes(p.key));
-
                 return (
-                        <div key={group.key} className="border rounded-lg p-4 flex flex-col gap-3 bg-surface">
-                            {/* Checkbox de categoría — marca/desmarca todos  COMPARTE COLOR CON EL BOTÓN SECUNDARIO*/}
-                            <Checkbox
-                                id={group.key}
-                                name={group.key}
-                                label={group.category}
-                                checked={allSelected}
-                                onChange={() => toggleCategory(group.permissions)}
-                                className="font-bold text-boton-fill-color-secondary"
-                                disabled={!isEditing} //Deshabilitado si no se está editando
-                            />
-
-                            <div className="w-full h-0.5 bg-focus-ring rounded-3xl" />
-
-                            {/* Permisos individuales */}
-                            <div className="grid grid-cols-2 md:grid-cols-3 gap-2 pl-4">
-                                {group.permissions.map(permission => (
-                                    <Checkbox
-                                        key={permission.key}
-                                        id={permission.key}
-                                        name={permission.key}
-                                        label={permission.label}
-                                        checked={selected.includes(permission.key)}
-                                        onChange={() => toggle(permission.key)}
-                                        disabled={!isEditing} //Deshabilitado si no se está editando
-                                        className="text-text-primary"
-                                    />
-                                ))}
-                            </div>
+                    <div key={group.key} className="border border-boton-fill-color-secondary rounded-3xl p-4 flex flex-col gap-3 bg-surface">
+                        <Checkbox
+                            id={group.key}
+                            name={group.key}
+                            label={group.category}
+                            checked={allSelected}
+                            onChange={() => toggleCategory(group.permissions)}
+                            className="font-bold text-boton-fill-color-secondary"
+                            disabled={!isEditing}
+                        />
+                        <div className="w-full h-0.5 bg-background rounded-3xl" />
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-2 pl-4">
+                            {group.permissions.map(permission => (
+                                <Checkbox
+                                    key={permission.key}
+                                    id={permission.key}
+                                    name={permission.key}
+                                    label={permission.label}
+                                    checked={selected.includes(permission.key)}
+                                    onChange={() => toggle(permission.key)}
+                                    disabled={!isEditing}
+                                    className="text-text-primary"
+                                />
+                            ))}
                         </div>
+                    </div>
                 );
             })}
-            
+
+            {/* Controles de paginación — solo si hay más de una página */}
+            {totalPages > 1 && (
+                <div className="flex items-center justify-center gap-4 mt-1">
+                    <button
+                        type="button"
+                        onClick={() => setCurrentPage(p => p - 1)}
+                        disabled={currentPage === 0}
+                        className="p-1 rounded-full text-brand disabled:opacity-30 disabled:cursor-not-allowed hover:bg-primary-50 transition-colors"
+                    >
+                        <ChevronLeft size={28} />
+                    </button>
+
+                    <span className="text-sm text-text-muted">
+                        {currentPage + 1} / {totalPages}
+                    </span>
+
+                    <button
+                        type="button"
+                        onClick={() => setCurrentPage(p => p + 1)}
+                        disabled={currentPage === totalPages - 1}
+                        className="p-1 rounded-full text-brand disabled:opacity-30 disabled:cursor-not-allowed hover:bg-primary-50 transition-colors"
+                    >
+                        <ChevronRight size={28} />
+                    </button>
+                </div>
+            )}
         </div>
     );
 }

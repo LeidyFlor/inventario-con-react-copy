@@ -361,10 +361,63 @@ def document_types(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def available_permissions(request):
-    """GET /api/permissions/ — retorna los permisos disponibles de los módulos del sistema"""
+    """GET /api/permissions/ — retorna los permisos disponibles de los módulos del sistema.
+
+    Solo incluye modelos que tienen verbose_name explícito en su Meta (distinto al
+    nombre auto-generado por Django). Eso permite marcar qué modelos se exponen en
+    la gestión de permisos sin mantener una lista hardcodeada.
+    """
+    import re
     from django.contrib.auth.models import Permission
-    # Solo permisos de los módulos propios (users y materials)
+    from django.apps import apps as django_apps
+
+    def auto_verbose_name(class_name):
+        """Reproduce el verbose_name que Django genera automáticamente."""
+        s = re.sub(r'([A-Z]+)([A-Z][a-z])', r'\1 \2', class_name)
+        s = re.sub(r'([a-z0-9])([A-Z])', r'\1 \2', s)
+        return s.lower()
+
+    # Detecta dinámicamente todos los app_labels de los módulos del sistema
+    module_app_labels = [
+        config.label
+        for config in django_apps.get_app_configs()
+        if config.name.startswith('backend_sigi.modules')
+    ]
+
     perms = Permission.objects.filter(
-        content_type__app_label__in=['users', 'materials']
-    ).values('id', 'codename', 'name', 'content_type__model').order_by('content_type__model', 'codename')
-    return Response(list(perms))
+        content_type__app_label__in=module_app_labels
+    ).select_related('content_type').order_by('content_type__model', 'codename')
+
+    result = []
+    model_cache = {}  # {model_name: {include, verbose_name, verbose_name_plural}}
+
+    for perm in perms:
+        model_name = perm.content_type.model
+
+        if model_name not in model_cache:
+            try:
+                model_class = django_apps.get_model(perm.content_type.app_label, model_name)
+                auto_name = auto_verbose_name(model_class.__name__)
+                explicit = model_class._meta.verbose_name != auto_name
+                model_cache[model_name] = {
+                    'include': explicit,
+                    'verbose_name': model_class._meta.verbose_name,
+                    'verbose_name_plural': model_class._meta.verbose_name_plural,
+                }
+            except Exception:
+                model_cache[model_name] = {'include': False}
+
+        entry = model_cache[model_name]
+        if not entry.get('include'):
+            continue
+
+        result.append({
+            'id': perm.id,
+            'codename': perm.codename,
+            'name': perm.name,
+            'content_type__model': model_name,
+            'verbose_name': entry['verbose_name'],
+            'verbose_name_plural': entry['verbose_name_plural'],
+        })
+
+    return Response(result)

@@ -8,7 +8,7 @@
 import { useRef, useState, useEffect, useMemo } from "react"
 import { Infinity as InfinityLoader } from "ldrs/react"
 import "ldrs/react/Infinity.css"
-import { CloudUpload } from "lucide-react"
+import { CloudUpload, ArrowDownToLine } from "lucide-react"
 
 export default function TechnicalFilesInput({
     // Archivos que ya existen en la base de datos
@@ -20,7 +20,7 @@ export default function TechnicalFilesInput({
     onNewFilesChange,             // (File[]) → void
 
     accept = "image/*,application/pdf",
-    maxFiles = 12,                // límite total (existentes + nuevos)
+    maxFiles = 3,                 // límite total (existentes + nuevos)
 }) {
     const inputRef = useRef()
     const [isLoading, setIsLoading] = useState(false)
@@ -113,12 +113,24 @@ export default function TechnicalFilesInput({
                         Guardado
                     </span>
 
-                    {/* Botón de eliminar (solo aparece al hover) */}
-                    <div className="absolute top-1 right-1 opacity-0 group-hover:opacity-100">
+                    {/* Botones que aparecen al hover */}
+                    <div className="absolute inset-0 opacity-0 group-hover:opacity-100 flex items-center justify-center bg-black/30 gap-2">
+                        {/* Descargar / abrir en el navegador */}
+                        <button
+                            type="button"
+                            // funcion nativa que abre el archivo en una pestana nueva
+                            onClick={() => window.open(file.file_url, '_blank')}
+                            className="w-7 h-7 bg-white rounded-full flex items-center justify-center shadow text-brand"
+                            title="Abrir archivo"
+                        >
+                            <ArrowDownToLine size={14} />
+                        </button>
+                        {/* Eliminar */}
                         <button
                             type="button"
                             onClick={() => onRemoveExisting(file.id)}
-                            className="w-7 h-7 bg-white rounded-full text-black text-xs shadow"
+                            className="w-7 h-7 bg-white rounded-full flex items-center justify-center shadow text-error text-xs"
+                            title="Eliminar archivo"
                         >
                             ✕
                         </button>

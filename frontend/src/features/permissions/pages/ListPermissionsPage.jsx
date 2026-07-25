@@ -173,7 +173,7 @@ export default function ListPermissionsPage() {
                     />
                     {selectedUserId && (
                         <p className="text-xs text-text-muted mt-1">
-                            Permisos adicionales sobre los del grupo.
+                            En los permisos de usuario individual se muestran los permisos del grupo (no editables desde esta vista), y se pueden adicionar más permisos individuales.
                         </p>
                     )}
                 </div>
@@ -190,7 +190,7 @@ export default function ListPermissionsPage() {
                     </div>
                 ) : hasSelection ? (
                     <>
-                        <div className="mt-2 mb-6 max-w-max">
+                        <div className="mb-1 max-w-max">
                             <h2 className="text-gradient-title text-h3 pb-0.5">
                                 {selectedGroupId
                                     ? `Permisos — ${groups.find(g => String(g.id) === selectedGroupId)?.name}`
@@ -202,6 +202,7 @@ export default function ListPermissionsPage() {
                         <PermissionsForm
                             key={selectedGroupId || selectedUserId}
                             initialPermissions={activeCodenames}
+                            allPermissions={allPermissions}
                             onSave={handleSave}
                             isLoading={saving}
                         />

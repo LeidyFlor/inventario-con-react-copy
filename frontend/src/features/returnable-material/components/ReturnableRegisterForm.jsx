@@ -122,7 +122,7 @@ export default function ReturnableRegisterForm() {
                         <div className="flex flex-col gap-3 items-center text-center">
                             <h2 className="font-bold text-body">Ficha técnica</h2>
                             <p className="text-text-muted text-small text-center">
-                                Se admiten 12 archivos (PNG, JPG, PNG). Máx 10MB.
+                                Se admiten hasta 3 archivos (PNG, JPG, PDF). Máx 10MB.
                             </p>
                             <FileInput
                                 value={formData.materialTechnicalSheet ?? []}
