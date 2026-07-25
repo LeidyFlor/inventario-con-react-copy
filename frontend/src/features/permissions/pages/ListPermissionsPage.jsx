@@ -37,6 +37,8 @@ export default function ListPermissionsPage() {
 
     // codenames activos del grupo/usuario seleccionado
     const [activeCodenames, setActiveCodenames] = useState([])
+    // codenames heredados de grupos (solo para usuarios individuales, solo lectura)
+    const [groupCodenames, setGroupCodenames] = useState([])
     const [loading, setLoading]   = useState(true)
     const [saving, setSaving]     = useState(false)
     const [loadingPerms, setLoadingPerms] = useState(false)
@@ -61,6 +63,7 @@ export default function ListPermissionsPage() {
         setSelectedGroupId(id)
         setSelectedUserId("") // limpiar usuario
         setActiveCodenames([])
+        setGroupCodenames([])
         if (!id) return
         setLoadingPerms(true)
         try {
@@ -78,11 +81,13 @@ export default function ListPermissionsPage() {
         setSelectedUserId(id)
         setSelectedGroupId("") // limpiar grupo
         setActiveCodenames([])
+        setGroupCodenames([])
         if (!id) return
         setLoadingPerms(true)
         try {
             const data = await getUserPermissions(id)
             setActiveCodenames(idsToCodenames(data.permissions))
+            setGroupCodenames(idsToCodenames(data.group_permissions ?? []))
         } catch {
             Alert.error("Error", "No se pudieron cargar los permisos del usuario")
         } finally {
@@ -173,7 +178,7 @@ export default function ListPermissionsPage() {
                     />
                     {selectedUserId && (
                         <p className="text-xs text-text-muted mt-1">
-                            Permisos adicionales sobre los del grupo.
+                            En los permisos de usuario individual se muestran los permisos del grupo (no editables desde esta vista), y se pueden adicionar más permisos individuales.
                         </p>
                     )}
                 </div>
@@ -190,7 +195,7 @@ export default function ListPermissionsPage() {
                     </div>
                 ) : hasSelection ? (
                     <>
-                        <div className="mt-2 mb-6 max-w-max">
+                        <div className="mb-1 max-w-max">
                             <h2 className="text-gradient-title text-h3 pb-0.5">
                                 {selectedGroupId
                                     ? `Permisos — ${groups.find(g => String(g.id) === selectedGroupId)?.name}`
@@ -202,6 +207,8 @@ export default function ListPermissionsPage() {
                         <PermissionsForm
                             key={selectedGroupId || selectedUserId}
                             initialPermissions={activeCodenames}
+                            groupPermissions={groupCodenames}
+                            allPermissions={allPermissions}
                             onSave={handleSave}
                             isLoading={saving}
                         />

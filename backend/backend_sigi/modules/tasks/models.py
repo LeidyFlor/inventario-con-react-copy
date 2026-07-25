@@ -36,6 +36,8 @@ class Task(models.Model):
 
     class Meta:
         db_table = 'task'
+        verbose_name = 'tarea'
+        verbose_name_plural = 'tareas'
         constraints = [
             models.CheckConstraint(
                 condition=(

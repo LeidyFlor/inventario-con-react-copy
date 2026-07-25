@@ -11,6 +11,7 @@ export default function FileInput({
     onChange, // setter externo
     multiple = false, // modo selección
     accept = "image/*,application/pdf", // tipos permitidos
+    maxFiles = 3, // límite máximo de archivos (solo aplica en modo multiple)
 }) {
     const inputRef = useRef(); // input oculto
     const [isLoading, setIsLoading] = useState(false); // loader
@@ -42,7 +43,7 @@ export default function FileInput({
         await new Promise((r) => setTimeout(r, 500));
 
         const data = multiple ? [...value, ...list] : [list[0]];
-        onChange(data.slice(0, 12));
+        onChange(data.slice(0, maxFiles));
 
         setIsLoading(false);
     };

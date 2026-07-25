@@ -130,6 +130,8 @@ class Loan(models.Model):
 
     class Meta:
         db_table = 'loan'
+        verbose_name = 'préstamo'
+        verbose_name_plural = 'préstamos'
         permissions = [
             ('listar_loan',          'Listar préstamos'),
             ('generar_reporte_loan', 'Generar reporte préstamos'),

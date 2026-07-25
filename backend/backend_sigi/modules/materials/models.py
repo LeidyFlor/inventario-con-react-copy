@@ -12,6 +12,8 @@ class Brand(models.Model):
 
     class Meta:
         db_table = 'brand'
+        verbose_name = 'marca'
+        verbose_name_plural = 'marcas'
         permissions = [
             ('listar_brand',           'Listar marcas'),
             ('generar_reporte_brand',  'Generar reporte marcas'),
@@ -109,6 +111,8 @@ class ConsumableMaterial(Material):
 
     class Meta:
         db_table = 'consumable_material'
+        verbose_name = 'material de consumo'
+        verbose_name_plural = 'materiales de consumo'
         permissions = [
             ('listar_consumablematerial',          'Listar material de consumo'),
             ('generar_reporte_consumablematerial', 'Generar reporte material de consumo'),
@@ -138,6 +142,8 @@ class ReturnableMaterial(Material):
 
     class Meta:
         db_table = 'returnable_material'
+        verbose_name = 'material devolutivo'
+        verbose_name_plural = 'materiales devolutivos'
         permissions = [
             ('listar_returnablematerial',          'Listar material devolutivo'),
             ('generar_reporte_returnablematerial', 'Generar reporte material devolutivo'),
