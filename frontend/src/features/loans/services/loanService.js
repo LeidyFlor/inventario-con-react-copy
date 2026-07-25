@@ -249,3 +249,14 @@ export async function checkIdentity(loanId, token) {
     }
     return response.json() // { identity_confirmed: true }
 }
+
+export async function searchLoanByCode(code) {
+    const response = await fetch(`${API_URL}/loans/search/?code=${encodeURIComponent(code)}`, {
+        headers: { Authorization: `Bearer ${getToken()}` },
+    })
+    if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.error ?? "Préstamo no encontrado")
+    }
+    return response.json() // { id }
+}

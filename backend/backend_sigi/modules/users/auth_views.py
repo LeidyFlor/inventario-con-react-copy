@@ -11,7 +11,8 @@ from .models import Users
 from .serializers import UserSerializer
 import random
 import string
-import resend
+from django.core.mail import send_mail
+from django.utils.html import strip_tags
 from django.conf import settings
 
 class LoginView(APIView):
@@ -76,52 +77,53 @@ class ForgotPasswordView(APIView):
         # timeout=600 significa que expira en 10 minutos (600 segundos)
         cache.set(f'reset_code_{email}', code, timeout=600)
 
-        # Configurar API key de Resend
-        resend.api_key = settings.RESEND_API_KEY
-
-        # Enviar correo con HTML directamente via Resend SDK
-        resend.Emails.send({
-            "from": settings.DEFAULT_FROM_EMAIL,
-            "to": [email],
-            "subject": "Código de recuperación - SIGI",
-            "html": f"""
-            <!DOCTYPE html>
-            <html lang="es">
-            <head>
-                <meta charset="UTF-8">
-                <style>
-                    body {{ margin: 0; padding: 0; background-color: #f9fafb; font-family: Arial, Helvetica, sans-serif; color: #242424; }}
-                    .container {{ max-width: 500px; background-color: #ffffff; border-radius: 1rem; border: 2px solid #E1F2D8; margin: 20px auto; overflow: hidden; }}
-                    .header {{ background: linear-gradient(to right, #72277C, #163F5C); padding: 24px; text-align: center; }}
-                    .header h1 {{ color: #ffffff; margin: 0; font-size: 1.5rem; font-weight: 700; letter-spacing: 1px; }}
-                    .content {{ padding: 32px 24px; text-align: center; }}
-                    .token-box {{ background-color: #F5FAF2; border: 2px dashed #39A900; border-radius: 0.75rem; padding: 20px; margin: 24px auto; max-width: 300px; }}
-                    .token-label {{ font-size: 0.875rem; color: #007A33; font-weight: 600; text-transform: uppercase; margin-bottom: 8px; display: block; }}
-                    .token-code {{ font-size: 2.5rem; font-weight: 700; color: #007A33; letter-spacing: 6px; margin: 0; }}
-                    .footer {{ padding: 24px; text-align: center; border-top: 1px solid #D1D1D1; background-color: #fafafa; }}
-                    .footer p {{ margin: 0; font-size: 0.75rem; color: #878787; }}
-                </style>
-            </head>
-            <body>
-                <div class="container">
-                    <div class="header"><h1>SIGI</h1></div>
-                    <div class="content">
-                        <h2 style="margin-top:0; color:#007A33;">Recuperación de contraseña</h2>
-                        <p>Hola {user.first_name}, hemos recibido una solicitud para restablecer la contraseña de tu cuenta. Ingresa el siguiente código de seguridad:</p>
-                        <div class="token-box">
-                            <span class="token-label">Tu código de seguridad</span>
-                            <p class="token-code">{code}</p>
-                        </div>
-                        <p style="font-size:0.875rem; color:#878787;">Este código expira en 10 minutos.</p>
+        html_body = f"""
+        <!DOCTYPE html>
+        <html lang="es">
+        <head>
+            <meta charset="UTF-8">
+            <style>
+                body {{ margin: 0; padding: 0; background-color: #f9fafb; font-family: Arial, Helvetica, sans-serif; color: #242424; }}
+                .container {{ max-width: 500px; background-color: #ffffff; border-radius: 1rem; border: 2px solid #E1F2D8; margin: 20px auto; overflow: hidden; }}
+                .header {{ background: linear-gradient(to right, #72277C, #163F5C); padding: 24px; text-align: center; }}
+                .header h1 {{ color: #ffffff; margin: 0; font-size: 1.5rem; font-weight: 700; letter-spacing: 1px; }}
+                .content {{ padding: 32px 24px; text-align: center; }}
+                .token-box {{ background-color: #F5FAF2; border: 2px dashed #39A900; border-radius: 0.75rem; padding: 20px; margin: 24px auto; max-width: 300px; }}
+                .token-label {{ font-size: 0.875rem; color: #007A33; font-weight: 600; text-transform: uppercase; margin-bottom: 8px; display: block; }}
+                .token-code {{ font-size: 2.5rem; font-weight: 700; color: #007A33; letter-spacing: 6px; margin: 0; }}
+                .footer {{ padding: 24px; text-align: center; border-top: 1px solid #D1D1D1; background-color: #fafafa; }}
+                .footer p {{ margin: 0; font-size: 0.75rem; color: #878787; }}
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="header"><h1>SIGI</h1></div>
+                <div class="content">
+                    <h2 style="margin-top:0; color:#007A33;">Recuperación de contraseña</h2>
+                    <p>Hola {user.first_name}, hemos recibido una solicitud para restablecer la contraseña de tu cuenta. Ingresa el siguiente código de seguridad:</p>
+                    <div class="token-box">
+                        <span class="token-label">Tu código de seguridad</span>
+                        <p class="token-code">{code}</p>
                     </div>
-                    <div class="footer">
-                        <p>Si no solicitaste restablecer tu contraseña, puedes ignorar este mensaje. Tu cuenta está protegida.</p>
-                    </div>
+                    <p style="font-size:0.875rem; color:#878787;">Este código expira en 10 minutos.</p>
                 </div>
-            </body>
-            </html>
-            """,
-        })
+                <div class="footer">
+                    <p>Si no solicitaste restablecer tu contraseña, puedes ignorar este mensaje. Tu cuenta está protegida.</p>
+                </div>
+            </div>
+        </body>
+        </html>
+        """
+
+        # Enviar correo via Django SMTP (Brevo)
+        send_mail(
+            subject="Código de recuperación - SIGI",
+            message=strip_tags(html_body),
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[email],
+            html_message=html_body,
+            fail_silently=False,
+        )
 
         # Respondemos igual en ambos casos (correo existe o no) por seguridad
         return Response({'message': 'Si el correo está registrado recibirás un código'})

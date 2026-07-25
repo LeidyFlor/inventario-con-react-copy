@@ -1,5 +1,7 @@
 from django.conf import settings
 from django.shortcuts import redirect
+from django.core.mail import send_mail
+from django.utils.html import strip_tags
 from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.decorators import action
@@ -222,6 +224,21 @@ class LoanViewSet(viewsets.ViewSet):
         return Response(LoanDetailSerializer(loan).data, status=status.HTTP_200_OK)
 
     # ──────────────────────────────────────────────────────────────
+    # SEARCH BY CODE  GET /api/loans/search/?code=AAA000000008
+    # Devuelve el id del préstamo dado su loan_code
+    # ──────────────────────────────────────────────────────────────
+    @action(detail=False, methods=['get'], url_path='search')
+    def search_by_code(self, request):
+        code = request.query_params.get('code', '').strip().upper()
+        if not code:
+            return Response({'error': 'Parámetro code requerido.'}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            loan = Loan.objects.get(loan_code=code)
+            return Response({'id': loan.id})
+        except Loan.DoesNotExist:
+            return Response({'error': f'No se encontró el préstamo "{code}".'}, status=status.HTTP_404_NOT_FOUND)
+
+    # ──────────────────────────────────────────────────────────────
     # VERIFY TOKEN  POST /api/loans/verify-token/
     # Comprueba si un token fue confirmado — se llama ANTES de crear el préstamo
     # cuando el usuario presiona "Ya confirmé"
@@ -252,8 +269,53 @@ class LoanViewSet(viewsets.ViewSet):
         # URL que se incluye en el correo — el frontend la abre y confirma el token
         confirm_url = f"{request.scheme}://{request.get_host()}/api/loans/confirm/{token_obj.token}/"
 
-        # TODO: enviar correo con confirm_url al prestador (integrar con servicio de email)
-        # Por ahora se devuelve la URL en la respuesta para pruebas
+        # Enviar correo al prestador con el link de confirmación
+        lender = token_obj.lender
+        html_body = f"""
+        <!DOCTYPE html>
+        <html lang="es">
+        <head>
+            <meta charset="UTF-8">
+            <style>
+                body {{ margin: 0; padding: 0; background-color: #f9fafb; font-family: Arial, Helvetica, sans-serif; color: #242424; }}
+                .container {{ max-width: 500px; background-color: #ffffff; border-radius: 1rem; border: 2px solid #E1F2D8; margin: 20px auto; overflow: hidden; }}
+                .header {{ background: linear-gradient(to right, #72277C, #163F5C); padding: 24px; text-align: center; }}
+                .header h1 {{ color: #ffffff; margin: 0; font-size: 1.5rem; font-weight: 700; letter-spacing: 1px; }}
+                .content {{ padding: 32px 24px; text-align: center; }}
+                .btn {{ display: inline-block; margin: 24px auto; padding: 14px 32px; background-color: #39A900; color: #ffffff; text-decoration: none; border-radius: 0.75rem; font-weight: 700; font-size: 1rem; }}
+                .footer {{ padding: 24px; text-align: center; border-top: 1px solid #D1D1D1; background-color: #fafafa; }}
+                .footer p {{ margin: 0; font-size: 0.75rem; color: #878787; }}
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="header"><h1>SIGI</h1></div>
+                <div class="content">
+                    <h2 style="margin-top:0; color:#007A33;">Confirmación de identidad</h2>
+                    <p>Hola {lender.first_name}, se ha generado un préstamo que requiere tu confirmación de identidad.</p>
+                    <p>Haz clic en el botón para confirmar que eres tú:</p>
+                    <a href="{confirm_url}" class="btn">Confirmar identidad</a>
+                    <p style="font-size:0.875rem; color:#878787;">Si no puedes hacer clic en el botón, copia y pega este enlace en tu navegador:<br>{confirm_url}</p>
+                </div>
+                <div class="footer">
+                    <p>Si no esperabas este correo, por favor contáctanos de inmediato.</p>
+                </div>
+            </div>
+        </body>
+        </html>
+        """
+        try:
+            send_mail(
+                subject="SIGI - Confirmación de identidad para préstamo",
+                message=strip_tags(html_body),
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[lender.email],
+                html_message=html_body,
+                fail_silently=False,
+            )
+        except Exception as e:
+            print(f"Error enviando correo de confirmación de identidad: {e}")
+
         return Response(
             {
                 'token': str(token_obj.token),

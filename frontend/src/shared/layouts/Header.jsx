@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { IconButtonReal, Dropdown, DropdownContent, DropdownItem, DropdownTrigger, Button, SearchField } from "@/shared";
 import { logout } from "@/features/auth/services/logoutService.js";
 import { Alert } from "@/shared";
+import { searchLoanByCode } from "@/features/loans/services/loanService";
 import logoSenaBlanco from "@/assets/images/logo-sena-blanco.png";
 import logoSigiBlanco from "@/assets/images/sigi-blanco.png";
 
@@ -54,13 +55,21 @@ export default function Header( { onMenuToggle } ) {
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, [menuOpen]);
 
-    const handleSearch = (value) => {
-        console.log("Buscar:", value);
-    };
+    const handleSearch = async (value) => {
+        const code = value.trim()
+        if (!code) return
+        Alert.loading("Buscando préstamo...")
+        try {
+            const { id } = await searchLoanByCode(code)
+            Alert.close()
+            setSearch("")
+            navigate(`/dashboard/loans/${id}/view`)
+        } catch (err) {
+            Alert.error("No encontrado", err.message)
+        }
+    }
 
-    const handleClear = () => {
-        console.log("Campo limpiado");
-    };
+    const handleClear = () => setSearch("");
     // handle de logout
     const handleLogOut = async () => {
         const result = await Alert.confirm("Cierre de sesión", "¿Está seguro que desea cerrar sesión?")

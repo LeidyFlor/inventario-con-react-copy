@@ -90,9 +90,10 @@ export default function LoginForm() {
     return (
         <div className="flex flex-col items-center justify-center relative h-screen">
             {/* contenedor principal */}
-            <div className="bg-background-login-coontainer border-2 border-border-login-container p-13 w-90 shadow-lg shadow-border-login-container rounded-2xl">
+            <div className="bg-background-login-coontainer border-2 border-border-login-container p-12 w-90 shadow-lg shadow-border-login-container rounded-2xl">
                 {/* contenenedor del titulo y la linea */}
                 <div className="flex flex-col place-self-center mb-6 max-w-max place-items-center gap-4">
+                    <h1 className="text-h3 font-medium text-text-primary justify-center text-center">Sistema de Gestión de Inventario</h1>
                     <img src={logoSigi} alt="Logo del sistema" className="h-auto w-18 "/>
                     <h1 className="text-gradient-title justify-end text-h3 pb-0.5">
                         Inicio de sesión

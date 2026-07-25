@@ -10,7 +10,8 @@ from django.utils import timezone
 import requests as http_requests
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
-import resend
+from django.core.mail import send_mail
+from django.utils.html import strip_tags
 
 class UserViewSet(viewsets.ViewSet):
     """
@@ -40,51 +41,53 @@ class UserViewSet(viewsets.ViewSet):
         plain_password = getattr(user, '_plain_password', None)
         if plain_password:
             try:
-                resend.api_key = settings.RESEND_API_KEY
-                resend.Emails.send({
-                    "from": settings.DEFAULT_FROM_EMAIL,
-                    "to": [user.email],
-                    "subject": "Bienvenido a SIGI - Tus credenciales de acceso",
-                    "html": f"""
-                    <!DOCTYPE html>
-                    <html lang="es">
-                    <head>
-                        <meta charset="UTF-8">
-                        <style>
-                            body {{ margin: 0; padding: 0; background-color: #f9fafb; font-family: Arial, Helvetica, sans-serif; color: #242424; }}
-                            .container {{ max-width: 500px; background-color: #ffffff; border-radius: 1rem; border: 2px solid #E1F2D8; margin: 20px auto; overflow: hidden; }}
-                            .header {{ background: linear-gradient(to right, #72277C, #163F5C); padding: 24px; text-align: center; }}
-                            .header h1 {{ color: #ffffff; margin: 0; font-size: 1.5rem; font-weight: 700; letter-spacing: 1px; }}
-                            .content {{ padding: 32px 24px; }}
-                            .credentials {{ background-color: #F5FAF2; border: 2px dashed #39A900; border-radius: 0.75rem; padding: 20px; margin: 24px 0; }}
-                            .label {{ font-size: 0.75rem; color: #007A33; font-weight: 600; text-transform: uppercase; margin-bottom: 4px; }}
-                            .value {{ font-size: 1rem; font-weight: 700; color: #242424; margin: 0 0 12px 0; }}
-                            .footer {{ padding: 24px; text-align: center; border-top: 1px solid #D1D1D1; background-color: #fafafa; }}
-                            .footer p {{ margin: 0; font-size: 0.75rem; color: #878787; }}
-                        </style>
-                    </head>
-                    <body>
-                        <div class="container">
-                            <div class="header"><h1>SIGI</h1></div>
-                            <div class="content">
-                                <h2 style="margin-top:0; color:#007A33;">¡Bienvenido, {user.first_name}!</h2>
-                                <p>Tu cuenta ha sido creada exitosamente. Estas son tus credenciales de acceso:</p>
-                                <div class="credentials">
-                                    <p class="label">Correo electrónico</p>
-                                    <p class="value">{user.email}</p>
-                                    <p class="label">Contraseña temporal</p>
-                                    <p class="value">{plain_password}</p>
-                                </div>
-                                <p>Por seguridad, deberás cambiar tu contraseña la primera vez que inicies sesión.</p>
+                html_body = f"""
+                <!DOCTYPE html>
+                <html lang="es">
+                <head>
+                    <meta charset="UTF-8">
+                    <style>
+                        body {{ margin: 0; padding: 0; background-color: #f9fafb; font-family: Arial, Helvetica, sans-serif; color: #242424; }}
+                        .container {{ max-width: 500px; background-color: #ffffff; border-radius: 1rem; border: 2px solid #E1F2D8; margin: 20px auto; overflow: hidden; }}
+                        .header {{ background: linear-gradient(to right, #72277C, #163F5C); padding: 24px; text-align: center; }}
+                        .header h1 {{ color: #ffffff; margin: 0; font-size: 1.5rem; font-weight: 700; letter-spacing: 1px; }}
+                        .content {{ padding: 32px 24px; }}
+                        .credentials {{ background-color: #F5FAF2; border: 2px dashed #39A900; border-radius: 0.75rem; padding: 20px; margin: 24px 0; }}
+                        .label {{ font-size: 0.75rem; color: #007A33; font-weight: 600; text-transform: uppercase; margin-bottom: 4px; }}
+                        .value {{ font-size: 1rem; font-weight: 700; color: #242424; margin: 0 0 12px 0; }}
+                        .footer {{ padding: 24px; text-align: center; border-top: 1px solid #D1D1D1; background-color: #fafafa; }}
+                        .footer p {{ margin: 0; font-size: 0.75rem; color: #878787; }}
+                    </style>
+                </head>
+                <body>
+                    <div class="container">
+                        <div class="header"><h1>SIGI</h1></div>
+                        <div class="content">
+                            <h2 style="margin-top:0; color:#007A33;">¡Bienvenido, {user.first_name}!</h2>
+                            <p>Tu cuenta ha sido creada exitosamente. Estas son tus credenciales de acceso:</p>
+                            <div class="credentials">
+                                <p class="label">Correo electrónico</p>
+                                <p class="value">{user.email}</p>
+                                <p class="label">Contraseña temporal</p>
+                                <p class="value">{plain_password}</p>
                             </div>
-                            <div class="footer">
-                                <p>Si no esperabas este correo, por favor contáctanos de inmediato.</p>
-                            </div>
+                            <p>Por seguridad, deberás cambiar tu contraseña la primera vez que inicies sesión.</p>
                         </div>
-                    </body>
-                    </html>
-                    """,
-                })
+                        <div class="footer">
+                            <p>Si no esperabas este correo, por favor contáctanos de inmediato.</p>
+                        </div>
+                    </div>
+                </body>
+                </html>
+                """
+                send_mail(
+                    subject="Bienvenido a SIGI - Tus credenciales de acceso",
+                    message=strip_tags(html_body),
+                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    recipient_list=[user.email],
+                    html_message=html_body,
+                    fail_silently=False,
+                )
             except Exception as e:
                 # El usuario ya fue creado — el fallo del correo no debe revertir la operación
                 print(f"Error enviando correo de bienvenida: {e}")

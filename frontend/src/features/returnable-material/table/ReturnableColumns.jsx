@@ -1,4 +1,5 @@
 // src/features/returnable-material/table/ReturnableColumns.jsx
+// @refresh reset
 import { useState } from "react"
 import { StatusSwitch, Alert } from "@/shared"
 import ReturnableRowAction from "../components/ReturnableRowAction"

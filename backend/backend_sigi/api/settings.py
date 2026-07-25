@@ -154,20 +154,37 @@ CORS_ALLOWED_ORIGINS = [
     'http://localhost:5173',   # host de react
 ]
 
-FRONTEND_URL = 'http://localhost:5173'
+FRONTEND_URL = os.getenv('FRONTEND_URL', 'http://localhost:5173')
 
-# Cache - Redis Cloud
-CACHES = {
-    "default": {
-        "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": os.getenv("REDIS_URL", ""),
-        "OPTIONS": {
-            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+# Cache
+# En desarrollo usa memoria local; en producción configurar Redis con REDIS_URL
+REDIS_URL = os.getenv("REDIS_URL", "")
+if REDIS_URL:
+    CACHES = {
+        "default": {
+            "BACKEND": "django_redis.cache.RedisCache",
+            "LOCATION": REDIS_URL,
+            "OPTIONS": {
+                "CLIENT_CLASS": "django_redis.client.DefaultClient",
+            }
         }
     }
-}
+else:
+    CACHES = {
+        "default": {
+            "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+        }
+    }
 
-# Resend - API para envío de correos
-RESEND_API_KEY = os.getenv('RESEND_API_KEY', '')
-DEFAULT_FROM_EMAIL = os.getenv('RESEND_FROM_EMAIL', '')
-RESEND_TEMPLATE_ID = os.getenv('RESEND_TEMPLATE_ID', '')
+# Brevo SMTP - envío de correos transaccionales
+EMAIL_BACKEND = (
+    'backend_sigi.api.email_backend.BrevoEmailBackend'  # ignora SSL — solo desarrollo
+    if DEBUG else
+    'django.core.mail.backends.smtp.EmailBackend'       # verificación SSL estándar — producción
+)
+EMAIL_HOST = 'smtp-relay.brevo.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = os.getenv('BREVO_SMTP_LOGIN', '')
+EMAIL_HOST_PASSWORD = os.getenv('BREVO_SMTP_KEY', '')
+DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'sigi.sena@gmail.com')

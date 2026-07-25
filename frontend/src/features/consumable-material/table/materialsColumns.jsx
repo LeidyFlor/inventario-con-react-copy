@@ -1,3 +1,4 @@
+// @refresh reset
 import { useState } from "react"
 import { StatusSwitch, Alert } from "@/shared/"
 import MaterialRowActions from "../components/MaterialRowActions"

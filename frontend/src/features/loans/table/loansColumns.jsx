@@ -1,3 +1,4 @@
+// @refresh reset
 import { useState } from "react";
 import { StatusSwitch, Button } from "@/shared/";
 import LoanRowActions from "../components/LoanRowActions";
