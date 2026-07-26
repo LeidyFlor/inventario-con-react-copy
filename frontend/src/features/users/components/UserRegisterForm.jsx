@@ -10,6 +10,19 @@ import { GroupCreateModalPage } from "@/features/groups";
 import { TaskCreateModal } from "@/features/tasks";
 import { createTaskForUser } from "@/features/tasks/services/taskService";
 
+// Devuelve la fecha local actual en formato YYYY-MM-DD.
+// Se usa getFullYear/Month/Date en vez de toISOString() porque toISOString()
+// retorna la fecha en UTC, lo cual en Colombia (UTC-5) puede devolver
+// el día siguiente a partir de las 7 PM hora local.
+const localToday = () => {
+    const d = new Date()
+    return [
+        d.getFullYear(),
+        String(d.getMonth() + 1).padStart(2, "0"),
+        String(d.getDate()).padStart(2, "0"),
+    ].join("-")
+}
+
 export default function UserRegisterForm() {
     const navigate = useNavigate();
     const [formData, setFormData] = useState({  
@@ -27,6 +40,7 @@ export default function UserRegisterForm() {
         userDateEnd: "",
         userDateStart: "",
         is_accountant: false,
+        is_staff: false,
         userImage: []
     });
     const [errors, setErrors] = useState({});
@@ -305,7 +319,7 @@ export default function UserRegisterForm() {
                             onChange={handleChange}
                             error={errors.userEmail2}
                         />
-                            {/* Fecha inicio usuario */}
+                            {/* Fecha inicio usuario — min=hoy para no permitir fechas pasadas */}
                             <Input
                                 type="date"
                                 name="userDateStart"
@@ -313,9 +327,10 @@ export default function UserRegisterForm() {
                                 value={formData.userDateStart}
                                 onChange={handleChange}
                                 error={errors.userDateStart}
+                                min={localToday()}
                                 required
                             />
-                            {/* Fecha fin usuario */}
+                            {/* Fecha fin usuario — min=hoy para no permitir fechas pasadas */}
                             <Input
                                 type="date"
                                 name="userDateEnd"
@@ -323,19 +338,27 @@ export default function UserRegisterForm() {
                                 value={formData.userDateEnd}
                                 onChange={handleChange}
                                 error={errors.userDateEnd}
+                                min={localToday()}
                                 required
                             />
                         
-                        <div className="flex place-self-center -items-center justify-center align-middle gap-3">
-                            <p className="parrafo-edit-style relative bottom-0.5 items-">¿Es cuentadante?:</p>
-                            {/* Switch */}
+                        <div className="flex place-self-center items-center justify-center gap-3">
+                            <p className="parrafo-edit-style relative bottom-0.5">¿Es cuentadante?:</p>
                             <StatusSwitch
-                                checked={isActive}
-                                onChange={handleChange}
+                                checked={formData.is_accountant}
+                                onChange={(val) => setFormData(prev => ({ ...prev, is_accountant: val }))}
                                 size="md"
-                                // inline-flex -> ocupa el espacio asignado
                                 className="inline-flex"
-                                value={formData.is_accountant}
+                            />
+                        </div>
+
+                        <div className="flex place-self-center items-center justify-center gap-3">
+                            <p className="parrafo-edit-style relative bottom-0.5">¿Es Staff?:</p>
+                            <StatusSwitch
+                                checked={formData.is_staff}
+                                onChange={(val) => setFormData(prev => ({ ...prev, is_staff: val }))}
+                                size="md"
+                                className="inline-flex"
                             />
                         </div>
 

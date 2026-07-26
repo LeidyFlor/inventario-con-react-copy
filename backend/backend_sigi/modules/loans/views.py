@@ -2,6 +2,7 @@ from django.conf import settings
 from django.shortcuts import redirect
 from django.core.mail import send_mail
 from django.utils.html import strip_tags
+from backend_sigi.utils.audit import log_action
 from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.decorators import action
@@ -58,6 +59,7 @@ class LoanViewSet(viewsets.ViewSet):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
         loan = serializer.save()
+        log_action(request.user, "CREAR", "Préstamo", loan.loan_code)
         return Response(
             LoanDetailSerializer(loan).data,
             status=status.HTTP_201_CREATED,
@@ -128,6 +130,7 @@ class LoanViewSet(viewsets.ViewSet):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
         loan = serializer.save(loan=loan)
+        log_action(request.user, "DEVOLVER", "Préstamo", loan.loan_code)
         return Response(LoanDetailSerializer(loan).data)
 
     # ──────────────────────────────────────────────────────────────
@@ -174,6 +177,7 @@ class LoanViewSet(viewsets.ViewSet):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
         loan = serializer.save(loan=loan, accepted_by=request.user)
+        log_action(request.user, "APROBAR_DEVOLUCIÓN", "Préstamo", loan.loan_code)
         return Response(LoanDetailSerializer(loan).data)
 
     # ──────────────────────────────────────────────────────────────

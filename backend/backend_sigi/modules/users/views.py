@@ -12,6 +12,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from django.core.mail import send_mail
 from django.utils.html import strip_tags
+from backend_sigi.utils.audit import log_action
 
 class UserViewSet(viewsets.ViewSet):
     """
@@ -113,6 +114,7 @@ class UserViewSet(viewsets.ViewSet):
                 user.user_image = url
                 user.save()
 
+        log_action(request.user, "CREAR", "Usuario", user.email)
         return Response(UserSerializer(user).data, status=status.HTTP_201_CREATED)
 
     def retrieve(self, request, pk=None):
@@ -152,7 +154,7 @@ class UserViewSet(viewsets.ViewSet):
                 url = f"{settings.SUPABASE_URL}/storage/v1/object/public/user-images/{file_name}"
                 user.user_image = url
                 user.save()
-        # retorna informacion ca,biada y la imagen cuando ya fue cargada
+        log_action(request.user, "EDITAR", "Usuario", user.email)
         return Response(UserSerializer(user).data)
 
     def partial_update(self, request, pk=None):
@@ -167,6 +169,7 @@ class UserViewSet(viewsets.ViewSet):
             return Response({'error': 'Usuario no encontrado'}, status=status.HTTP_404_NOT_FOUND)
         user.is_active = False
         user.save()
+        log_action(request.user, "DESACTIVAR", "Usuario", user.email)
         return Response({'message': 'Usuario desactivado correctamente'}, status=status.HTTP_200_OK)
     
     #SUBIDA DE IMAGENES A SUPABASE, el campo userImagen solo guarda la url
@@ -310,6 +313,7 @@ class GroupViewSet(viewsets.ViewSet):
         if serializer.is_valid():
             group = serializer.save()                   # asignar resultado
             GroupProfile.objects.create(group=group)    # crear profile con is_active=True
+            log_action(request.user, "CREAR", "Grupo", group.name)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -320,13 +324,21 @@ class GroupViewSet(viewsets.ViewSet):
         except Group.DoesNotExist:
             return Response({'error': 'Grupo no encontrado'}, status=status.HTTP_404_NOT_FOUND)
         # is_active vive en GroupProfile (tabla separada), se actualiza manualmente
+        old_is_active = None
         if 'is_active' in request.data:
             profile, _ = GroupProfile.objects.get_or_create(group=group)
+            old_is_active = profile.is_active
             profile.is_active = request.data['is_active']
             profile.save()
         serializer = GroupSerializer(group, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
+            # Determinar acción comparando el estado anterior con el nuevo
+            if old_is_active is not None and profile.is_active != old_is_active:
+                accion = "ACTIVAR" if profile.is_active else "DESACTIVAR"
+            else:
+                accion = "EDITAR"
+            log_action(request.user, accion, "Grupo", group.name)
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -346,6 +358,7 @@ class GroupViewSet(viewsets.ViewSet):
         profile, _ = GroupProfile.objects.get_or_create(group=group)
         profile.is_active = False
         profile.save()
+        log_action(request.user, "DESACTIVAR", "Grupo", group.name)
         return Response({'message': 'Grupo desactivado correctamente'})
 
     @action(detail=True, methods=['post'], url_path='permissions')

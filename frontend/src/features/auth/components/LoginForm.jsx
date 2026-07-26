@@ -1,6 +1,7 @@
 import { Input, Button, IconButton  } from "@/shared"
 import React, {useState} from "react";
-import { loginShema } from "../schemas/loginSchema";
+// Sin validación Zod en el login: no queremos revelar al usuario
+// si el formato del usuario es un correo ni el largo mínimo de la contraseña.
 import  logoSigi  from "@/assets/images/LOGO-SIGI.png";
 import { useNavigate, Link } from "react-router-dom";
 import { login } from "../services/authService";
@@ -12,7 +13,8 @@ export default function LoginForm() {
         userEmail: "",
         userPassword: "",
     });
-    const [errors, setErrors] = useState({});
+    // No se usan errores por campo — todo error se muestra como credenciales inválidas
+
 
     
     // Handle eventos. onChange cada vez que se escribe. onBlur toma el valor cuando uno sale del campo
@@ -43,47 +45,27 @@ export default function LoginForm() {
     */
 
     const handleSubmit = async (e) => {
-
         e.preventDefault();
-        //Se valida el objeto formData usando el esquema definido con Zod
-        // safeParse devuelve un objeto indicando si la validacion fue exitosa o no
-        const result = loginShema.safeParse(formData);
 
-        //Si la validacion falla
-        if (!result.success) {
-            const fieldErrors = {};
-
-            //Zod devuelve los errores en un arreglo llamado issues
-            //se recorren para asociar cada error a su campo correspondiente
-            result.error.issues.forEach((issue) => {
-                const field = issue.path[0]
-
-
-                //Se guarda el mensaje de error en el objeto fieldErrors
-                fieldErrors[field] = issue.message;
-            });
-
-            //Se actualiza el estado de errores para mostrarlos en el formulario
-            setErrors(fieldErrors);
-            //Se detiene la ejecucion porque el formulario tiene errores
-            return;
+        // Validación mínima: solo verificar que los campos no estén vacíos.
+        // No se dan pistas sobre formato (correo, largo de contraseña, etc.)
+        if (!formData.userEmail.trim() || !formData.userPassword.trim()) {
+            Alert.error("Credenciales inválidas", "Verifica tus datos e intenta de nuevo.")
+            return
         }
-        //Si la validacion es exitosa se limpian los errores anteriores
-        setErrors({});
-        //result.data contiene los datos ya validados por Zod
-        try {
-            Alert.loading("Iniciando sesión", "Estamos validando su solicitud..."); //alerta de espera
-            const data = await login(result.data);
-            Alert.close(); //aleta se cierra
-            Alert.success("Inicio de sesión exitoso");
-            //console.log("LOGIN RESPONSE:", data);
-            sessionStorage.setItem("token", data.access); //clave adta. access es lo que devuelve el backend
 
-            //despues de loguear a donde me lleva
-            navigate("/dashboard");
-        } catch (error) {
-            Alert.close();
-            Alert.error("Error al iniciar sesión", error.message)
+        try {
+            Alert.loading("Iniciando sesión", "Estamos validando su solicitud...")
+            const data = await login(formData)
+            Alert.close()
+            Alert.success("Inicio de sesión exitoso")
+            sessionStorage.setItem("token", data.access)
+            navigate("/dashboard")
+        } catch {
+            // Cualquier error del backend se muestra igual de genérico
+            // para no revelar si el usuario existe o si la contraseña es incorrecta
+            Alert.close()
+            Alert.error("Credenciales inválidas", "Verifica tus datos e intenta de nuevo.")
         }
     }
 
@@ -110,7 +92,6 @@ export default function LoginForm() {
                             label="Usuario"
                             value={formData.userEmail}
                             onChange={handleChange}
-                            error={errors.userEmail}
                         />
                         <Input
                             placeholder="Contraseña"
@@ -119,7 +100,6 @@ export default function LoginForm() {
                             label="Contraseña"
                             value={formData.userPassword}
                             onChange={handleChange}
-                            error={errors.userPassword}
                         />
 
                         {/* Acciones */}

@@ -93,6 +93,8 @@ export default function ViewUserPage() {
                     { label: "Dirección",            value: user.user_addres },
                     { label: "Segundo teléfono",     value: user.user_tel2 },
                     { label: "Correo institucional", value: user.user_email2 },
+                    { label: "Cuentadante",          value: user.is_accountant ? "Sí" : "No" },
+                    { label: "Staff",                value: user.is_staff      ? "Sí" : "No" },
                 ]} />
             </ViewPageTemplate>
 

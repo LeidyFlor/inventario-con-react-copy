@@ -7,12 +7,14 @@ import { Alert } from "@/shared";
 import ReportLoanModal from "@/features/loans/reports/components/ReportLoanModal";
 import { ReportConfigModal as ReportConsumableModal } from "@/features/consumable-material/reports/components/ReportConfigModal";
 import { ReportConfigModal as ReportReturnableModal } from "@/features/returnable-material/reports/components/ReportConfigModal";
+import LogsModal from "@/features/audit/components/LogsModal";
 
 export default function Navbar( { isOpen, onClose }){
     const navigate = useNavigate()
     const [loanReportOpen, setLoanReportOpen] = useState(false)
     const [consumableReportOpen, setConsumableReportOpen] = useState(false)
     const [returnableReportOpen, setReturnableReportOpen] = useState(false)
+    const [logsOpen, setLogsOpen] = useState(false)
     // handle de logout
     const handleLogOut = async () => {
         const result = await Alert.confirm("Cierre de sesión", "¿Está seguro que desea cerrar sesión?")
@@ -177,9 +179,12 @@ export default function Navbar( { isOpen, onClose }){
                                         </Link>
                                     </DropdownItem>
                                     <DropdownItem>
-                                    <Link to="group-list" className="block w-full">
+                                        <Link to="group-list" className="block w-full">
                                             Gestión de grupos
                                         </Link>
+                                    </DropdownItem>
+                                    <DropdownItem onClick={() => setLogsOpen(true)}>
+                                        Historial
                                     </DropdownItem>
 
                                 </DropdownContent>
@@ -198,6 +203,7 @@ export default function Navbar( { isOpen, onClose }){
         <ReportLoanModal isOpen={loanReportOpen} onClose={() => setLoanReportOpen(false)} />
         <ReportConsumableModal isOpen={consumableReportOpen} onClose={() => setConsumableReportOpen(false)} />
         <ReportReturnableModal isOpen={returnableReportOpen} onClose={() => setReturnableReportOpen(false)} />
+        <LogsModal isOpen={logsOpen} onClose={() => setLogsOpen(false)} />
         </>
     )
 }

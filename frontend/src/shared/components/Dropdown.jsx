@@ -77,7 +77,7 @@ export function DropdownTrigger({ children }) {
     const handleClick = (e) => {
         if (triggerRef.current) {
             const rect = triggerRef.current.getBoundingClientRect()
-            const dropdownHeight = 150
+            const dropdownHeight = 200
             const dropdownWidth = 192 // min-w-48 = 192px
 
             // ¿Cabe abajo?

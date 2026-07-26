@@ -8,6 +8,19 @@ import { createLoan, createIdentityToken, verifyToken } from "../services/loanSe
 import { useNavigate } from "react-router-dom";
 import { Alert } from "@/shared/components/utils/alert";
 
+// Devuelve la fecha local actual en formato YYYY-MM-DD.
+// Se usa getFullYear/Month/Date en vez de toISOString() porque toISOString()
+// retorna la fecha en UTC, lo cual en Colombia (UTC-5) puede devolver
+// el día siguiente a partir de las 7 PM hora local.
+const localToday = () => {
+    const d = new Date()
+    return [
+        d.getFullYear(),
+        String(d.getMonth() + 1).padStart(2, "0"),
+        String(d.getDate()).padStart(2, "0"),
+    ].join("-")
+}
+
 export default function NewLoanForm() {
     const navigate = useNavigate();
 
@@ -263,6 +276,7 @@ export default function NewLoanForm() {
 
                             <div className="flex flex-row gap-2 overflow-hidden">
                                 <div className="flex-1 min-w-0 w-0">
+                                    {/* min=hoy para no permitir fechas pasadas */}
                                     <Input
                                         type="date"
                                         name="loanDateOut"
@@ -270,9 +284,11 @@ export default function NewLoanForm() {
                                         value={formData.loanDateOut}
                                         onChange={handleChange}
                                         error={errors.loanDateOut}
+                                        min={localToday()}
                                     />
                                 </div>
                                 <div className="flex-1 min-w-0 w-0">
+                                    {/* min=hoy para no permitir fechas pasadas */}
                                     <Input
                                         label="Fecha estimada de entrega"
                                         type="date"
@@ -280,6 +296,7 @@ export default function NewLoanForm() {
                                         value={formData.loanDateIn}
                                         onChange={handleChange}
                                         error={errors.loanDateIn}
+                                        min={localToday()}
                                     />
                                 </div>
                             </div>

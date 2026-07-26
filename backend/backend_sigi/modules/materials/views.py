@@ -3,6 +3,7 @@ from rest_framework.response import Response
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from django.conf import settings
+from backend_sigi.utils.audit import log_action
 from django.utils import timezone
 import requests as http_requests
 
@@ -37,7 +38,8 @@ class BrandViewSet(viewsets.ViewSet):
         serializer = BrandSerializer(data=request.data)
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        serializer.save()
+        brand = serializer.save()
+        log_action(request.user, "CREAR", "Marca", brand.name)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     def update(self, request, pk=None):
@@ -46,10 +48,17 @@ class BrandViewSet(viewsets.ViewSet):
         except Brand.DoesNotExist:
             return Response({'error': 'Marca no encontrada'}, status=status.HTTP_404_NOT_FOUND)
 
+        old_is_active = brand.is_active
         serializer = BrandSerializer(brand, data=request.data, partial=True)
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         serializer.save()
+        # Determinar acción comparando el estado anterior con el nuevo
+        if 'is_active' in request.data and brand.is_active != old_is_active:
+            accion = "ACTIVAR" if brand.is_active else "DESACTIVAR"
+        else:
+            accion = "EDITAR"
+        log_action(request.user, accion, "Marca", brand.name)
         return Response(serializer.data)
 
     def partial_update(self, request, pk=None):
@@ -62,6 +71,7 @@ class BrandViewSet(viewsets.ViewSet):
             return Response({'error': 'Marca no encontrada'}, status=status.HTTP_404_NOT_FOUND)
         brand.is_active = False
         brand.save()
+        log_action(request.user, "DESACTIVAR", "Marca", brand.name)
         return Response({'message': 'Marca desactivada correctamente'})
 
 class ConsumableMaterialViewSet(viewsets.ViewSet):
@@ -114,6 +124,7 @@ class ConsumableMaterialViewSet(viewsets.ViewSet):
                 material.material_image = url
                 material.save()
 
+        log_action(request.user, "CREAR", "Material de consumo", material.material_name)
         return Response(ConsumableMaterialSerializer(material).data, status=status.HTTP_201_CREATED)
 
     def update(self, request, pk=None):
@@ -122,6 +133,7 @@ class ConsumableMaterialViewSet(viewsets.ViewSet):
         except ConsumableMaterial.DoesNotExist:
             return Response({'error': 'Material no encontrado'}, status=status.HTTP_404_NOT_FOUND)
 
+        old_is_active = material.is_active
         serializer = ConsumableMaterialUpdateSerializer(material, data=request.data, partial=True)
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -153,6 +165,12 @@ class ConsumableMaterialViewSet(viewsets.ViewSet):
                 material.material_image = f"{settings.SUPABASE_URL}/storage/v1/object/public/material-data-sheet/{file_name}"
                 material.save()
 
+        # Determinar acción comparando el estado anterior con el nuevo
+        if 'is_active' in request.data and material.is_active != old_is_active:
+            accion = "ACTIVAR" if material.is_active else "DESACTIVAR"
+        else:
+            accion = "EDITAR"
+        log_action(request.user, accion, "Material de consumo", material.material_name)
         return Response(ConsumableMaterialSerializer(material).data)
 
     def partial_update(self, request, pk=None):
@@ -165,6 +183,7 @@ class ConsumableMaterialViewSet(viewsets.ViewSet):
             return Response({'error': 'Material no encontrado'}, status=status.HTTP_404_NOT_FOUND)
         material.is_active = False
         material.save()
+        log_action(request.user, "DESACTIVAR", "Material de consumo", material.material_name)
         return Response({'message': 'Material desactivado correctamente'})
 
     @action(detail=True, methods=['post'], url_path='upload-image')
@@ -291,6 +310,7 @@ class ReturnableMaterialViewSet(viewsets.ViewSet):
                     file_name=tech_file.name,
                 )
 
+        log_action(request.user, "CREAR", "Material devolutivo", material.material_name)
         return Response(ReturnableMaterialSerializer(material).data, status=status.HTTP_201_CREATED)
 
     def update(self, request, pk=None):
@@ -299,6 +319,7 @@ class ReturnableMaterialViewSet(viewsets.ViewSet):
         except ReturnableMaterial.DoesNotExist:
             return Response({'error': 'Material no encontrado'}, status=status.HTTP_404_NOT_FOUND)
 
+        old_is_active = material.is_active
         serializer = ReturnableMaterialUpdateSerializer(material, data=request.data, partial=True)
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -332,6 +353,12 @@ class ReturnableMaterialViewSet(viewsets.ViewSet):
                 material.material_image = url
                 material.save()
 
+        # Determinar acción comparando el estado anterior con el nuevo
+        if 'is_active' in request.data and material.is_active != old_is_active:
+            accion = "ACTIVAR" if material.is_active else "DESACTIVAR"
+        else:
+            accion = "EDITAR"
+        log_action(request.user, accion, "Material devolutivo", material.material_name)
         return Response(ReturnableMaterialSerializer(material).data)
 
     def partial_update(self, request, pk=None):
@@ -344,6 +371,7 @@ class ReturnableMaterialViewSet(viewsets.ViewSet):
             return Response({'error': 'Material no encontrado'}, status=status.HTTP_404_NOT_FOUND)
         material.is_active = False
         material.save()
+        log_action(request.user, "DESACTIVAR", "Material devolutivo", material.material_name)
         return Response({'message': 'Material desactivado correctamente'})
 
     @action(detail=True, methods=['post'], url_path='upload-technical-files')

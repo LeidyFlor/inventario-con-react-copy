@@ -188,3 +188,41 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = os.getenv('BREVO_SMTP_LOGIN', '')
 EMAIL_HOST_PASSWORD = os.getenv('BREVO_SMTP_KEY', '')
 DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'sigi.sena@gmail.com')
+
+# ──────────────────────────────────────────────────────────────
+# Auditoría — logs de acciones de usuarios
+# Archivo diario en backend/logs/audit.log
+# Rotación automática a medianoche; se conservan 31 días
+# ──────────────────────────────────────────────────────────────
+LOGS_DIR = BASE_DIR / 'logs'
+LOGS_DIR.mkdir(exist_ok=True)
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'audit': {
+            'format': '{asctime} | {levelname} | {message}',
+            'style': '{',
+            'datefmt': '%Y-%m-%d %H:%M:%S',
+        },
+    },
+    'handlers': {
+        'audit_file': {
+            'class': 'logging.handlers.TimedRotatingFileHandler',
+            'filename': str(LOGS_DIR / 'audit.log'),
+            'when': 'midnight',
+            'interval': 1,
+            'backupCount': 31,
+            'formatter': 'audit',
+            'encoding': 'utf-8',
+        },
+    },
+    'loggers': {
+        'audit': {
+            'handlers': ['audit_file'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+    },
+}
