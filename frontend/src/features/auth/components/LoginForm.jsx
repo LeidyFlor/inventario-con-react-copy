@@ -61,11 +61,23 @@ export default function LoginForm() {
             Alert.success("Inicio de sesión exitoso")
             sessionStorage.setItem("token", data.access)
             navigate("/dashboard")
-        } catch {
-            // Cualquier error del backend se muestra igual de genérico
-            // para no revelar si el usuario existe o si la contraseña es incorrecta
+        } catch (err) {
             Alert.close()
-            Alert.error("Credenciales inválidas", "Verifica tus datos e intenta de nuevo.")
+
+            // 409 = el usuario ya tiene una sesión activa (otro dispositivo/pestaña,
+            // o cerró abruptamente y aún no pasó el periodo de gracia del heartbeat).
+            // Este caso sí se distingue porque no revela nada sobre la contraseña,
+            // solo informa un estado legítimo para que la persona entienda qué pasa.
+            // Cualquier otro error (401, red, etc.) se muestra genérico a propósito,
+            // para no revelar si el usuario existe o si la contraseña es incorrecta.
+            if (err.status === 409) {
+                Alert.error(
+                    "Sesión ya activa",
+                    "Este usuario ya tiene una sesión abierta en otro dispositivo o pestaña. Ciérrala, o espera unos minutos si se cerró abruptamente."
+                )
+            } else {
+                Alert.error("Credenciales inválidas", "Verifica tus datos e intenta de nuevo.")
+            }
         }
     }
 

@@ -4,10 +4,17 @@ import { IconButton, Navbar, Button, Header } from "@/shared"
 import { LoginForm } from "@/features/auth";
 import { useState } from "react";
 import { PermissionsProvider } from "@/features/permissions/context/PermissionsContext";
+import { useHeartbeat } from "@/features/auth/hooks/useHeartbeat";
 
 export default function DashboardLayout() {
     const navigate = useNavigate();
     const [menuOpen, setMenuOpen] = useState(false);
+
+    // Mientras el dashboard esté abierto, avisa cada 2 minutos que la
+    // pestaña sigue activa. Si se cierra, el backend cierra la sesión solo
+    // pasados 5 minutos sin recibir este latido.
+    useHeartbeat();
+
     return (
         // PermissionsProvider carga los permisos del usuario al entrar al dashboard
         // y registra el interceptor global de respuestas 403

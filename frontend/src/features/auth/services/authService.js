@@ -18,7 +18,13 @@ export async function login(userData) {
 
   if (!response.ok) {
     const error = await response.json();
-    throw new Error(error.error || "Error login");
+    const err = new Error(error.error || "Error login");
+    // Se conserva el status HTTP para que LoginForm pueda distinguir
+    // "sesión ya activa" (409) de "credenciales inválidas" (401).
+    // El mensaje en sí sigue siendo genérico para no revelar si el
+    // correo existe o si la contraseña tiene el formato incorrecto.
+    err.status = response.status;
+    throw err;
   }
 
   return response.json();

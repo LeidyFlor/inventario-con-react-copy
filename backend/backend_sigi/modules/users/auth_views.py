@@ -9,6 +9,7 @@ from django.utils import timezone
 from datetime import timedelta
 from .models import Users
 from .serializers import UserSerializer
+from .backends import HEARTBEAT_GRACE_PERIOD
 import random
 import string
 from django.core.mail import send_mail
@@ -26,8 +27,20 @@ class LoginView(APIView):
             return Response({'error': 'Credenciales inválidas'}, status=status.HTTP_401_UNAUTHORIZED)
 
         # Verificar si ya hay sesión activa y no ha expirado. Es lo mismo que preguntarse, existe un token registrado y la hora-actual es < hora-caducada? si si envia error porque ya existe sesion iniciada
+        #
+        # Además del tope de 8h, se revisa el heartbeat: si el usuario cerró la
+        # pestaña, nunca vuelve a llegar una petición con el token viejo, así que
+        # JWTSessionAuthentication.get_user() nunca tiene la oportunidad de limpiar
+        # current_token_jti (solo se limpia cuando ESE token se vuelve a usar).
+        # Sin este chequeo, el usuario quedaría bloqueado hasta que se cumplan las
+        # 8 horas completas, aunque su sesión ya esté "muerta" hace rato.
         if user.current_token_jti and user.current_token_expires_at:
-            if timezone.now() < user.current_token_expires_at:
+            session_still_valid = timezone.now() < user.current_token_expires_at
+            heartbeat_alive = (
+                user.last_heartbeat_at
+                and timezone.now() - user.last_heartbeat_at <= HEARTBEAT_GRACE_PERIOD
+            )
+            if session_still_valid and heartbeat_alive:
                 return Response(
                     {'error': 'Ya hay una sesión activa con este usuario'},
                     status=status.HTTP_409_CONFLICT
@@ -40,6 +53,10 @@ class LoginView(APIView):
         # Guardar jti y expiración en el usuario
         user.current_token_jti = str(access['jti'])
         user.current_token_expires_at = timezone.now() + timedelta(hours=8)
+        # Arranca el reloj del heartbeat justo en el login, para que la
+        # primera petición no encuentre el campo vacío y se dispare el
+        # chequeo de inactividad antes de que el frontend envíe su primer latido
+        user.last_heartbeat_at = timezone.now()
         user.last_login = timezone.now()   #guarda last_login en data base
         user.save()
         #en un json se le entrega a react lod 2 tokens, determina si el usuario no ha cambiado contraseña y user, es la informacion del usuario

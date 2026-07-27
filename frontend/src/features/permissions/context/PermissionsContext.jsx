@@ -38,6 +38,11 @@ export function PermissionsProvider({ children }) {
     // usuarios, grupos y estados al montarse)
     const handling403Ref = useRef(false)
 
+    // Mismo propósito que el anterior, pero para 401 (sesión inválida).
+    // Ej: si el heartbeat y otra petición fallan casi al mismo tiempo tras
+    // el cierre de sesión por inactividad, solo se avisa una vez.
+    const handling401Ref = useRef(false)
+
     const refresh = useCallback(async () => {
         // Sin token no tiene sentido pedir permisos (usuario no logueado)
         if (!sessionStorage.getItem("token")) {
@@ -63,14 +68,17 @@ export function PermissionsProvider({ children }) {
     useEffect(() => { refresh() }, [refresh])
 
     // ──────────────────────────────────────────────────────────────
-    // Interceptor global de respuestas 403
+    // Interceptor global de respuestas 401 y 403
     //
     // Se envuelve window.fetch una sola vez para no tener que modificar
     // los ~20 archivos de servicios que usan fetch directamente.
     //
-    // IMPORTANTE: un 403 significa "estás autenticado pero sin permiso".
-    // NO se toca el token — la sesión sigue viva. Eso es distinto de un
-    // 401, que sí implica que el token es inválido o expiró.
+    // 403 = estás autenticado pero sin permiso. NO se toca el token, la
+    //       sesión sigue viva.
+    // 401 = el token ya no es válido (expiró, se inició sesión en otro
+    //       dispositivo, o el backend la cerró por inactividad de la
+    //       pestaña tras 5 minutos sin heartbeat). Aquí sí se limpia la
+    //       sesión local y se manda al login.
     // ──────────────────────────────────────────────────────────────
     useEffect(() => {
         const originalFetch = window.fetch
@@ -81,6 +89,20 @@ export function PermissionsProvider({ children }) {
             // Solo interceptar llamadas a nuestra propia API
             const url = typeof args[0] === "string" ? args[0] : args[0]?.url ?? ""
             const isOwnApi = url.includes("/api/")
+
+            if (response.status === 401 && isOwnApi && !handling401Ref.current) {
+                handling401Ref.current = true
+
+                sessionStorage.removeItem("token")
+                Alert.error(
+                    "Sesión finalizada",
+                    "Tu sesión se cerró. Inicia sesión de nuevo para continuar."
+                )
+                navigate("/auth")
+
+                setTimeout(() => { handling401Ref.current = false }, 1000)
+                return response
+            }
 
             if (response.status === 403 && isOwnApi && !handling403Ref.current) {
                 // Bandera para que varias peticiones simultáneas que fallen

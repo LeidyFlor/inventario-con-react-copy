@@ -299,6 +299,20 @@ class UserViewSet(viewsets.ViewSet):
         return Response({'message': 'Sesión cerrada correctamente'})
 
     # ──────────────────────────────────────────────────────────────
+    # POST /api/users/heartbeat/ — "sigo aquí"
+    #
+    # El frontend llama esto cada 2 minutos mientras el dashboard está
+    # abierto. Si el navegador deja de enviarlo (pestaña cerrada) por más
+    # de 5 minutos, JWTSessionAuthentication invalida la sesión en la
+    # siguiente petición autenticada. Ver backends.py.
+    # ──────────────────────────────────────────────────────────────
+    @action(detail=False, methods=['post'], url_path='heartbeat')
+    def heartbeat(self, request):
+        request.user.last_heartbeat_at = timezone.now()
+        request.user.save(update_fields=['last_heartbeat_at'])
+        return Response({'message': 'ok'})
+
+    # ──────────────────────────────────────────────────────────────
     # GET /api/users/me/ — datos del propio usuario logueado
     # No requiere permisos: cualquiera puede ver su propia información
     # ──────────────────────────────────────────────────────────────
