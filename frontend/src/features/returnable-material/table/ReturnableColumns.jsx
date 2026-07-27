@@ -1,6 +1,7 @@
 // src/features/returnable-material/table/ReturnableColumns.jsx
 // @refresh reset
-import { useState } from "react"
+
+import { useNavigate } from "react-router-dom"
 import { StatusSwitch, Alert } from "@/shared"
 import ReturnableRowAction from "../components/ReturnableRowAction"
 import { toggleReturnableStatus } from "../services/returnableService"
@@ -8,6 +9,20 @@ import { getMaterialStates } from "../services/selectService"
 import Swal from "sweetalert2"
 import { usePermissions } from "@/features/permissions/context/PermissionsContext"
 import { PERM } from "@/features/permissions/config/perms"
+
+// Componente separado para poder usar el hook useNavigate
+// (los hooks no se pueden llamar dentro de la función cell directamente)
+function ReturnableNameCell({ material }) {
+    const navigate = useNavigate();
+    return (
+        <span
+            onDoubleClick={() => navigate(`/dashboard/returnable-materials/${material.id}/view`)}
+            className="cursor-pointer hover:underline"
+        >
+            {material.material_name}
+        </span>
+    );
+}
 
 // Muestra la categoría como texto legible
 function CategoryTag({ category }) {
@@ -34,10 +49,11 @@ function MaterialStateTag({ isActive, state }) {
 // Recibe setReturnables para actualizar la lista localmente sin recargar
 export const getReturnableColumns = (setReturnables) => [
 
-    // Nombre
+    // Nombre — doble clic navega al visualizar del material
     {
         accessorKey: "material_name",
         header: "Nombre",
+        cell: ({ row }) => <ReturnableNameCell material={row.original} />,
     },
 
     // Placa SENA (obligatoria en devolutivos)

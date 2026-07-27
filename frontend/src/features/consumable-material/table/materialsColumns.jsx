@@ -1,5 +1,6 @@
 // @refresh reset
 import { useState } from "react"
+import { useNavigate } from "react-router-dom"
 import { StatusSwitch, Alert } from "@/shared/"
 import MaterialRowActions from "../components/MaterialRowActions"
 import { toggleMaterialStatus } from "../services/materialService"
@@ -7,6 +8,20 @@ import { getMaterialStates } from "../services/selectService"
 import Swal from "sweetalert2"
 import { usePermissions } from "@/features/permissions/context/PermissionsContext"
 import { PERM } from "@/features/permissions/config/perms"
+
+// Componente separado para poder usar el hook useNavigate
+// (los hooks no se pueden llamar dentro de la función cell directamente)
+function MaterialNameCell({ material }) {
+    const navigate = useNavigate();
+    return (
+        <span
+            onDoubleClick={() => navigate(`/dashboard/materials/${material.id}/view`)}
+            className="cursor-pointer hover:underline"
+        >
+            {material.material_name}
+        </span>
+    );
+}
 
 // Muestra el estado del material solo cuando está inactivo
 function MaterialStateTag({ isActive, state }) {
@@ -23,10 +38,11 @@ function MaterialStateTag({ isActive, state }) {
 
 export const getMaterialsColumns = (setMaterials) => [
 
-    // Nombre del material
+    // Nombre del material — doble clic navega al visualizar
     {
         accessorKey: "material_name",
         header: "Nombre",
+        cell: ({ row }) => <MaterialNameCell material={row.original} />,
     },
 
     // Marca

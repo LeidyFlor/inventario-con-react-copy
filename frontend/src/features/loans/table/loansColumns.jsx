@@ -1,7 +1,22 @@
 // @refresh reset
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { StatusSwitch, Button } from "@/shared/";
 import LoanRowActions from "../components/LoanRowActions";
+
+// Componente separado para poder usar el hook useNavigate
+// (los hooks no se pueden llamar dentro de la función cell directamente)
+function LoanCodeCell({ loan }) {
+    const navigate = useNavigate();
+    return (
+        <span
+            onDoubleClick={() => navigate(`/dashboard/loans/${loan.id}/view`)}
+            className="cursor-pointer hover:underline"
+        >
+            {loan.idLoan}
+        </span>
+    );
+}
 
 function TruncatedCell({ value, maxChars = 30 }) {
     const [open, setOpen] = useState(false);
@@ -53,10 +68,11 @@ function TruncatedCell({ value, maxChars = 30 }) {
 
 export const loansColumns = [
 
-    // Columna ID préstamo
+    // Columna ID préstamo — doble clic navega al visualizar del préstamo
     {
         accessorKey: "idLoan",
         header: "ID Préstamo",
+        cell: ({ row }) => <LoanCodeCell loan={row.original} />,
     },
 
     // Columna grupo aprendices
