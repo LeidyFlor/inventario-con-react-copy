@@ -120,7 +120,7 @@ export default function DataTable({ data, columns, compact = false }) {
 
 
             {/* ================== TABLA ================== */}
-            <div className="overflow-x-auto md:overflow-x-hidden border rounded">
+            <div className="overflow-x-auto md:overflow-x-hidden border border-background-dropdown rounded-2xl">
                 <table className="w-full">
 
 
@@ -176,14 +176,14 @@ export default function DataTable({ data, columns, compact = false }) {
                         {table.getRowModel().rows.map(row => (
 
 
-                            <tr key={row.id} className="hover:bg-surface">
+                            <tr key={row.id} className="bg-background hover:bg-surface">
 
 
                                 {/* Celdas visibles de cada fila */}
                                 {row.getVisibleCells().map(cell => (
 
 
-                                    <td key={cell.id} className="py-2em px-3 border-b">
+                                    <td key={cell.id} className="py-2em px-3 border-b border-background-dropdown">
 
 
                                         {/* Render dinámico del contenido de la celda */}

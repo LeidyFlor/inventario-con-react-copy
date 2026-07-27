@@ -1,15 +1,20 @@
 import { Input, Button, IconButton, Select, Alert, Textarea } from "@/shared"
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { getUserTypes, getTaskState, getUserName } from "@/features/tasks/services/selectService";
 import { tasksSchema } from "../schemas/tasksSchema";
 import { Settings, ChevronLeft, ChevronRight } from "lucide-react";
 import TaskEditModal from "./TaskEditModal";
 import { createTask, getTasks } from "@/features/tasks/services/taskService";
+import { GroupCreateModalPage } from "@/features/groups";
 
 // Cuantas cards se muestran por pagina en la columna derecha
 const CARDS_PER_PAGE = 2;
 
 export default function TaskForm() {
+    const navigate = useNavigate();
+    // Modal para crear grupo al vuelo, mismo patrón que UserRegisterForm
+    const [groupModalOpen, setGroupModalOpen] = useState(false);
     const [formData, setFormData] = useState({
         userName: "",
         userType: "",
@@ -206,8 +211,22 @@ export default function TaskForm() {
                             error={errors.userType}
                             required
                         />
-                        <Button variant="primary" size="sm">Nuevo usuario</Button>
-                        <Button variant="primary" size="sm">Nuevo grupo</Button>
+                        <Button
+                            type="button"
+                            variant="primary"
+                            size="sm"
+                            onClick={() => navigate("/dashboard/user-create")}
+                        >
+                            Nuevo usuario
+                        </Button>
+                        <Button
+                            type="button"
+                            variant="primary"
+                            size="sm"
+                            onClick={() => setGroupModalOpen(true)}
+                        >
+                            Nuevo grupo
+                        </Button>
 
                     </div>
 
@@ -416,6 +435,30 @@ export default function TaskForm() {
                 taskStates={taskState}
                 onSave={handleSaveTask}
             />
+
+            {groupModalOpen && (
+                <div
+                    className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+                    onClick={() => setGroupModalOpen(false)}
+                >
+                    <div onClick={(e) => e.stopPropagation()}>
+                        <GroupCreateModalPage
+                            onClose={() => setGroupModalOpen(false)}
+                            onGroupCreated={(newGroup) => {
+                                // Agrega el nuevo grupo al select y lo deja seleccionado,
+                                // igual que en UserRegisterForm
+                                setUserTypes(prev => [...prev, newGroup])
+                                setFormData(prev => ({
+                                    ...prev,
+                                    userType: String(newGroup.value),
+                                    userName: "", // exclusión mutua con usuario
+                                }))
+                                setGroupModalOpen(false)
+                            }}
+                        />
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
