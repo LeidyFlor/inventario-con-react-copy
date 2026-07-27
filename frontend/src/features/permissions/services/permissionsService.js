@@ -5,6 +5,22 @@ function authHeaders() {
     return { "Authorization": `Bearer ${token}` }
 }
 
+// GET /api/users/me/permissions/ — permisos del usuario logueado
+// Devuelve { permissions: ["app_label.codename", ...], is_superuser, is_staff }
+export async function getMyPermissions() {
+    const res = await fetch(`${API_URL}/users/me/permissions/`, { headers: authHeaders() })
+    if (!res.ok) throw new Error("Error al obtener los permisos del usuario")
+    return res.json()
+}
+
+// GET /api/users/me/ — datos del propio usuario logueado
+// No requiere el permiso view_users: cualquiera puede ver su propia información
+export async function getMyProfile() {
+    const res = await fetch(`${API_URL}/users/me/`, { headers: authHeaders() })
+    if (!res.ok) throw new Error("Error al obtener el perfil")
+    return res.json()
+}
+
 // GET /api/permissions/ — lista todos los permisos disponibles del sistema
 export async function getPermissions() {
     const res = await fetch(`${API_URL}/permissions/`, { headers: authHeaders() })

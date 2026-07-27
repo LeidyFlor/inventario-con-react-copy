@@ -6,6 +6,8 @@ import ReturnableRowAction from "../components/ReturnableRowAction"
 import { toggleReturnableStatus } from "../services/returnableService"
 import { getMaterialStates } from "../services/selectService"
 import Swal from "sweetalert2"
+import { usePermissions } from "@/features/permissions/context/PermissionsContext"
+import { PERM } from "@/features/permissions/config/perms"
 
 // Muestra la categoría como texto legible
 function CategoryTag({ category }) {
@@ -79,10 +81,24 @@ export const getReturnableColumns = (setReturnables) => [
     {
         id: "is_active",
         header: "Activo",
-        cell: ({ row }) => {
-            const material = row.original
+        cell: ({ row }) => (
+            <ReturnableStatusCell material={row.original} setReturnables={setReturnables} />
+        ),
+    },
 
-            const handleChange = async (newValue) => {
+    // Acciones (editar, ver detalle)
+    {
+        id: "actions",
+        cell: ({ row }) => <ReturnableRowAction returnable={row.original} />,
+    },
+]
+
+// Componente separado para poder usar el hook usePermissions
+// (los hooks no se pueden llamar dentro de la función cell directamente)
+function ReturnableStatusCell({ material, setReturnables }) {
+    const { hasPerm } = usePermissions()
+
+    const handleChange = async (newValue) => {
                 if (!newValue) {
                     // Pedir motivo de desactivación
                     const states = getMaterialStates()
@@ -158,19 +174,20 @@ export const getReturnableColumns = (setReturnables) => [
                 }
             }
 
-            return (
-                <StatusSwitch
-                    checked={material.is_active}
-                    onChange={handleChange}
-                    className="inline-flex"
-                />
-            )
-        },
-    },
+    // Sin permiso para activar/desactivar solo se muestra el estado como texto
+    if (!hasPerm(PERM.RETURNABLE_DELETE)) {
+        return (
+            <span className={material.is_active ? "text-brand" : "text-text-muted"}>
+                {material.is_active ? "Sí" : "No"}
+            </span>
+        )
+    }
 
-    // Acciones (editar, ver detalle)
-    {
-        id: "actions",
-        cell: ({ row }) => <ReturnableRowAction returnable={row.original} />,
-    },
-]
+    return (
+        <StatusSwitch
+            checked={material.is_active}
+            onChange={handleChange}
+            className="inline-flex"
+        />
+    )
+}

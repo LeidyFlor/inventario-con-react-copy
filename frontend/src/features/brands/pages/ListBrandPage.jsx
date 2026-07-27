@@ -7,11 +7,14 @@ import BrandRegisterForm from "../components/BrandRegisterForm"
 import { getBrands } from "../services/brandService"
 import { Ping } from "ldrs/react"
 import "ldrs/react/Ping.css"
+import { usePermissions } from "@/features/permissions/context/PermissionsContext"
+import { PERM } from "@/features/permissions/config/perms"
 
 export default function ListBrandPage() {
     const [modalAbierto, setModalAbierto] = useState(false)
     const [brands, setBrands] = useState([])
     const [loading, setLoading] = useState(true)
+    const { hasPerm } = usePermissions()
 
     useEffect(() => {
         getBrands()
@@ -39,9 +42,12 @@ export default function ListBrandPage() {
                 </div>
 
                 <div className="flex gap-6">
+                    {/* Crear marca — requiere permiso de crear marcas */}
+                    {hasPerm(PERM.BRAND_ADD) && (
                     <Button variant="primary" size="sm" onClick={() => setModalAbierto(true)}>
                         Crear marca
                     </Button>
+                    )}
                 </div>
             </div>
 

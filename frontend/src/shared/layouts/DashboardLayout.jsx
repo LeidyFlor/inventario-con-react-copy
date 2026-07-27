@@ -3,11 +3,15 @@ import { Link, useNavigate } from "react-router-dom";
 import { IconButton, Navbar, Button, Header } from "@/shared"
 import { LoginForm } from "@/features/auth";
 import { useState } from "react";
+import { PermissionsProvider } from "@/features/permissions/context/PermissionsContext";
 
 export default function DashboardLayout() {
     const navigate = useNavigate();
     const [menuOpen, setMenuOpen] = useState(false);
     return (
+        // PermissionsProvider carga los permisos del usuario al entrar al dashboard
+        // y registra el interceptor global de respuestas 403
+        <PermissionsProvider>
         <div className="relative min-h-screen text-text-primary overflow-hidden bg-background">
 
             <div className=" top-20 left-2 lg:left-34 absolute w-fit h-fit z-5">
@@ -38,5 +42,6 @@ export default function DashboardLayout() {
             </main>
 
         </div>
+        </PermissionsProvider>
     )
 }

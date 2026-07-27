@@ -8,11 +8,14 @@ import { useState } from "react"
 import { useUsers } from "../hooks/useUsers"
 import { Ping } from 'ldrs/react'
 import 'ldrs/react/Ping.css'
+import { usePermissions } from "@/features/permissions/context/PermissionsContext"
+import { PERM } from "@/features/permissions/config/perms"
 
 export default function ListUserPage() {
     const navigate = useNavigate();
     const [isReportModalOpen, setIsReportModalOpen] = useState(false)
     const { users, setUsers, loading } = useUsers()
+    const { hasPerm } = usePermissions()
 
   return (      
     
@@ -30,22 +33,28 @@ export default function ListUserPage() {
 
             <div className="flex gap-6">
 
+                    {/* Reporte — requiere permiso de generar reporte de usuarios */}
+                    {hasPerm(PERM.USER_REPORT) && (
                     <Button
-                        variant="secondary" 
+                        variant="secondary"
                         size="sm"
                         onClick = {() => setIsReportModalOpen(true)}
                     >
                         Reporte
                     </Button>
+                    )}
 
-                  <Link to="/dashboard/user-create">
-                    <Button
-                        variant="primary"
-                        size="sm"
-                    >
-                        Crear Usuario
-                    </Button>
-                </Link>
+                    {/* Crear usuario — el formulario también carga el select de grupos */}
+                    {hasPerm(PERM.USER_ADD) && hasPerm(PERM.GROUP_VIEW) && (
+                    <Link to="/dashboard/user-create">
+                        <Button
+                            variant="primary"
+                            size="sm"
+                        >
+                            Crear Usuario
+                        </Button>
+                    </Link>
+                    )}
 
             </div>
 

@@ -1,7 +1,7 @@
 import {
     useContext, //Consume el estado en cualquier subcomponente(Button,     menu, item)
     createContext, //Define un contenedor de datos
-    useEffect, useRef, useState
+    useEffect, useCallback, useRef, useState
 } from "react";
 import { createPortal } from "react-dom";
 
@@ -14,7 +14,7 @@ export function Dropdown({
     className = "",
 }) {
     // Para saber la posiscion del trigger
-    const [pos, setPos] = useState({ top: 0, left: 0 });
+    const [pos, setPos] = useState({ triggerTop: 0, triggerBottom: 0, left: 0 });
     const triggerRef = useRef(null);
     const [uncontrolledOpen, setUncontrolledOpen] = useState(false);
 
@@ -77,19 +77,18 @@ export function DropdownTrigger({ children }) {
     const handleClick = (e) => {
         if (triggerRef.current) {
             const rect = triggerRef.current.getBoundingClientRect()
-            const dropdownHeight = 200
             const dropdownWidth = 192 // min-w-48 = 192px
 
-            // ¿Cabe abajo?
-            const fitsBottom = rect.bottom + dropdownHeight < window.innerHeight
             // ¿Cabe a la derecha?
             const fitsRight = rect.left + dropdownWidth < window.innerWidth
-            setPos({
-                
-                top: fitsBottom
-                    ? rect.bottom + 4
-                    : rect.top - dropdownHeight - 4,  // 👈 se abre hacia arriba
 
+            // Solo se guardan las coordenadas del trigger.
+            // La posición vertical final la calcula DropdownContent midiendo
+            // su altura real, porque la cantidad de ítems visibles varía
+            // según los permisos del usuario.
+            setPos({
+                triggerTop:    rect.top,
+                triggerBottom: rect.bottom,
                 left: fitsRight
                     ? rect.left    // alinea a la izquierda del trigger (inicio)
                     : rect.right - dropdownWidth  // 👈 alinea a la derecha del trigger (fin)
@@ -116,22 +115,52 @@ export function DropdownTrigger({ children }) {
 export function DropdownContent({ children, className = "" }) {
     const { open, pos, contentRef } = useContext(DropdownContext);
 
+    // Callback ref: React lo llama con el nodo cuando el menú se monta,
+    // durante el commit y antes de que el navegador pinte.
+
+    // Se mide la altura real en vez de asumir un valor fijo porque el número
+    // de ítems visibles cambia según los permisos del usuario: un menú de 2
+    // ítems mide mucho menos que uno de 5, y con una altura fija el menú
+    // quedaba flotando separado del botón al abrirse hacia arriba.
+
+    // La posición se escribe directamente en el estilo del nodo en vez de
+    // guardarla en un useState, para no provocar un render adicional.
+    const setContentRef = useCallback((node) => {
+        contentRef.current = node
+        if (!node) return
+
+        const height = node.offsetHeight
+        const margin = 4
+
+        // ¿Cabe abajo con su altura real?
+        const fitsBottom = pos.triggerBottom + height + margin < window.innerHeight
+
+        const finalTop = fitsBottom
+            ? pos.triggerBottom + margin
+            : Math.max(margin, pos.triggerTop - height - margin)  // se abre hacia arriba
+
+        node.style.top = `${finalTop}px`
+        node.style.visibility = "visible"
+    }, [pos.triggerTop, pos.triggerBottom, contentRef])
+
     if (!open) return null
-    
-    //El portal saca el drop-down-context de la logica de react 
+
+    //El portal saca el drop-down-context de la logica de react
     return createPortal(
         <div
             role="menu"
-            ref={contentRef}
+            ref={setContentRef}
             style={{
                 position: "fixed",
-                top: pos.top,    // posición calculada del trigger 🔫
+                // Valores provisionales: el callback ref los corrige tras medir
+                // la altura real. Se oculta mientras tanto para evitar parpadeo.
+                top:  pos.triggerBottom + 4,
                 left: pos.left,
+                visibility: "hidden",
             }}
             className={`
             fixed
             overflow-hidden
-            mt-1
             min-w-48
             border
             text-text-primary
@@ -144,7 +173,7 @@ export function DropdownContent({ children, className = "" }) {
             rounded-2xl
             hover:shadow-black
             transition-shadow duration-700
-            ${className}    
+            ${className}
         `}
         >
             {children}

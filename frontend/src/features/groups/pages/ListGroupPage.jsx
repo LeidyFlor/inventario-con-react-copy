@@ -7,11 +7,14 @@ import GroupRegisterModal from "../components/GroupRegisterModal"
 import { getGroups } from "../services/groupService"
 import { Ping } from "ldrs/react"
 import "ldrs/react/Ping.css"
+import { usePermissions } from "@/features/permissions/context/PermissionsContext"
+import { PERM } from "@/features/permissions/config/perms"
 
 export default function ListGroupPage() {
     const [modalAbierto, setModalAbierto] = useState(false)
     const [groups, setGroups]             = useState([])
     const [loading, setLoading]           = useState(true)
+    const { hasPerm } = usePermissions()
 
     useEffect(() => {
         getGroups()
@@ -39,9 +42,12 @@ export default function ListGroupPage() {
                 </div>
 
                 <div className="flex gap-6">
+                    {/* Crear grupo — requiere permiso de crear grupos */}
+                    {hasPerm(PERM.GROUP_ADD) && (
                     <Button variant="primary" size="sm" onClick={() => setModalAbierto(true)}>
                         Crear grupo
                     </Button>
+                    )}
                 </div>
             </div>
 

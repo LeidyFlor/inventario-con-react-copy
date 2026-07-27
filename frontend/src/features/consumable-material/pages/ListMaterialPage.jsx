@@ -8,10 +8,13 @@ import { ReportConfigModal } from "../reports/components/ReportConfigModal"
 import { useMaterials } from "../hooks/useMaterials"
 import { Ping } from 'ldrs/react'
 import 'ldrs/react/Ping.css'
+import { usePermissions } from "@/features/permissions/context/PermissionsContext"
+import { PERM } from "@/features/permissions/config/perms"
 
 export default function ListMaterialPage() {
     const [isReportModalOpen, setIsReportModalOpen] = useState(false)
     const { materials, setMaterials, loading } = useMaterials()
+    const { hasPerm } = usePermissions()
 
   return (      
     
@@ -28,15 +31,20 @@ export default function ListMaterialPage() {
               </div>
 
             <div className="flex mb-3 md:mb-0 gap-6">
-                
+
+                    {/* Reporte — requiere permiso de generar reporte */}
+                    {hasPerm(PERM.CONSUMABLE_REPORT) && (
                     <Button
-                        variant="secondary" 
+                        variant="secondary"
                         size="sm"
                         onClick={() => setIsReportModalOpen(true)}
                     >
                         Reporte
                     </Button>
+                    )}
 
+                {/* Crear — requiere permiso de crear material de consumo */}
+                {hasPerm(PERM.CONSUMABLE_ADD) && (
                 <Link to="/dashboard/consumable-material-create">
                     <Button
                         variant="primary"
@@ -45,6 +53,7 @@ export default function ListMaterialPage() {
                         Crear Material de consumo
                     </Button>
                 </Link>
+                )}
 
             </div>
 

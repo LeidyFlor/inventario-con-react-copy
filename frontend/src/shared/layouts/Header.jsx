@@ -7,11 +7,14 @@ import { Alert } from "@/shared";
 import { searchLoanByCode } from "@/features/loans/services/loanService";
 import logoSenaBlanco from "@/assets/images/logo-sena-blanco.png";
 import logoSigiBlanco from "@/assets/images/sigi-blanco.png";
+import { usePermissions } from "@/features/permissions/context/PermissionsContext";
+import { PERM } from "@/features/permissions/config/perms";
 
 export default function Header( { onMenuToggle } ) {
     //Componente de busqueda. para detectar un cambio cuando cambie
     const [search, setSearch] = useState("");
     const navigate = useNavigate();
+    const { hasPerm } = usePermissions();
 
     //UseState del icono Serch en mobil y su usestate 👀🔎
     const [searchOpen, setSearchOpen] = useState(false); //Estado si se da click en el icono 🔎 en 📱
@@ -112,7 +115,8 @@ export default function Header( { onMenuToggle } ) {
 
                     {/* Seccion de la derecha: busqueda + usuario */}
                     <div className="flex items-center  h-fit">
-                        {/* Solo se muestra en mobil */}
+                        {/* Buscador de préstamos — solo si puede ver préstamos */}
+                        {hasPerm(PERM.LOAN_VIEW) && (
                         <div ref={searchRef} className="flex items-center">
                             <IconButtonReal
                                 variant="outline"
@@ -138,6 +142,7 @@ export default function Header( { onMenuToggle } ) {
                             </div>
 
                         </div>
+                        )}
                         {/* Icono de usuario */}
                         <div className="p-10">
                             <Dropdown>
@@ -150,14 +155,28 @@ export default function Header( { onMenuToggle } ) {
                                 </DropdownTrigger>
 
                                 <DropdownContent className="right-0 w-48">
+                                    {/* El formulario de creación carga el select de
+                                        grupos, por eso también exige view_group */}
+                                    {hasPerm(PERM.USER_ADD) && hasPerm(PERM.GROUP_VIEW) && (
                                     <DropdownItem>
                                         <Link to="user-create" className="block w-full">
                                             Crear Usuario
                                         </Link>
                                     </DropdownItem>
+                                    )}
+                                    {hasPerm(PERM.USER_LIST) && (
                                     <DropdownItem>
                                         <Link to="user-list" className="block w-full">
                                             Gestión de Usuarios
+                                        </Link>
+                                    </DropdownItem>
+                                    )}
+                                    {/* Mi perfil siempre visible: cualquier usuario puede
+                                        consultar su propia información aunque no tenga
+                                        permiso para ver o listar otros usuarios */}
+                                    <DropdownItem>
+                                        <Link to="my-profile" className="block w-full">
+                                            Mi perfil
                                         </Link>
                                     </DropdownItem>
                                     <DropdownItem onClick={handleLogOut} className="block w-full">

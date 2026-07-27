@@ -13,6 +13,7 @@ from rest_framework.permissions import IsAuthenticated
 from django.core.mail import send_mail
 from django.utils.html import strip_tags
 from backend_sigi.utils.audit import log_action
+from backend_sigi.utils.perm_check import deny_if_no_perm
 
 class UserViewSet(viewsets.ViewSet):
     """
@@ -26,12 +27,16 @@ class UserViewSet(viewsets.ViewSet):
 
     def list(self, request):
         """GET /api/users/ — listar usuarios"""
+        deny = deny_if_no_perm(request, 'users.listar_usuarios')
+        if deny: return deny
         users = Users.objects.all()
         serializer = UserSerializer(users, many=True)
         return Response(serializer.data)
 
     def create(self, request):
         """POST /api/users/ — crear nuevo usuario"""
+        deny = deny_if_no_perm(request, 'users.add_users')
+        if deny: return deny
         serializer = UserCreateSerializer(data=request.data)
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -119,6 +124,8 @@ class UserViewSet(viewsets.ViewSet):
 
     def retrieve(self, request, pk=None):
         """GET /api/users/{id}/ — ver detalle de un usuario"""
+        deny = deny_if_no_perm(request, 'users.view_users')
+        if deny: return deny
         try:
             user = Users.objects.get(pk=pk)
         except Users.DoesNotExist:
@@ -128,6 +135,8 @@ class UserViewSet(viewsets.ViewSet):
 
     def update(self, request, pk=None):
         """PUT /api/users/{id}/ — editar usuario"""
+        deny = deny_if_no_perm(request, 'users.change_users')
+        if deny: return deny
         try:
             user = Users.objects.get(pk=pk)
         except Users.DoesNotExist:
@@ -163,6 +172,8 @@ class UserViewSet(viewsets.ViewSet):
 
     def destroy(self, request, pk=None):
         """DELETE /api/users/{id}/ — desactivar usuario (no elimina de la BD)"""
+        deny = deny_if_no_perm(request, 'users.delete_users')
+        if deny: return deny
         try:
             user = Users.objects.get(pk=pk)
         except Users.DoesNotExist:
@@ -246,7 +257,14 @@ class UserViewSet(viewsets.ViewSet):
         GET  /api/users/{id}/permissions/ — permisos individuales del usuario
         POST /api/users/{id}/permissions/ — asignar permisos individuales
         Body POST: { "permissions": [1, 2, 3] }
+
+        Solo el superusuario puede consultar o modificar permisos.
         """
+        if not request.user.is_superuser:
+            return Response(
+                {'error': 'Solo el super administrador puede gestionar los permisos.'},
+                status=status.HTTP_403_FORBIDDEN,
+            )
         try:
             user = Users.objects.get(pk=pk)
         except Users.DoesNotExist:
@@ -280,6 +298,37 @@ class UserViewSet(viewsets.ViewSet):
         request.user.save()
         return Response({'message': 'Sesión cerrada correctamente'})
 
+    # ──────────────────────────────────────────────────────────────
+    # GET /api/users/me/ — datos del propio usuario logueado
+    # No requiere permisos: cualquiera puede ver su propia información
+    # ──────────────────────────────────────────────────────────────
+    @action(detail=False, methods=['get'], url_path='me')
+    def me(self, request):
+        return Response(UserSerializer(request.user).data)
+
+    # ──────────────────────────────────────────────────────────────
+    # GET /api/users/me/permissions/ — permisos del usuario logueado
+    # Devuelve strings tipo "app_label.codename" para que el frontend
+    # pueda verificar con hasPerm(). El superusuario recibe todos.
+    # ──────────────────────────────────────────────────────────────
+    @action(detail=False, methods=['get'], url_path='me/permissions')
+    def my_permissions(self, request):
+        user = request.user
+
+        if user.is_superuser:
+            # get_all_permissions() ya devuelve todos para el superusuario
+            perms = Permission.objects.select_related('content_type').all()
+            perm_strings = [f"{p.content_type.app_label}.{p.codename}" for p in perms]
+        else:
+            # Incluye permisos individuales y los heredados de sus grupos
+            perm_strings = sorted(user.get_all_permissions())
+
+        return Response({
+            'permissions': perm_strings,
+            'is_superuser': user.is_superuser,
+            'is_staff': user.is_staff,
+        })
+
 
 class GroupViewSet(viewsets.ViewSet):
     """
@@ -293,12 +342,16 @@ class GroupViewSet(viewsets.ViewSet):
 
     def list(self, request):
         """GET /api/groups/ — listar grupos con sus permisos e is_active"""
+        deny = deny_if_no_perm(request, 'auth.view_group')
+        if deny: return deny
         groups = Group.objects.prefetch_related('permissions', 'profile').all()
         serializer = GroupSerializer(groups, many=True)
         return Response(serializer.data)
 
     def retrieve(self, request, pk=None):
         """GET /api/groups/{id}/ — detalle de un grupo con sus permisos"""
+        deny = deny_if_no_perm(request, 'auth.view_group')
+        if deny: return deny
         try:
             group = Group.objects.prefetch_related('permissions').get(pk=pk)
         except Group.DoesNotExist:
@@ -308,17 +361,20 @@ class GroupViewSet(viewsets.ViewSet):
 
     def create(self, request):
         """POST /api/groups/ — crear grupo"""
+        deny = deny_if_no_perm(request, 'auth.add_group')
+        if deny: return deny
         serializer = GroupSerializer(data=request.data)
-        #primero guarda al grupo basico y luego el "perfil" con el active=true
         if serializer.is_valid():
-            group = serializer.save()                   # asignar resultado
-            GroupProfile.objects.create(group=group)    # crear profile con is_active=True
+            group = serializer.save()
+            GroupProfile.objects.create(group=group)
             log_action(request.user, "CREAR", "Grupo", group.name)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def update(self, request, pk=None):
         """PUT /api/groups/{id}/ — editar nombre y/o estado del grupo"""
+        deny = deny_if_no_perm(request, 'auth.change_group')
+        if deny: return deny
         try:
             group = Group.objects.get(pk=pk)
         except Group.DoesNotExist:
@@ -344,6 +400,8 @@ class GroupViewSet(viewsets.ViewSet):
 
     def destroy(self, request, pk=None):
         """DELETE /api/groups/{id}/ — desactiva grupo"""
+        deny = deny_if_no_perm(request, 'auth.delete_group')
+        if deny: return deny
         try:
             group = Group.objects.get(pk=pk)
         except Group.DoesNotExist:
@@ -365,7 +423,14 @@ class GroupViewSet(viewsets.ViewSet):
     def assign_permissions(self, request, pk=None):
         """POST /api/groups/{id}/permissions/ — asignar permisos al grupo
         Body: { "permissions": [1, 2, 3] }  ← IDs de auth_permission
+
+        Solo el superusuario puede asignar permisos a un grupo.
         """
+        if not request.user.is_superuser:
+            return Response(
+                {'error': 'Solo el super administrador puede gestionar los permisos.'},
+                status=status.HTTP_403_FORBIDDEN,
+            )
         try:
             group = Group.objects.get(pk=pk)
         except Group.DoesNotExist:
@@ -397,7 +462,15 @@ def available_permissions(request):
     Solo incluye modelos que tienen verbose_name explícito en su Meta (distinto al
     nombre auto-generado por Django). Eso permite marcar qué modelos se exponen en
     la gestión de permisos sin mantener una lista hardcodeada.
+
+    Solo el superusuario puede consultar la tabla de permisos del sistema.
     """
+    if not request.user.is_superuser:
+        return Response(
+            {'error': 'Solo el super administrador puede gestionar los permisos del sistema.'},
+            status=status.HTTP_403_FORBIDDEN,
+        )
+
     import re
     from django.contrib.auth.models import Permission
     from django.apps import apps as django_apps
@@ -449,6 +522,33 @@ def available_permissions(request):
             'content_type__model': model_name,
             'verbose_name': entry['verbose_name'],
             'verbose_name_plural': entry['verbose_name_plural'],
+        })
+
+    # El modelo Group es de django.contrib.auth, no de backend_sigi.modules,
+    # por lo que el filtro anterior no lo incluye. Se agrega explícitamente
+    # porque la gestión de grupos sí es parte del sistema y sus permisos
+    # deben poder asignarse desde esta pantalla.
+    group_perm_labels = {
+        'add_group':    'Crear grupos',
+        'view_group':   'Visualizar grupos',
+        'change_group': 'Actualizar grupos',
+        'delete_group': 'Activar/Desactivar grupos',
+    }
+    group_perms = Permission.objects.filter(
+        content_type__app_label='auth',
+        content_type__model='group',
+    ).select_related('content_type').order_by('codename')
+
+    for perm in group_perms:
+        if perm.codename not in group_perm_labels:
+            continue
+        result.append({
+            'id': perm.id,
+            'codename': perm.codename,
+            'name': group_perm_labels[perm.codename],
+            'content_type__model': 'group',
+            'verbose_name': 'grupo',
+            'verbose_name_plural': 'grupos',
         })
 
     return Response(result)

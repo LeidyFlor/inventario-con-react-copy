@@ -5,6 +5,8 @@ import { useNavigate, useParams } from "react-router-dom";
 import { getReturnables } from "../services/returnableService";
 import { Ping } from "ldrs/react";
 import "ldrs/react/Ping.css";
+import { usePermissions } from "@/features/permissions/context/PermissionsContext";
+import { PERM } from "@/features/permissions/config/perms";
 
 const CATEGORY_LABELS = {
     herramienta:       "Herramienta",
@@ -25,6 +27,7 @@ const formatPrice = (value) =>
 export default function ViewReturnablePage() {
     const navigate = useNavigate();
     const { id } = useParams();
+    const { hasPerm } = usePermissions();
 
     const [material, setMaterial] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -57,7 +60,9 @@ export default function ViewReturnablePage() {
             name={material.material_name}
             description={material.material_description}
             estado={material.is_active}
-            onEdit={() => navigate(`/dashboard/returnable-materials/${material.id}/edit`)}
+            onEdit={hasPerm(PERM.RETURNABLE_CHANGE)
+                ? () => navigate(`/dashboard/returnable-materials/${material.id}/edit`)
+                : undefined}
         >
             <ViewDetailCard fields={[
                 { label: "Placa SENA",          value: material.material_barcode_sena ?? "—" },

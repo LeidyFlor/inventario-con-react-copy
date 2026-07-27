@@ -9,6 +9,8 @@ import { useNavigate } from "react-router-dom";
 import { GroupCreateModalPage } from "@/features/groups";
 import { TaskCreateModal } from "@/features/tasks";
 import { createTaskForUser } from "@/features/tasks/services/taskService";
+import { usePermissions } from "@/features/permissions/context/PermissionsContext";
+import { PERM } from "@/features/permissions/config/perms";
 
 // Devuelve la fecha local actual en formato YYYY-MM-DD.
 // Se usa getFullYear/Month/Date en vez de toISOString() porque toISOString()
@@ -25,6 +27,7 @@ const localToday = () => {
 
 export default function UserRegisterForm() {
     const navigate = useNavigate();
+    const { hasPerm } = usePermissions();
     const [formData, setFormData] = useState({  
         userDocument: "",
         First_name: "",
@@ -362,6 +365,8 @@ export default function UserRegisterForm() {
                             />
                         </div>
 
+                        {/* Agregar tarea requiere el permiso propio de tareas */}
+                        {hasPerm(PERM.TASK_ADD) && (
                         <div className="flex flex-col items-end justify-end gap-4">
                             <Button
                                 variant="primary"
@@ -372,6 +377,7 @@ export default function UserRegisterForm() {
                                 Agregar tarea
                             </Button>
                         </div>
+                        )}
                     </div>
 
                     <div className="flex items-end justify-end">

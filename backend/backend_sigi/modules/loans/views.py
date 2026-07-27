@@ -3,6 +3,7 @@ from django.shortcuts import redirect
 from django.core.mail import send_mail
 from django.utils.html import strip_tags
 from backend_sigi.utils.audit import log_action
+from backend_sigi.utils.perm_check import deny_if_no_perm
 from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.decorators import action
@@ -41,6 +42,8 @@ class LoanViewSet(viewsets.ViewSet):
     # LIST  GET /api/loans/
     # ──────────────────────────────────────────────────────────────
     def list(self, request):
+        deny = deny_if_no_perm(request, 'loans.listar_loan')
+        if deny: return deny
         loans = (
             Loan.objects
             .select_related('loan_user_requester', 'loan_user_lender')
@@ -54,6 +57,8 @@ class LoanViewSet(viewsets.ViewSet):
     # CREATE  POST /api/loans/
     # ──────────────────────────────────────────────────────────────
     def create(self, request):
+        deny = deny_if_no_perm(request, 'loans.add_loan')
+        if deny: return deny
         serializer = LoanCreateSerializer(data=request.data)
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -69,6 +74,8 @@ class LoanViewSet(viewsets.ViewSet):
     # RETRIEVE  GET /api/loans/{id}/
     # ──────────────────────────────────────────────────────────────
     def retrieve(self, request, pk=None):
+        deny = deny_if_no_perm(request, 'loans.view_loan')
+        if deny: return deny
         try:
             loan = (
                 Loan.objects
@@ -86,6 +93,8 @@ class LoanViewSet(viewsets.ViewSet):
     # UPDATE  PATCH /api/loans/{id}/
     # ──────────────────────────────────────────────────────────────
     def partial_update(self, request, pk=None):
+        deny = deny_if_no_perm(request, 'loans.change_loan')
+        if deny: return deny
         try:
             loan = Loan.objects.get(pk=pk)
         except Loan.DoesNotExist:
@@ -104,6 +113,8 @@ class LoanViewSet(viewsets.ViewSet):
     # ──────────────────────────────────────────────────────────────
     @action(detail=True, methods=['post'], url_path='return')
     def return_loan(self, request, pk=None):
+        deny = deny_if_no_perm(request, 'loans.change_loan')
+        if deny: return deny
         try:
             loan = (
                 Loan.objects
@@ -233,6 +244,8 @@ class LoanViewSet(viewsets.ViewSet):
     # ──────────────────────────────────────────────────────────────
     @action(detail=False, methods=['get'], url_path='search')
     def search_by_code(self, request):
+        deny = deny_if_no_perm(request, 'loans.view_loan')
+        if deny: return deny
         code = request.query_params.get('code', '').strip().upper()
         if not code:
             return Response({'error': 'Parámetro code requerido.'}, status=status.HTTP_400_BAD_REQUEST)
