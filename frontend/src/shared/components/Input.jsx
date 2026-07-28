@@ -1,5 +1,6 @@
 // Componente que se va a exportar
-
+import { Eye, EyeOff } from "lucide-react";
+import { useState } from "react";
 export default function Input({
     label,
     type = "Text",
@@ -20,8 +21,10 @@ export default function Input({
         //Variante cunaod se edita el nombre de elementos (border botton verde)
         nameEdit: "border-b-2 border-border rounded-t-xl text-body font-semibold text-text-secundary text-center placeholder-text-muted hover:rounded-2xl hover:border-2 hover:border-focus-border transition-all-duration-10 focus:outline-none focus:ring-1 focus:ring-focus-ring",
     }
-    const isDate = type === "date";
-    
+    const [visible, setVisible] = useState(false) //estado icono 👁️
+    const isPassword = type === "password"
+    const inputType = isPassword && visible ? "text" : type
+    const isDate = inputType === "date";
     // cuerpo de la funcion
     return (
         //Contenedor del input que se exporta con label, cuerpo y feedback message
@@ -78,7 +81,7 @@ export default function Input({
                 {/* border-border es el colo rdel borde con variables */}
                 <input
                     // toma el input de cuando se crea el input
-                    type={type}
+                    type={inputType}
                     size={isDate ? 12: undefined}
                     value={value}
                     style={isDate ? { color: !value ? 'var(--color-text-muted)' : 'var(--color-text-primary)' } : undefined}
@@ -88,6 +91,7 @@ export default function Input({
                         h-10
                         px-4
                         transition-all duration-300
+                        ${isPassword ? "pr-10" : ""}
                         ${variants[variant]}
                         ${error ? "border-2 border-red-800" : "text-text-primary" }
                          ${labelInside && label
@@ -102,6 +106,16 @@ export default function Input({
                     {...props}
                 >
                 </input>
+                {isPassword && (
+                    <button
+                        type="button"
+                        onClick={() => setVisible(v => !v)}
+                        aria-label={visible ? "Ocultar contraseña" : "Mostrar contraseña"}
+                        className="absolute right-3 z-10 text-text-muted hover:text-text-primary"
+                    >
+                        {visible ? <EyeOff size={20} /> : <Eye size={20} />}
+                    </button>
+                )}
 
                 {/* Label DENTRO (flota arriba del texto) */}
                 {label && labelInside && (
