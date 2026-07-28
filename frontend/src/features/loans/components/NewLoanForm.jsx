@@ -175,7 +175,7 @@ export default function NewLoanForm() {
        <div className="flex flex-col place-items-center justify-items-center relative px-4">
 
             {/* Contenedor verde */}
-            <div className="bg-gradient-container-green border-4 border-border-green-container p-4 md:p-5 rounded-4xl w-full max-w-4xl overflow-hidden">
+            <div className="bg-gradient-container-green border-4 border-border-green-container p-2 md:p-5 rounded-4xl w-full max-w-4xl overflow-hidden">
 
                 {/* Título */}
                 <div className="mb-1 max-w-max">
@@ -201,7 +201,7 @@ export default function NewLoanForm() {
 
                         {/*  Usuario solicitante */}
                         <div className="flex flex-col gap-4">
-                            <h2 className="font-bold text-body">2. Selecciona usuario solicitante</h2>
+                            <h2 className="font-bold text-body">2. Selecciona usuario solicitante <span className="text-error">*</span></h2>
                             <Select
                                 name="loanUserRequester"
                                 options={userName}
@@ -213,7 +213,7 @@ export default function NewLoanForm() {
 
                         {/*  Usuario prestador + confirmación de identidad */}
                         <div className="flex flex-col gap-3">
-                            <h2 className="font-bold text-body">3. Usuario prestador</h2>
+                            <h2 className="font-bold text-body">3. Usuario prestador <span className="text-error">*</span></h2>
                             <Select
                                 name="loanUserLender"
                                 options={lenders}
@@ -293,7 +293,7 @@ export default function NewLoanForm() {
                     <div className="flex flex-col gap-4 w-full md:w-1/2 min-w-0">
                         <h2 className="font-bold text-body">4. Ingresar los siguientes datos:</h2>
 
-                        <div className="flex flex-col gap-3 w-full">
+                        <div className="flex flex-col gap-1 w-full">
                             <Input
                                 placeholder="Grupo aprendices"
                                 name="loanStudentsGroup"
@@ -301,6 +301,7 @@ export default function NewLoanForm() {
                                 value={formData.loanStudentsGroup}
                                 onChange={handleChange}
                                 error={errors.loanStudentsGroup}
+                                required
                             />
                             <Textarea
                                 placeholder="Justificación de uso"
@@ -309,6 +310,7 @@ export default function NewLoanForm() {
                                 value={formData.loanJustification}
                                 onChange={handleChange}
                                 error={errors.loanJustification}
+                                required
                             />
                             <Select
                                 label="Tipo de préstamo"
@@ -317,6 +319,7 @@ export default function NewLoanForm() {
                                 value={formData.loanType}
                                 onChange={handleChange}
                                 error={errors.loanType}
+                                required
                             />
 
                             <div className="flex flex-row gap-2 overflow-hidden">
@@ -330,6 +333,7 @@ export default function NewLoanForm() {
                                         onChange={handleChange}
                                         error={errors.loanDateOut}
                                         min={localToday()}
+                                        required
                                     />
                                 </div>
                                 <div className="flex-1 min-w-0 w-0">
@@ -342,6 +346,7 @@ export default function NewLoanForm() {
                                         onChange={handleChange}
                                         error={errors.loanDateIn}
                                         min={localToday()}
+                                        required
                                     />
                                 </div>
                             </div>

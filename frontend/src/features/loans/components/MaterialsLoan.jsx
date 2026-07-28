@@ -448,7 +448,7 @@ export default function MaterialsLoan({ selectedMaterials, setSelectedMaterials 
         <>
             {/* Botones que abren el modal correspondiente según el tipo de material */}
             <div className="flex flex-col gap-4">
-                <h2 className="font-bold text-body">1. Selecciona los materiales</h2>
+                <h2 className="font-bold text-body">1. Selecciona los materiales <span className="text-error">*</span></h2>
                 <div className="flex gap-3 justify-center">
                     <Button
                         type="button"
