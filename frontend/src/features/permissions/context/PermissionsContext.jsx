@@ -1,7 +1,12 @@
 import { createContext, useContext, useState, useEffect, useCallback, useRef } from "react"
 import { useNavigate } from "react-router-dom"
 import { getMyPermissions } from "../services/permissionsService"
-import { Alert } from "@/shared"
+// Se importa Alert desde su archivo y NO desde el barril "@/shared".
+// El barril exporta DashboardLayout, que a su vez importa este contexto:
+// eso creaba una importación circular y hacía que PermissionsContext fuera
+// undefined al evaluarse RequirePerm ("usePermissions debe usarse dentro
+// de <PermissionsProvider>" aunque el provider sí estuviera montado).
+import { Alert } from "@/shared/components/utils/alert.js"
 
 const PermissionsContext = createContext(null)
 

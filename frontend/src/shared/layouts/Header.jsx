@@ -119,7 +119,7 @@ export default function Header( { onMenuToggle } ) {
                         {hasPerm(PERM.LOAN_VIEW) && (
                         <div ref={searchRef} className="flex items-center">
                             <IconButtonReal
-                                variant="outline"
+                                variant="primary"
                                 arialLabel="Buscar"
                                 className={`md:hidden ${searchOpen ? "hidden" : "flex"}`}
                                 onClick={() => setSearchOpen(!searchOpen)}

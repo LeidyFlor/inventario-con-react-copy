@@ -39,9 +39,13 @@ export default function NewLoanForm() {
     const [loanTypes, setLoanTypes]         = useState([]);
     const [selectedMaterials, setSelectedMaterials] = useState([]);
 
-    // Estado del flujo de confirmación de identidad
+    // Estado del flujo de confirmación de identidad.
+    // Requiere doble confirmación: el prestador (quien entrega) y el
+    // solicitante (quien recibe) deben abrir cada uno su enlace del correo.
     const [identityToken, setIdentityToken]         = useState(null)   // UUID devuelto por el backend
-    const [identityConfirmed, setIdentityConfirmed] = useState(false)
+    const [identityConfirmed, setIdentityConfirmed] = useState(false)  // ambos confirmaron
+    const [lenderConfirmed, setLenderConfirmed]       = useState(false)
+    const [requesterConfirmed, setRequesterConfirmed] = useState(false)
     const [identityLoading, setIdentityLoading]     = useState(false)
     const [identityError, setIdentityError]         = useState("")
 
@@ -51,47 +55,72 @@ export default function NewLoanForm() {
         getLenders().then(setLenders);
     }, []); //los [] es para que al menos se ejecute una vez, no tiene dependencia
 
+    // Limpia todo el estado de confirmación. Se llama cuando cambia
+    // cualquiera de las dos personas involucradas, porque el token
+    // generado ya no corresponde a esa pareja.
+    const resetIdentity = () => {
+        setIdentityToken(null);
+        setIdentityConfirmed(false);
+        setLenderConfirmed(false);
+        setRequesterConfirmed(false);
+        setIdentityError("");
+    };
+
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData((prev) => ({ ...prev, [name]: value }));
-        // Si cambia el prestador, resetear la confirmación de identidad
-        if (name === "loanUserLender") {
-            setIdentityToken(null);
-            setIdentityConfirmed(false);
-            setIdentityError("");
+        // Si cambia el prestador o el solicitante, se reinicia la confirmación
+        if (name === "loanUserLender" || name === "loanUserRequester") {
+            resetIdentity();
         }
     };
 
-    // Genera el token y lo envía por correo al prestador
+    // Genera el token y envía un correo a cada parte con su propio enlace
     const handleConfirmIdentity = async () => {
-        if (!formData.loanUserLender) {
-            setIdentityError("Selecciona primero un usuario prestador.");
+        if (!formData.loanUserLender || !formData.loanUserRequester) {
+            setIdentityError("Selecciona primero el usuario solicitante y el prestador.");
+            return;
+        }
+        if (formData.loanUserLender === formData.loanUserRequester) {
+            setIdentityError("El prestador y el solicitante no pueden ser la misma persona.");
             return;
         }
         setIdentityLoading(true);
         setIdentityError("");
         try {
-            const res = await createIdentityToken(formData.loanUserLender);
+            const res = await createIdentityToken(
+                formData.loanUserLender,
+                formData.loanUserRequester,
+            );
             setIdentityToken(res.token);
             setIdentityConfirmed(false);
+            setLenderConfirmed(false);
+            setRequesterConfirmed(false);
         } catch {
-            setIdentityError("No se pudo enviar el correo de confirmación.");
+            setIdentityError("No se pudieron enviar los correos de confirmación.");
         } finally {
             setIdentityLoading(false);
         }
     };
 
-    // Verifica si el prestador ya abrió el link del correo
+    // Consulta cuáles de las dos partes ya abrieron su enlace del correo
     const handleCheckIdentity = async () => {
         if (!identityToken) return;
         setIdentityLoading(true);
         setIdentityError("");
         try {
             const res = await verifyToken(identityToken);
+            setLenderConfirmed(Boolean(res.lender_confirmed));
+            setRequesterConfirmed(Boolean(res.requester_confirmed));
+
             if (res.is_confirmed) {
                 setIdentityConfirmed(true);
             } else {
-                setIdentityError("El prestador aún no ha confirmado. Intenta de nuevo.");
+                // Mensaje concreto según quién falta, en vez de un genérico
+                const faltan = [];
+                if (!res.lender_confirmed)    faltan.push("el prestador");
+                if (!res.requester_confirmed) faltan.push("el solicitante");
+                setIdentityError(`Falta que ${faltan.join(" y ")} confirme(n) su identidad.`);
             }
         } catch {
             setIdentityError("Error al verificar la confirmación.");
@@ -201,13 +230,17 @@ export default function NewLoanForm() {
                                         variant="outline"
                                         size="sm"
                                         onClick={handleConfirmIdentity}
-                                        disabled={identityLoading || !formData.loanUserLender}
+                                        disabled={
+                                            identityLoading ||
+                                            !formData.loanUserLender ||
+                                            !formData.loanUserRequester
+                                        }
                                     >
                                         {identityLoading ? "Enviando..." : "Confirmar identidad"}
                                     </Button>
                                 ) : identityConfirmed ? (
                                     <span className="text-sm font-semibold text-brand">
-                                        ✓ Identidad confirmada
+                                        ✓ Identidad confirmada por ambas partes
                                     </span>
                                 ) : (
                                     <>
@@ -218,7 +251,7 @@ export default function NewLoanForm() {
                                             onClick={handleCheckIdentity}
                                             disabled={identityLoading}
                                         >
-                                            {identityLoading ? "Verificando..." : "Ya confirmé"}
+                                            {identityLoading ? "Verificando..." : "Ya confirmamos"}
                                         </Button>
                                         <Button
                                             type="button"
@@ -227,18 +260,30 @@ export default function NewLoanForm() {
                                             onClick={handleConfirmIdentity}
                                             disabled={identityLoading}
                                         >
-                                            Reenviar correo
+                                            Reenviar correos
                                         </Button>
                                     </>
                                 )}
                             </div>
+
+                            {/* Estado individual de cada parte, para saber quién falta */}
+                            {identityToken && !identityConfirmed && (
+                                <div className="flex flex-col gap-1 text-sm">
+                                    <span className={lenderConfirmed ? "text-brand font-semibold" : "text-text-muted"}>
+                                        {lenderConfirmed ? "✓" : "○"} Prestador
+                                    </span>
+                                    <span className={requesterConfirmed ? "text-brand font-semibold" : "text-text-muted"}>
+                                        {requesterConfirmed ? "✓" : "○"} Solicitante
+                                    </span>
+                                </div>
+                            )}
 
                             {identityError && (
                                 <p className="text-sm text-red-500">{identityError}</p>
                             )}
                             {identityToken && !identityConfirmed && (
                                 <p className="text-sm text-text-muted">
-                                    Se envió un link al prestador. Cuando lo abra, presiona "Ya confirmé".
+                                    Se envió un enlace al prestador y al solicitante. Cuando ambos lo abran, presiona "Ya confirmamos".
                                 </p>
                             )}
                         </div>

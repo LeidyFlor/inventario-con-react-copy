@@ -7,7 +7,12 @@ import { CreateTaskPage } from "@/features/tasks";
 import { ListGroupPage } from "@/features/groups";
 import { CreateConsumablePage, ListMaterialPage, ViewMaterialPage , EditConsumablePage} from "@/features/consumable-material";
 import { CreateReturnablePage, EditReturnablePage, ListReturnablePage, ViewReturnablePage } from "@/features/returnable-material";
-import { ListPermissionsPage, RequirePerm, PERM } from "@/features/permissions";
+import { ListPermissionsPage } from "@/features/permissions";
+// RequirePerm y PERM se importan directo (no por el barril) para no arrastrar
+// ListPermissionsPage → "@/shared" → DashboardLayout dentro del mismo ciclo
+// de importaciones donde vive PermissionsContext.
+import RequirePerm from "@/features/permissions/components/RequirePerm";
+import { PERM } from "@/features/permissions/config/perms";
 import { LoginForm, LoginRestorePassword, LoginRestorePasswordCode, LoginRestoreNewPassword } from "@/features/auth";
 import { AuthLayout, DashboardLayout, ProtectedRoute } from "@/shared/";
 import { HomePage } from "@/features/home";

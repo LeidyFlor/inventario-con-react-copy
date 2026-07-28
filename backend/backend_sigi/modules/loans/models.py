@@ -6,7 +6,12 @@ from backend_sigi.modules.materials.models import ConsumableMaterial, Returnable
 
 class IdentityToken(models.Model):
     """
-    Token temporal para confirmar la identidad del prestador vía correo.
+    Token temporal para confirmar la identidad vía correo antes de crear un préstamo.
+
+    Requiere doble confirmación: tanto el prestador (cuentadante que entrega los
+    materiales) como el solicitante (persona que los recibe) deben abrir el enlace
+    que les llega por correo. El préstamo solo puede crearse cuando ambos confirmaron.
+
     Se genera al hacer clic en 'Confirmar identidad' y se invalida al crear el préstamo.
     """
     token      = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
@@ -16,8 +21,30 @@ class IdentityToken(models.Model):
         limit_choices_to={'is_accountant': True},
         related_name='identity_tokens',
     )
-    is_confirmed = models.BooleanField(default=False)
+    # Persona que recibe los materiales. Nullable para no romper los tokens
+    # que ya existían antes de agregar la doble confirmación.
+    requester  = models.ForeignKey(
+        Users,
+        on_delete=models.CASCADE,
+        null=True, blank=True,
+        related_name='identity_tokens_as_requester',
+    )
+
+    # Confirmación individual de cada parte
+    lender_confirmed    = models.BooleanField(default=False)
+    requester_confirmed = models.BooleanField(default=False)
+
     created_at   = models.DateTimeField(auto_now_add=True)
+
+    @property
+    def is_confirmed(self):
+        """
+        El token se considera confirmado solo cuando ambas partes aceptaron.
+        Si no hay solicitante (tokens antiguos), basta con el prestador.
+        """
+        if self.requester_id is None:
+            return self.lender_confirmed
+        return self.lender_confirmed and self.requester_confirmed
 
     class Meta:
         db_table = 'identity_token'
@@ -92,6 +119,14 @@ class Loan(models.Model):
     )
     accepted_at          = models.DateTimeField(null=True, blank=True)
     accept_observations  = models.TextField(blank=True, default='')
+
+    # ── Recordatorios de vencimiento ───────────────────────────────────────────
+    # Marcan cuándo se envió cada aviso, para que el comando programado
+    # (enviar_recordatorios) no mande el mismo correo dos veces si llega a
+    # ejecutarse más de una vez el mismo día.
+    # Solo aplican a préstamos externos.
+    reminder_previo_sent_at = models.DateTimeField(null=True, blank=True)  # un día antes
+    reminder_vence_sent_at  = models.DateTimeField(null=True, blank=True)  # el día del vencimiento
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

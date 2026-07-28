@@ -53,8 +53,8 @@ AUTH_USER_MODEL = 'users.Users' #Para usar el models de users propio
 AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
 ]
-#para que supabase muestre en hora local las fechas
-TIME_ZONE = 'America/Bogota'
+# TIME_ZONE se define más abajo, en la sección de Internationalization.
+# Antes estaba declarado aquí también y la definición de abajo lo sobrescribía.
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
@@ -130,10 +130,17 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+# Zona horaria de Colombia (UTC-5). NO cambiar a 'UTC': con UTC, a partir de
+# las 7:00 p.m. hora local el servidor ya considera que es el día siguiente,
+# lo que hacía que un préstamo que vence mañana se reportara como "vence hoy".
+# Afecta a timezone.localdate(), los logs de auditoría y las fechas que se
+# muestran en el sistema.
+TIME_ZONE = 'America/Bogota'
 
 USE_I18N = True
 
+# Las fechas se guardan en UTC en la base de datos y Django las convierte
+# a TIME_ZONE al leerlas. Por eso basta con corregir TIME_ZONE.
 USE_TZ = True
 # API sin estados, en cada peticion fornt, debe enviar un token
 REST_FRAMEWORK = {

@@ -1,6 +1,9 @@
 import { useState, useEffect } from "react";
 import { Settings } from "lucide-react";
-import { Select, Alert } from "@/shared";
+// Importados desde su archivo y no desde el barril "@/shared", que exporta
+// DashboardLayout e introduce una importación circular con PermissionsContext
+import Select from "@/shared/components/Select.jsx";
+import { Alert } from "@/shared/components/utils/alert.js";
 import PermissionsForm from "../components/PermissionsForm";
 import {
     getPermissions,
