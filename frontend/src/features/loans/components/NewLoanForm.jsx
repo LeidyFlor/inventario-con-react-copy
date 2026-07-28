@@ -8,6 +8,19 @@ import { createLoan, createIdentityToken, verifyToken } from "../services/loanSe
 import { useNavigate } from "react-router-dom";
 import { Alert } from "@/shared/components/utils/alert";
 
+// Devuelve la fecha local actual en formato YYYY-MM-DD.
+// Se usa getFullYear/Month/Date en vez de toISOString() porque toISOString()
+// retorna la fecha en UTC, lo cual en Colombia (UTC-5) puede devolver
+// el día siguiente a partir de las 7 PM hora local.
+const localToday = () => {
+    const d = new Date()
+    return [
+        d.getFullYear(),
+        String(d.getMonth() + 1).padStart(2, "0"),
+        String(d.getDate()).padStart(2, "0"),
+    ].join("-")
+}
+
 export default function NewLoanForm() {
     const navigate = useNavigate();
 
@@ -26,9 +39,13 @@ export default function NewLoanForm() {
     const [loanTypes, setLoanTypes]         = useState([]);
     const [selectedMaterials, setSelectedMaterials] = useState([]);
 
-    // Estado del flujo de confirmación de identidad
+    // Estado del flujo de confirmación de identidad.
+    // Requiere doble confirmación: el prestador (quien entrega) y el
+    // solicitante (quien recibe) deben abrir cada uno su enlace del correo.
     const [identityToken, setIdentityToken]         = useState(null)   // UUID devuelto por el backend
-    const [identityConfirmed, setIdentityConfirmed] = useState(false)
+    const [identityConfirmed, setIdentityConfirmed] = useState(false)  // ambos confirmaron
+    const [lenderConfirmed, setLenderConfirmed]       = useState(false)
+    const [requesterConfirmed, setRequesterConfirmed] = useState(false)
     const [identityLoading, setIdentityLoading]     = useState(false)
     const [identityError, setIdentityError]         = useState("")
 
@@ -38,47 +55,72 @@ export default function NewLoanForm() {
         getLenders().then(setLenders);
     }, []); //los [] es para que al menos se ejecute una vez, no tiene dependencia
 
+    // Limpia todo el estado de confirmación. Se llama cuando cambia
+    // cualquiera de las dos personas involucradas, porque el token
+    // generado ya no corresponde a esa pareja.
+    const resetIdentity = () => {
+        setIdentityToken(null);
+        setIdentityConfirmed(false);
+        setLenderConfirmed(false);
+        setRequesterConfirmed(false);
+        setIdentityError("");
+    };
+
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData((prev) => ({ ...prev, [name]: value }));
-        // Si cambia el prestador, resetear la confirmación de identidad
-        if (name === "loanUserLender") {
-            setIdentityToken(null);
-            setIdentityConfirmed(false);
-            setIdentityError("");
+        // Si cambia el prestador o el solicitante, se reinicia la confirmación
+        if (name === "loanUserLender" || name === "loanUserRequester") {
+            resetIdentity();
         }
     };
 
-    // Genera el token y lo envía por correo al prestador
+    // Genera el token y envía un correo a cada parte con su propio enlace
     const handleConfirmIdentity = async () => {
-        if (!formData.loanUserLender) {
-            setIdentityError("Selecciona primero un usuario prestador.");
+        if (!formData.loanUserLender || !formData.loanUserRequester) {
+            setIdentityError("Selecciona primero el usuario solicitante y el prestador.");
+            return;
+        }
+        if (formData.loanUserLender === formData.loanUserRequester) {
+            setIdentityError("El prestador y el solicitante no pueden ser la misma persona.");
             return;
         }
         setIdentityLoading(true);
         setIdentityError("");
         try {
-            const res = await createIdentityToken(formData.loanUserLender);
+            const res = await createIdentityToken(
+                formData.loanUserLender,
+                formData.loanUserRequester,
+            );
             setIdentityToken(res.token);
             setIdentityConfirmed(false);
+            setLenderConfirmed(false);
+            setRequesterConfirmed(false);
         } catch {
-            setIdentityError("No se pudo enviar el correo de confirmación.");
+            setIdentityError("No se pudieron enviar los correos de confirmación.");
         } finally {
             setIdentityLoading(false);
         }
     };
 
-    // Verifica si el prestador ya abrió el link del correo
+    // Consulta cuáles de las dos partes ya abrieron su enlace del correo
     const handleCheckIdentity = async () => {
         if (!identityToken) return;
         setIdentityLoading(true);
         setIdentityError("");
         try {
             const res = await verifyToken(identityToken);
+            setLenderConfirmed(Boolean(res.lender_confirmed));
+            setRequesterConfirmed(Boolean(res.requester_confirmed));
+
             if (res.is_confirmed) {
                 setIdentityConfirmed(true);
             } else {
-                setIdentityError("El prestador aún no ha confirmado. Intenta de nuevo.");
+                // Mensaje concreto según quién falta, en vez de un genérico
+                const faltan = [];
+                if (!res.lender_confirmed)    faltan.push("el prestador");
+                if (!res.requester_confirmed) faltan.push("el solicitante");
+                setIdentityError(`Falta que ${faltan.join(" y ")} confirme(n) su identidad.`);
             }
         } catch {
             setIdentityError("Error al verificar la confirmación.");
@@ -133,7 +175,7 @@ export default function NewLoanForm() {
        <div className="flex flex-col place-items-center justify-items-center relative px-4">
 
             {/* Contenedor verde */}
-            <div className="bg-gradient-container-green border-4 border-border-green-container p-4 md:p-5 rounded-4xl w-full max-w-4xl overflow-hidden">
+            <div className="bg-gradient-container-green border-4 border-border-green-container p-2 md:p-5 rounded-4xl w-full max-w-4xl overflow-hidden">
 
                 {/* Título */}
                 <div className="mb-1 max-w-max">
@@ -159,7 +201,7 @@ export default function NewLoanForm() {
 
                         {/*  Usuario solicitante */}
                         <div className="flex flex-col gap-4">
-                            <h2 className="font-bold text-body">2. Selecciona usuario solicitante</h2>
+                            <h2 className="font-bold text-body">2. Selecciona usuario solicitante <span className="text-error">*</span></h2>
                             <Select
                                 name="loanUserRequester"
                                 options={userName}
@@ -171,7 +213,7 @@ export default function NewLoanForm() {
 
                         {/*  Usuario prestador + confirmación de identidad */}
                         <div className="flex flex-col gap-3">
-                            <h2 className="font-bold text-body">3. Usuario prestador</h2>
+                            <h2 className="font-bold text-body">3. Usuario prestador <span className="text-error">*</span></h2>
                             <Select
                                 name="loanUserLender"
                                 options={lenders}
@@ -188,13 +230,17 @@ export default function NewLoanForm() {
                                         variant="outline"
                                         size="sm"
                                         onClick={handleConfirmIdentity}
-                                        disabled={identityLoading || !formData.loanUserLender}
+                                        disabled={
+                                            identityLoading ||
+                                            !formData.loanUserLender ||
+                                            !formData.loanUserRequester
+                                        }
                                     >
                                         {identityLoading ? "Enviando..." : "Confirmar identidad"}
                                     </Button>
                                 ) : identityConfirmed ? (
                                     <span className="text-sm font-semibold text-brand">
-                                        ✓ Identidad confirmada
+                                        ✓ Identidad confirmada por ambas partes
                                     </span>
                                 ) : (
                                     <>
@@ -205,7 +251,7 @@ export default function NewLoanForm() {
                                             onClick={handleCheckIdentity}
                                             disabled={identityLoading}
                                         >
-                                            {identityLoading ? "Verificando..." : "Ya confirmé"}
+                                            {identityLoading ? "Verificando..." : "Ya confirmamos"}
                                         </Button>
                                         <Button
                                             type="button"
@@ -214,18 +260,30 @@ export default function NewLoanForm() {
                                             onClick={handleConfirmIdentity}
                                             disabled={identityLoading}
                                         >
-                                            Reenviar correo
+                                            Reenviar correos
                                         </Button>
                                     </>
                                 )}
                             </div>
+
+                            {/* Estado individual de cada parte, para saber quién falta */}
+                            {identityToken && !identityConfirmed && (
+                                <div className="flex flex-col gap-1 text-sm">
+                                    <span className={lenderConfirmed ? "text-brand font-semibold" : "text-text-muted"}>
+                                        {lenderConfirmed ? "✓" : "○"} Prestador
+                                    </span>
+                                    <span className={requesterConfirmed ? "text-brand font-semibold" : "text-text-muted"}>
+                                        {requesterConfirmed ? "✓" : "○"} Solicitante
+                                    </span>
+                                </div>
+                            )}
 
                             {identityError && (
                                 <p className="text-sm text-red-500">{identityError}</p>
                             )}
                             {identityToken && !identityConfirmed && (
                                 <p className="text-sm text-text-muted">
-                                    Se envió un link al prestador. Cuando lo abra, presiona "Ya confirmé".
+                                    Se envió un enlace al prestador y al solicitante. Cuando ambos lo abran, presiona "Ya confirmamos".
                                 </p>
                             )}
                         </div>
@@ -235,7 +293,7 @@ export default function NewLoanForm() {
                     <div className="flex flex-col gap-4 w-full md:w-1/2 min-w-0">
                         <h2 className="font-bold text-body">4. Ingresar los siguientes datos:</h2>
 
-                        <div className="flex flex-col gap-3 w-full">
+                        <div className="flex flex-col gap-1 w-full">
                             <Input
                                 placeholder="Grupo aprendices"
                                 name="loanStudentsGroup"
@@ -243,6 +301,7 @@ export default function NewLoanForm() {
                                 value={formData.loanStudentsGroup}
                                 onChange={handleChange}
                                 error={errors.loanStudentsGroup}
+                                required
                             />
                             <Textarea
                                 placeholder="Justificación de uso"
@@ -251,6 +310,7 @@ export default function NewLoanForm() {
                                 value={formData.loanJustification}
                                 onChange={handleChange}
                                 error={errors.loanJustification}
+                                required
                             />
                             <Select
                                 label="Tipo de préstamo"
@@ -259,10 +319,12 @@ export default function NewLoanForm() {
                                 value={formData.loanType}
                                 onChange={handleChange}
                                 error={errors.loanType}
+                                required
                             />
 
                             <div className="flex flex-row gap-2 overflow-hidden">
                                 <div className="flex-1 min-w-0 w-0">
+                                    {/* min=hoy para no permitir fechas pasadas */}
                                     <Input
                                         type="date"
                                         name="loanDateOut"
@@ -270,9 +332,12 @@ export default function NewLoanForm() {
                                         value={formData.loanDateOut}
                                         onChange={handleChange}
                                         error={errors.loanDateOut}
+                                        min={localToday()}
+                                        required
                                     />
                                 </div>
                                 <div className="flex-1 min-w-0 w-0">
+                                    {/* min=hoy para no permitir fechas pasadas */}
                                     <Input
                                         label="Fecha estimada de entrega"
                                         type="date"
@@ -280,6 +345,8 @@ export default function NewLoanForm() {
                                         value={formData.loanDateIn}
                                         onChange={handleChange}
                                         error={errors.loanDateIn}
+                                        min={localToday()}
+                                        required
                                     />
                                 </div>
                             </div>

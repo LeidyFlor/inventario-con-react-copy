@@ -60,6 +60,7 @@ class UserCreateSerializer(serializers.ModelSerializer):
             'user_date_start',
             'user_date_end',
             'is_accountant',
+            'is_staff',
             'groups',
         ]
 

@@ -8,10 +8,13 @@ import ChangePasswordModal from "../components/ChangePasswordModal";
 import { TaskCreateModal, TaskViewModal } from "@/features/tasks";
 import { getUser } from "../services/userService";
 import { createTaskForUser, getTasksByUser, getTasksByGroup } from "@/features/tasks/services/taskService";
+import { usePermissions } from "@/features/permissions/context/PermissionsContext";
+import { PERM } from "@/features/permissions/config/perms";
 
 export default function ViewUserPage() {
     const navigate = useNavigate();
     const { id } = useParams();
+    const { hasPerm } = usePermissions();
     const [user, setUser]         = useState(null);
     const [loading, setLoading]   = useState(true);
     const [tasks, setTasks]       = useState([]);
@@ -65,20 +68,25 @@ export default function ViewUserPage() {
                 image={user.user_image}
                 name={`${user.first_name} ${user.last_name}`}
                 estado={user.is_active}
-                onEdit={handleEdit}
+                onEdit={hasPerm(PERM.USER_CHANGE) ? handleEdit : undefined}
                 topActions={
                     <div className="flex gap-4 mb-3">
+                        {/* Agregar tarea usa el permiso propio de tareas */}
+                        {hasPerm(PERM.TASK_ADD) && (
                         <Button variant="primary" size="sm" onClick={() => setCreateTaskModalOpen(true)}>
                             <p className="hidden md:block">Agregar tarea</p>
                         </Button>
+                        )}
                         <Button variant="ghost" size="sm" onClick={() => setViewTaskModalOpen(true)}>
                             <ListTodo size={16} />
                             <p className="hidden md:block">Tareas</p>
                         </Button>
+                        {hasPerm(PERM.USER_CHANGE) && (
                         <Button variant="outline" size="sm" onClick={() => setShowPasswordModal(true)}>
                             <KeyRound size={20} />
                             <p className="hidden md:block">Cambiar contraseña</p>
                         </Button>
+                        )}
                     </div>
                 }
             >
@@ -93,6 +101,8 @@ export default function ViewUserPage() {
                     { label: "Dirección",            value: user.user_addres },
                     { label: "Segundo teléfono",     value: user.user_tel2 },
                     { label: "Correo institucional", value: user.user_email2 },
+                    { label: "Cuentadante",          value: user.is_accountant ? "Sí" : "No" },
+                    { label: "Staff",                value: user.is_staff      ? "Sí" : "No" },
                 ]} />
             </ViewPageTemplate>
 

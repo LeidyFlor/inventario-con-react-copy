@@ -9,11 +9,14 @@ import ReportConfigModal from "../reports/components/ReportLoanModal"
 import { getLoans } from "../services/loanService"
 import { Ping } from "ldrs/react"
 import "ldrs/react/Ping.css"
+import { usePermissions } from "@/features/permissions/context/PermissionsContext"
+import { PERM } from "@/features/permissions/config/perms"
 
 export default function ListLoanPage() {
     const [loanList, setLoanList]   = useState([])
     const [loading, setLoading]     = useState(true)
     const [isReportModalOpen, setIsReportModalOpen] = useState(false)
+    const { hasPerm } = usePermissions()
 
     useEffect(() => {
         getLoans()
@@ -55,6 +58,8 @@ export default function ListLoanPage() {
 
             <div className="flex mb-3 md:mb-0 gap-6">
 
+                    {/* Reporte — requiere permiso de generar reporte de préstamos */}
+                    {hasPerm(PERM.LOAN_REPORT) && (
                     <Button
                         variant="secondary"
                         size="sm"
@@ -62,6 +67,9 @@ export default function ListLoanPage() {
                     >
                         Reporte
                     </Button>
+                    )}
+                {/* Crear préstamo — requiere permiso de crear préstamos */}
+                {hasPerm(PERM.LOAN_ADD) && (
                 <Link to="/dashboard/loan-create">
                     <Button
                         variant="primary"
@@ -70,6 +78,7 @@ export default function ListLoanPage() {
                         Crear préstamo
                     </Button>
                 </Link>
+                )}
 
             </div>
 

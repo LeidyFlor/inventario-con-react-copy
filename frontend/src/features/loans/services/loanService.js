@@ -209,26 +209,28 @@ export async function verifyToken(tokenUUID) {
         body: JSON.stringify({ token: tokenUUID }),
     })
     if (!response.ok) throw new Error("Error al verificar token")
-    return response.json() // { is_confirmed: true|false }
+    // { is_confirmed, lender_confirmed, requester_confirmed, lender_id, requester_id }
+    return response.json()
 }
 
 //  POST /api/loans/identity-token/ ─
-// Genera el token y (cuando esté listo) envía el correo al prestador
+// Genera el token y envía un correo a cada parte (prestador y solicitante).
+// Ambos deben abrir su enlace para que el préstamo pueda crearse.
 
-export async function createIdentityToken(lenderId) {
+export async function createIdentityToken(lenderId, requesterId) {
     const response = await fetch(`${API_URL}/loans/identity-token/`, {
         method: "POST",
         headers: {
             Authorization:  `Bearer ${getToken()}`,
             "Content-Type": "application/json",
         },
-        body: JSON.stringify({ lender_id: lenderId }),
+        body: JSON.stringify({ lender_id: lenderId, requester_id: requesterId }),
     })
     if (!response.ok) {
         const error = await response.json()
         throw new Error(JSON.stringify(error))
     }
-    return response.json() // { token, confirm_url, message }
+    return response.json() // { token, message, errores_envio }
 }
 
 //  POST /api/loans/{id}/check-identity/ ──
@@ -248,4 +250,15 @@ export async function checkIdentity(loanId, token) {
         throw new Error(JSON.stringify(error))
     }
     return response.json() // { identity_confirmed: true }
+}
+
+export async function searchLoanByCode(code) {
+    const response = await fetch(`${API_URL}/loans/search/?code=${encodeURIComponent(code)}`, {
+        headers: { Authorization: `Bearer ${getToken()}` },
+    })
+    if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.error ?? "Préstamo no encontrado")
+    }
+    return response.json() // { id }
 }

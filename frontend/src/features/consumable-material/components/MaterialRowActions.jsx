@@ -11,11 +11,15 @@ import {
     DropdownTrigger,
     DropdownItem
     }  from "@/shared"
+import { usePermissions } from "@/features/permissions/context/PermissionsContext";
+import { PERM } from "@/features/permissions/config/perms";
 
 
 // Componente que renderiza las acciones de cada fila de usuario
 // Recibe como prop el objeto user
 export default function MaterialRowActions({ material }) {
+
+  const { hasPerm } = usePermissions();
 
 
   // const handleEdit = () => {
@@ -50,21 +54,25 @@ export default function MaterialRowActions({ material }) {
     // Contenedor de los botones de acciones
     <div className="flex gap-2">
 
-      {/* Botón editar */}
+      {/* Botón editar — requiere permiso de actualizar material de consumo */}
+      {hasPerm(PERM.CONSUMABLE_CHANGE) && (
       <IconButtonReal
         onClick={handleEdit} // Ejecuta la navegación a la página de edición
         variant="outline"
       >
         <Pencil size={20} /> {/* Icono de editar */}
       </IconButtonReal>
+      )}
 
-      {/* Botón Visualizar */}
+      {/* Botón Visualizar — requiere permiso de ver material de consumo */}
+      {hasPerm(PERM.CONSUMABLE_VIEW) && (
       <IconButtonReal
         onClick={handleView} // Ejecuta la navegación a la página de visualizar
         variant="outline"
       >
         <Eye size={20} /> {/* Icono de visualizar */}
       </IconButtonReal>
+      )}
 
     </div>
   );

@@ -58,7 +58,8 @@ export async function createUser(formData) {
         ? formData.userDateEnd.toISOString().split("T")[0]
         : formData.userDateEnd,
     );
-    data.append("is_accountant", formData.is_accountant ? 1: 0)
+    data.append("is_accountant", formData.is_accountant ? 1 : 0)
+    data.append("is_staff",     formData.is_staff     ? 1 : 0)
     if (Array.isArray(formData.userType)){
         // se debe iterar sobre array y se hace append por cada valor
         formData.userType.forEach((groupId) =>{

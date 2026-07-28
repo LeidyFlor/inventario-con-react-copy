@@ -1,9 +1,27 @@
+// @refresh reset
 import { useState } from "react"
+import { useNavigate } from "react-router-dom"
 import { StatusSwitch, Alert } from "@/shared/"
 import MaterialRowActions from "../components/MaterialRowActions"
 import { toggleMaterialStatus } from "../services/materialService"
 import { getMaterialStates } from "../services/selectService"
 import Swal from "sweetalert2"
+import { usePermissions } from "@/features/permissions/context/PermissionsContext"
+import { PERM } from "@/features/permissions/config/perms"
+
+// Componente separado para poder usar el hook useNavigate
+// (los hooks no se pueden llamar dentro de la función cell directamente)
+function MaterialNameCell({ material }) {
+    const navigate = useNavigate();
+    return (
+        <span
+            onDoubleClick={() => navigate(`/dashboard/materials/${material.id}/view`)}
+            className="cursor-pointer hover:underline"
+        >
+            {material.material_name}
+        </span>
+    );
+}
 
 // Muestra el estado del material solo cuando está inactivo
 function MaterialStateTag({ isActive, state }) {
@@ -20,10 +38,11 @@ function MaterialStateTag({ isActive, state }) {
 
 export const getMaterialsColumns = (setMaterials) => [
 
-    // Nombre del material
+    // Nombre del material — doble clic navega al visualizar
     {
         accessorKey: "material_name",
         header: "Nombre",
+        cell: ({ row }) => <MaterialNameCell material={row.original} />,
     },
 
     // Marca
@@ -66,10 +85,24 @@ export const getMaterialsColumns = (setMaterials) => [
     {
         id: "is_active",
         header: "Estado",
-        cell: ({ row }) => {
-            const material = row.original
+        cell: ({ row }) => (
+            <MaterialStatusCell material={row.original} setMaterials={setMaterials} />
+        ),
+    },
 
-            const handleChange = async (newValue) => {
+    // Acciones (editar, ver detalle)
+    {
+        id: "actions",
+        cell: ({ row }) => <MaterialRowActions material={row.original} />,
+    },
+]
+
+// Componente separado para poder usar el hook usePermissions
+// (los hooks no se pueden llamar dentro de la función cell directamente)
+function MaterialStatusCell({ material, setMaterials }) {
+    const { hasPerm } = usePermissions()
+
+    const handleChange = async (newValue) => {
                 if (!newValue) {
                     // Pedir confirmación y motivo al desactivar
                     const states = getMaterialStates()
@@ -145,19 +178,20 @@ export const getMaterialsColumns = (setMaterials) => [
                 }
             }
 
-            return (
-                <StatusSwitch
-                    checked={material.is_active}
-                    onChange={handleChange}
-                    className="inline-flex"
-                />
-            )
-        },
-    },
+    // Sin permiso para activar/desactivar solo se muestra el estado como texto
+    if (!hasPerm(PERM.CONSUMABLE_DELETE)) {
+        return (
+            <span className={material.is_active ? "text-brand" : "text-text-muted"}>
+                {material.is_active ? "Activo" : "Inactivo"}
+            </span>
+        )
+    }
 
-    // Acciones (editar, ver detalle)
-    {
-        id: "actions",
-        cell: ({ row }) => <MaterialRowActions material={row.original} />,
-    },
-]
+    return (
+        <StatusSwitch
+            checked={material.is_active}
+            onChange={handleChange}
+            className="inline-flex"
+        />
+    )
+}

@@ -90,6 +90,11 @@ class Users(AbstractUser):
     current_token_jti = models.CharField(max_length=255, null=True, blank=True)
     #verifica cuando expiro el token, y en caso de que el usuario no cierre sesión
     current_token_expires_at = models.DateTimeField(null=True, blank=True)
+    # Último "latido" enviado por el frontend cada 2 minutos mientras el dashboard
+    # está abierto. Si pasan más de 5 minutos sin latido (pestaña cerrada), la
+    # sesión se invalida automáticamente en la siguiente petición autenticada.
+    # Ver JWTSessionAuthentication.get_user() en backends.py
+    last_heartbeat_at = models.DateTimeField(null=True, blank=True)
 
     #MODELO DE GRUPO, solo es para agregar el is_active que no viene por defecto en grupos, de resto django ya tiene creado los demas grupos on delete Cascade es para que en caso de que grupos aunque sea tenga asignado 1 usuario no se pueda deactivar
 class GroupProfile(models.Model):

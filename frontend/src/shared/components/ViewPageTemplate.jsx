@@ -83,9 +83,14 @@ export default function ViewPageTemplate({
                             <span className="font-medium">Estado: </span>
                             {estado == true ? "Activo" : "Inactivo"}
                         </div>
+                        {/* El botón solo aparece si el padre pasa onEdit.
+                            Las páginas pasan undefined cuando el usuario no
+                            tiene permiso de edición sobre ese módulo. */}
+                        {onEdit && (
                         <Button variant="warning" size={"sm"} onClick={onEdit}>
                             Editar
                         </Button>
+                        )}
                     </div>
                 </div>
 

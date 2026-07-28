@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from django.db import transaction
+from django.db import transaction, models
 
 from backend_sigi.modules.users.models import Users
 from backend_sigi.modules.materials.models import ConsumableMaterial, ReturnableMaterial
@@ -258,13 +258,16 @@ class LoanCreateSerializer(serializers.Serializer):
 
         loan = Loan.objects.create(**validated_data)
 
-        # Vincula el token de identidad si fue confirmado
+        # Vincula el token de identidad solo si AMBAS partes confirmaron.
+        # is_confirmed es una propiedad calculada, no una columna, por eso se
+        # busca por token y luego se evalúa en Python.
         if identity_token_uuid:
             try:
-                token_obj = IdentityToken.objects.get(token=identity_token_uuid, is_confirmed=True)
-                loan.identity_token     = token_obj
-                loan.identity_confirmed = True
-                loan.save(update_fields=['identity_token', 'identity_confirmed'])
+                token_obj = IdentityToken.objects.get(token=identity_token_uuid)
+                if token_obj.is_confirmed:
+                    loan.identity_token     = token_obj
+                    loan.identity_confirmed = True
+                    loan.save(update_fields=['identity_token', 'identity_confirmed'])
             except IdentityToken.DoesNotExist:
                 pass
 
@@ -549,32 +552,53 @@ class AcceptReturnSerializer(serializers.Serializer):
 
 class IdentityTokenCreateSerializer(serializers.Serializer):
     """
-    Genera un token de confirmación para el prestador y lo envía por correo.
+    Genera un token de confirmación y lo envía por correo a AMBAS partes:
+    el prestador (cuentadante) y el solicitante (quien recibe los materiales).
     El frontend llama a este endpoint cuando el usuario presiona 'Confirmar identidad'.
     """
     lender_id = serializers.PrimaryKeyRelatedField(
         queryset=Users.objects.filter(is_accountant=True, is_active=True)
     )
+    requester_id = serializers.PrimaryKeyRelatedField(
+        queryset=Users.objects.filter(is_active=True)
+    )
+
+    def validate(self, data):
+        if data['lender_id'] == data['requester_id']:
+            raise serializers.ValidationError(
+                'El prestador y el solicitante no pueden ser la misma persona.'
+            )
+        return data
 
     def create(self, validated_data):
-        lender = validated_data['lender_id']
-        # Invalida tokens anteriores no confirmados del mismo prestador
-        IdentityToken.objects.filter(lender=lender, is_confirmed=False).delete()
-        token = IdentityToken.objects.create(lender=lender)
+        lender    = validated_data['lender_id']
+        requester = validated_data['requester_id']
+        # Invalida tokens anteriores del mismo prestador que aún no estén
+        # completamente confirmados (le falta al menos una de las dos partes)
+        IdentityToken.objects.filter(lender=lender).filter(
+            models.Q(lender_confirmed=False) | models.Q(requester_confirmed=False)
+        ).delete()
+        token = IdentityToken.objects.create(lender=lender, requester=requester)
         return token
 
 
 class IdentityConfirmSerializer(serializers.Serializer):
     """
-    El frontend llama a este endpoint cuando el prestador presiona 'Ya confirmé'
-    para verificar si el token fue confirmado vía el link del correo.
+    El frontend llama a este endpoint cuando el usuario presiona 'Ya confirmé'
+    para verificar si el token fue confirmado por ambas partes vía el correo.
     """
     token = serializers.UUIDField()
 
     def validate_token(self, value):
         try:
-            token_obj = IdentityToken.objects.get(token=value, is_confirmed=True)
+            token_obj = IdentityToken.objects.get(token=value)
         except IdentityToken.DoesNotExist:
-            raise serializers.ValidationError('El token no existe o aún no ha sido confirmado.')
+            raise serializers.ValidationError('El token no existe.')
+        # is_confirmed es propiedad calculada: exige que prestador y
+        # solicitante hayan abierto su respectivo enlace
+        if not token_obj.is_confirmed:
+            raise serializers.ValidationError(
+                'Falta que el prestador o el solicitante confirmen su identidad.'
+            )
         self.context['token_obj'] = token_obj
         return value

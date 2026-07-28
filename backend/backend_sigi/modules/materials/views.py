@@ -3,6 +3,8 @@ from rest_framework.response import Response
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from django.conf import settings
+from backend_sigi.utils.audit import log_action
+from backend_sigi.utils.perm_check import deny_if_no_perm
 from django.utils import timezone
 import requests as http_requests
 
@@ -29,39 +31,55 @@ class BrandViewSet(viewsets.ViewSet):
     """
 
     def list(self, request):
+        deny = deny_if_no_perm(request, 'materials.listar_brand')
+        if deny: return deny
         brands = Brand.objects.all()
         serializer = BrandSerializer(brands, many=True)
         return Response(serializer.data)
 
     def create(self, request):
+        deny = deny_if_no_perm(request, 'materials.add_brand')
+        if deny: return deny
         serializer = BrandSerializer(data=request.data)
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        serializer.save()
+        brand = serializer.save()
+        log_action(request.user, "CREAR", "Marca", brand.name)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     def update(self, request, pk=None):
+        deny = deny_if_no_perm(request, 'materials.change_brand')
+        if deny: return deny
         try:
             brand = Brand.objects.get(pk=pk)
         except Brand.DoesNotExist:
             return Response({'error': 'Marca no encontrada'}, status=status.HTTP_404_NOT_FOUND)
 
+        old_is_active = brand.is_active
         serializer = BrandSerializer(brand, data=request.data, partial=True)
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         serializer.save()
+        if 'is_active' in request.data and brand.is_active != old_is_active:
+            accion = "ACTIVAR" if brand.is_active else "DESACTIVAR"
+        else:
+            accion = "EDITAR"
+        log_action(request.user, accion, "Marca", brand.name)
         return Response(serializer.data)
 
     def partial_update(self, request, pk=None):
         return self.update(request, pk)
 
     def destroy(self, request, pk=None):
+        deny = deny_if_no_perm(request, 'materials.delete_brand')
+        if deny: return deny
         try:
             brand = Brand.objects.get(pk=pk)
         except Brand.DoesNotExist:
             return Response({'error': 'Marca no encontrada'}, status=status.HTTP_404_NOT_FOUND)
         brand.is_active = False
         brand.save()
+        log_action(request.user, "DESACTIVAR", "Marca", brand.name)
         return Response({'message': 'Marca desactivada correctamente'})
 
 class ConsumableMaterialViewSet(viewsets.ViewSet):
@@ -73,13 +91,16 @@ class ConsumableMaterialViewSet(viewsets.ViewSet):
     DELETE /api/consumable-materials/{id}/        - desactivar
     POST   /api/consumable-materials/{id}/upload-image/  - subir imagen
     """
-    #Listar todos los materiales
     def list(self, request):
+        deny = deny_if_no_perm(request, 'materials.listar_consumablematerial')
+        if deny: return deny
         materials = ConsumableMaterial.objects.select_related('brand', 'inventory_manager').all()
         serializer = ConsumableMaterialSerializer(materials, many=True)
         return Response(serializer.data)
-    #Visualizar de un solo elemento
+
     def retrieve(self, request, pk=None):
+        deny = deny_if_no_perm(request, 'materials.view_consumablematerial')
+        if deny: return deny
         try:
             material = ConsumableMaterial.objects.select_related('brand', 'inventory_manager').get(pk=pk)
         except ConsumableMaterial.DoesNotExist:
@@ -87,6 +108,8 @@ class ConsumableMaterialViewSet(viewsets.ViewSet):
         return Response(ConsumableMaterialSerializer(material).data)
 
     def create(self, request):
+        deny = deny_if_no_perm(request, 'materials.add_consumablematerial')
+        if deny: return deny
         serializer = ConsumableMaterialCreateSerializer(data=request.data)
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -114,14 +137,18 @@ class ConsumableMaterialViewSet(viewsets.ViewSet):
                 material.material_image = url
                 material.save()
 
+        log_action(request.user, "CREAR", "Material de consumo", material.material_name)
         return Response(ConsumableMaterialSerializer(material).data, status=status.HTTP_201_CREATED)
 
     def update(self, request, pk=None):
+        deny = deny_if_no_perm(request, 'materials.change_consumablematerial')
+        if deny: return deny
         try:
             material = ConsumableMaterial.objects.get(pk=pk)
         except ConsumableMaterial.DoesNotExist:
             return Response({'error': 'Material no encontrado'}, status=status.HTTP_404_NOT_FOUND)
 
+        old_is_active = material.is_active
         serializer = ConsumableMaterialUpdateSerializer(material, data=request.data, partial=True)
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -153,18 +180,27 @@ class ConsumableMaterialViewSet(viewsets.ViewSet):
                 material.material_image = f"{settings.SUPABASE_URL}/storage/v1/object/public/material-data-sheet/{file_name}"
                 material.save()
 
+        # Determinar acción comparando el estado anterior con el nuevo
+        if 'is_active' in request.data and material.is_active != old_is_active:
+            accion = "ACTIVAR" if material.is_active else "DESACTIVAR"
+        else:
+            accion = "EDITAR"
+        log_action(request.user, accion, "Material de consumo", material.material_name)
         return Response(ConsumableMaterialSerializer(material).data)
 
     def partial_update(self, request, pk=None):
         return self.update(request, pk)
 
     def destroy(self, request, pk=None):
+        deny = deny_if_no_perm(request, 'materials.delete_consumablematerial')
+        if deny: return deny
         try:
             material = ConsumableMaterial.objects.get(pk=pk)
         except ConsumableMaterial.DoesNotExist:
             return Response({'error': 'Material no encontrado'}, status=status.HTTP_404_NOT_FOUND)
         material.is_active = False
         material.save()
+        log_action(request.user, "DESACTIVAR", "Material de consumo", material.material_name)
         return Response({'message': 'Material desactivado correctamente'})
 
     @action(detail=True, methods=['post'], url_path='upload-image')
@@ -225,6 +261,8 @@ class ReturnableMaterialViewSet(viewsets.ViewSet):
     """
 
     def list(self, request):
+        deny = deny_if_no_perm(request, 'materials.listar_returnablematerial')
+        if deny: return deny
         materials = ReturnableMaterial.objects.select_related(
             'brand', 'inventory_manager'
         ).prefetch_related('technical_files').all()
@@ -232,6 +270,8 @@ class ReturnableMaterialViewSet(viewsets.ViewSet):
         return Response(serializer.data)
 
     def retrieve(self, request, pk=None):
+        deny = deny_if_no_perm(request, 'materials.view_returnablematerial')
+        if deny: return deny
         try:
             material = ReturnableMaterial.objects.select_related(
                 'brand', 'inventory_manager'
@@ -241,6 +281,8 @@ class ReturnableMaterialViewSet(viewsets.ViewSet):
         return Response(ReturnableMaterialSerializer(material).data)
 
     def create(self, request):
+        deny = deny_if_no_perm(request, 'materials.add_returnablematerial')
+        if deny: return deny
         serializer = ReturnableMaterialCreateSerializer(data=request.data)
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -291,14 +333,18 @@ class ReturnableMaterialViewSet(viewsets.ViewSet):
                     file_name=tech_file.name,
                 )
 
+        log_action(request.user, "CREAR", "Material devolutivo", material.material_name)
         return Response(ReturnableMaterialSerializer(material).data, status=status.HTTP_201_CREATED)
 
     def update(self, request, pk=None):
+        deny = deny_if_no_perm(request, 'materials.change_returnablematerial')
+        if deny: return deny
         try:
             material = ReturnableMaterial.objects.get(pk=pk)
         except ReturnableMaterial.DoesNotExist:
             return Response({'error': 'Material no encontrado'}, status=status.HTTP_404_NOT_FOUND)
 
+        old_is_active = material.is_active
         serializer = ReturnableMaterialUpdateSerializer(material, data=request.data, partial=True)
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -332,18 +378,27 @@ class ReturnableMaterialViewSet(viewsets.ViewSet):
                 material.material_image = url
                 material.save()
 
+        # Determinar acción comparando el estado anterior con el nuevo
+        if 'is_active' in request.data and material.is_active != old_is_active:
+            accion = "ACTIVAR" if material.is_active else "DESACTIVAR"
+        else:
+            accion = "EDITAR"
+        log_action(request.user, accion, "Material devolutivo", material.material_name)
         return Response(ReturnableMaterialSerializer(material).data)
 
     def partial_update(self, request, pk=None):
         return self.update(request, pk)
 
     def destroy(self, request, pk=None):
+        deny = deny_if_no_perm(request, 'materials.delete_returnablematerial')
+        if deny: return deny
         try:
             material = ReturnableMaterial.objects.get(pk=pk)
         except ReturnableMaterial.DoesNotExist:
             return Response({'error': 'Material no encontrado'}, status=status.HTTP_404_NOT_FOUND)
         material.is_active = False
         material.save()
+        log_action(request.user, "DESACTIVAR", "Material devolutivo", material.material_name)
         return Response({'message': 'Material desactivado correctamente'})
 
     @action(detail=True, methods=['post'], url_path='upload-technical-files')

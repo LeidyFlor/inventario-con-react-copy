@@ -9,10 +9,13 @@ import { ReportConfigModal } from "../reports/components/ReportConfigModal"
 import { useReturnableMaterials } from "../hooks/useReturnableMaterials"
 import { Ping } from 'ldrs/react'
 import 'ldrs/react/Ping.css'
+import { usePermissions } from "@/features/permissions/context/PermissionsContext"
+import { PERM } from "@/features/permissions/config/perms"
 
 export default function ListReturnablePage() {
     const [isReportModalOpen, setIsReportModalOpen] = useState(false)
     const { returnables, setReturnables, loading } = useReturnableMaterials()
+    const { hasPerm } = usePermissions()
 
     return (
         <div className="p-6">
@@ -27,6 +30,8 @@ export default function ListReturnablePage() {
                 </div>
 
                 <div className="flex mb-3 md:mb-0 gap-6">
+                    {/* Reporte — requiere permiso de generar reporte */}
+                    {hasPerm(PERM.RETURNABLE_REPORT) && (
                     <Button
                         variant="secondary"
                         size="sm"
@@ -34,11 +39,15 @@ export default function ListReturnablePage() {
                     >
                         Reporte
                     </Button>
+                    )}
+                    {/* Crear — requiere permiso de crear material devolutivo */}
+                    {hasPerm(PERM.RETURNABLE_ADD) && (
                     <Link to="/dashboard/returnable-material-create">
                         <Button variant="primary" size="sm">
                             Crear Material devolutivo
                         </Button>
                     </Link>
+                    )}
                 </div>
             </div>
 

@@ -4,6 +4,54 @@ import { StatusSwitch } from "@/shared/";
 import UserRowActions from "../components/UserRowActions";
 import { Alert } from "@/shared"
 import { toggleUserStatus } from "../services/userService"
+import { usePermissions } from "@/features/permissions/context/PermissionsContext"
+import { PERM } from "@/features/permissions/config/perms"
+
+// Componente separado para poder usar el hook usePermissions,
+// ya que los hooks no se pueden llamar dentro de la función cell directamente
+function UserStatusCell({ user, setUsers }) {
+    const { hasPerm } = usePermissions()
+
+    const handleChange = async (newValue) => {
+        // Si va a desactivar, pedir confirmación
+        if (!newValue) {
+            const result = await Alert.confirm(
+                "¿Desactivar usuario?",
+                `${user.first_name} ${user.last_name} no podrá iniciar sesión.`
+            )
+            if (!result.isConfirmed) {
+                setUsers(prev => [...prev])
+                return
+            }
+        }
+
+        try {
+            await toggleUserStatus(user.id, newValue)
+            setUsers(prev =>
+                prev.map(u => u.id === user.id ? { ...u, is_active: newValue } : u)
+            )
+        } catch {
+            Alert.error("Error", "No se pudo actualizar el estado del usuario")
+        }
+    }
+
+    // Sin permiso para activar/desactivar solo se muestra el estado como texto
+    if (!hasPerm(PERM.USER_DELETE)) {
+        return (
+            <span className={user.is_active ? "text-brand" : "text-text-muted"}>
+                {user.is_active ? "Activo" : "Inactivo"}
+            </span>
+        )
+    }
+
+    return (
+        <StatusSwitch
+            checked={user.is_active}
+            onChange={handleChange}
+            className="inline-flex"
+        />
+    )
+}
 
 // Muestra los grupos como tags; si hay más de 1 los colapsa
 function GroupsTags({ groups }) {
@@ -74,41 +122,7 @@ export const getUsersColumns = (setUsers, navigate) => [
     {
         accessorKey: "is_active",
         header: "Estado",
-        cell: ({ row }) => {
-            const user = row.original;
-
-            const handleChange = async (newValue) => {
-                // Si va a desactivar, pedir confirmación
-                if (!newValue) {
-                    const result = await Alert.confirm(
-                        "¿Desactivar usuario?",
-                        `${user.first_name} ${user.last_name} no podrá iniciar sesión.`
-                    )
-                    if (!result.isConfirmed) {
-                        setUsers(prev => [...prev])
-                        return
-                    }
-                }
-
-                try {
-                    await toggleUserStatus(user.id, newValue)
-                    // Actualiza el estado local sin recargar toda la lista
-                    setUsers(prev =>
-                        prev.map(u => u.id === user.id ? { ...u, is_active: newValue } : u)
-                    )
-                } catch {
-                    Alert.error("Error", "No se pudo actualizar el estado del usuario")
-                }
-            }
-
-            return (
-                <StatusSwitch
-                    checked={user.is_active}
-                    onChange={handleChange}
-                    className="inline-flex"
-                />
-            )
-        },
+        cell: ({ row }) => <UserStatusCell user={row.original} setUsers={setUsers} />,
     },
 
 

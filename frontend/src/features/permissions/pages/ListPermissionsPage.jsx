@@ -1,6 +1,9 @@
 import { useState, useEffect } from "react";
 import { Settings } from "lucide-react";
-import { Select, Alert } from "@/shared";
+// Importados desde su archivo y no desde el barril "@/shared", que exporta
+// DashboardLayout e introduce una importación circular con PermissionsContext
+import Select from "@/shared/components/Select.jsx";
+import { Alert } from "@/shared/components/utils/alert.js";
 import PermissionsForm from "../components/PermissionsForm";
 import {
     getPermissions,
@@ -11,6 +14,7 @@ import {
 } from "../services/permissionsService";
 import { Ping } from 'ldrs/react'
 import 'ldrs/react/Ping.css'
+import { usePermissions } from "../context/PermissionsContext"
 
 async function fetchGroups() {
     const token = sessionStorage.getItem("token")
@@ -27,6 +31,11 @@ async function fetchUsers() {
 }
 
 export default function ListPermissionsPage() {
+    // La gestión de permisos es exclusiva del super administrador.
+    // También está validado en el backend, esto solo evita mostrar la vista
+    // si alguien escribe la URL directamente.
+    const { isSuperuser, loading: loadingPermsCtx } = usePermissions()
+
     const [groups, setGroups]               = useState([])
     const [users, setUsers]                 = useState([])
     const [allPermissions, setAllPermissions] = useState([])
@@ -44,6 +53,11 @@ export default function ListPermissionsPage() {
     const [loadingPerms, setLoadingPerms] = useState(false)
 
     useEffect(() => {
+        // Sin ser superadmin no se cargan los datos
+        if (loadingPermsCtx || !isSuperuser) {
+            setLoading(false)
+            return
+        }
         Promise.all([fetchGroups(), fetchUsers(), getPermissions()])
             .then(([groupsData, usersData, permsData]) => {
                 setGroups(groupsData.filter(g => g.is_active))
@@ -52,7 +66,7 @@ export default function ListPermissionsPage() {
             })
             .catch(() => Alert.error("Error", "No se pudieron cargar los datos"))
             .finally(() => setLoading(false))
-    }, [])
+    }, [isSuperuser, loadingPermsCtx])
 
     // Convierte IDs de permisos → codenames usando el mapa del backend
     const idsToCodenames = (ids) =>
@@ -124,10 +138,17 @@ export default function ListPermissionsPage() {
     const userOptions    = users.map(u => ({ value: String(u.id), label: `${u.first_name} ${u.last_name}` }))
     const hasSelection   = selectedGroupId || selectedUserId
 
-    if (loading) return (
+    if (loading || loadingPermsCtx) return (
         <div className="flex flex-col place-items-center gap-2">
             <Ping size="45" speed="1.5" color="#56B526" />
             <p className="text-text-muted text-center">Cargando..</p>
+        </div>)
+
+    if (!isSuperuser) return (
+        <div className="flex items-center justify-center min-h-40">
+            <p className="text-text-muted text-center">
+                Solo el super administrador puede gestionar los permisos del sistema.
+            </p>
         </div>)
 
     return (

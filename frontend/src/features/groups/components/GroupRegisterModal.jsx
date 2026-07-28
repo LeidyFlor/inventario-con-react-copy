@@ -4,28 +4,10 @@
 // agregue el grupo al select y lo deje seleccionado.
 
 import { useState } from "react"
-import { Users } from "lucide-react"
+import { UsersRound } from "lucide-react"
 import { Input, Button } from "@/shared"
 import { Alert } from "@/shared"
-
-const API_URL = "/api"
-
-async function createGroup(name) {
-    const token = sessionStorage.getItem("token")
-    const response = await fetch(`${API_URL}/groups/`, {
-        method: "POST",
-        headers: {
-            "Authorization": `Bearer ${token}`,
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ name }),
-    })
-    if (!response.ok) {
-        const error = await response.json()
-        throw new Error(JSON.stringify(error))
-    }
-    return response.json()
-}
+import { createGroup } from "../services/groupService"
 
 export default function GroupRegisterModal({ onClose, onGroupCreated }) {
     const [groupName, setGroupName] = useState("")
@@ -59,7 +41,7 @@ export default function GroupRegisterModal({ onClose, onGroupCreated }) {
 
                 <div className="mb-6 max-w-max">
                     <h1 className="flex gap-2 text-gradient-title text-h3 pb-0.5">
-                        <Users className="text-brand" />
+                        <UsersRound className="text-brand" />
                         Crear grupo
                     </h1>
                     <div className="h-0.5 bg-gradiant-title-line"></div>

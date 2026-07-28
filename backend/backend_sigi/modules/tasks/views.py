@@ -6,6 +6,7 @@ from django.conf import settings
 
 from .models import Task
 from .serializers import TaskReadSerializer, TaskModalSerializer, TaskFullSerializer
+from backend_sigi.utils.perm_check import deny_if_no_perm
 
 
 class TaskViewSet(viewsets.ViewSet):
@@ -13,6 +14,11 @@ class TaskViewSet(viewsets.ViewSet):
 
     # ------------------------------------------------------------------
     # GET /api/tasks/          — listar; filtra por ?user=id o ?group=id
+    #
+    # La LECTURA queda abierta a cualquier usuario autenticado a propósito:
+    # "Mi perfil" permite que cualquiera consulte sus propias tareas asignadas
+    # aunque no tenga permiso de gestión de usuarios.
+    # La escritura (crear/editar/eliminar) sí requiere users.change_users.
     # ------------------------------------------------------------------
     def list(self, request):
         qs = Task.objects.select_related('user', 'group').all()
@@ -30,6 +36,8 @@ class TaskViewSet(viewsets.ViewSet):
     # POST /api/tasks/         — crear desde gestión de tareas (con user o group)
     # ------------------------------------------------------------------
     def create(self, request):
+        deny = deny_if_no_perm(request, 'tasks.add_task')
+        if deny: return deny
         serializer = TaskFullSerializer(data=request.data)
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -50,6 +58,8 @@ class TaskViewSet(viewsets.ViewSet):
     # PATCH /api/tasks/{id}/
     # ------------------------------------------------------------------
     def partial_update(self, request, pk=None):
+        deny = deny_if_no_perm(request, 'tasks.change_task')
+        if deny: return deny
         try:
             task = Task.objects.get(pk=pk)
         except Task.DoesNotExist:
@@ -65,6 +75,8 @@ class TaskViewSet(viewsets.ViewSet):
     # DELETE /api/tasks/{id}/
     # ------------------------------------------------------------------
     def destroy(self, request, pk=None):
+        deny = deny_if_no_perm(request, 'tasks.delete_task')
+        if deny: return deny
         try:
             task = Task.objects.get(pk=pk)
         except Task.DoesNotExist:
@@ -79,6 +91,8 @@ class TaskViewSet(viewsets.ViewSet):
     # ------------------------------------------------------------------
     @action(detail=False, methods=['post'], url_path=r'for-user/(?P<user_id>[0-9]+)')
     def for_user(self, request, user_id=None):
+        deny = deny_if_no_perm(request, 'tasks.add_task')
+        if deny: return deny
         # Importación local para evitar circular import con users
         from django.contrib.auth import get_user_model
         User = get_user_model()
@@ -101,6 +115,8 @@ class TaskViewSet(viewsets.ViewSet):
     # ------------------------------------------------------------------
     @action(detail=False, methods=['post'], url_path=r'for-group/(?P<group_id>[0-9]+)')
     def for_group(self, request, group_id=None):
+        deny = deny_if_no_perm(request, 'tasks.add_task')
+        if deny: return deny
         from django.contrib.auth.models import Group
 
         try:
