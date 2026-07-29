@@ -24,7 +24,47 @@ class LoginView(APIView):
         user = authenticate(request, username=email, password=password)
 
         if not user:
+            # authenticate() devuelve None tanto si la contraseña está mal como
+            # si la cuenta está desactivada (ModelBackend rechaza is_active=False).
+            # Para no mostrar "credenciales inválidas" a alguien cuya cuenta fue
+            # desactivada, se distingue el caso: solo si el correo existe Y la
+            # contraseña es correcta se revela que la cuenta está desactivada.
+            # Así no se filtra qué correos están registrados.
+            inactivo = Users.objects.filter(email=email, is_active=False).first()
+            if inactivo and password and inactivo.check_password(password):
+                return Response(
+                    {'error': 'Tu cuenta está desactivada. Comunícate con el administrador.'},
+                    status=status.HTTP_403_FORBIDDEN
+                )
             return Response({'error': 'Credenciales inválidas'}, status=status.HTTP_401_UNAUTHORIZED)
+
+        # Plazo para cambiar la contraseña temporal.
+        #
+        # Al crear el usuario se guarda must_change_password=True y
+        # password_expires_at = creación + 2h. Si el usuario nunca cambió su
+        # contraseña dentro de ese plazo, la cuenta se desactiva en el momento
+        # en que intenta entrar y ya no puede iniciar sesión: debe pedirle al
+        # administrador que lo reactive (y así se le genera una contraseña nueva).
+        #
+        # Se revisa aquí y no en un proceso programado a propósito: la cuenta
+        # solo estorba cuando alguien intenta usarla, y así no hace falta un
+        # comando adicional corriendo todos los días.
+        if (
+            user.must_change_password
+            and user.password_expires_at
+            and timezone.now() > user.password_expires_at
+        ):
+            user.is_active = False
+            # Se corta cualquier sesión que hubiera quedado registrada
+            user.current_token_jti = None
+            user.current_token_expires_at = None
+            user.save(update_fields=[
+                'is_active', 'current_token_jti', 'current_token_expires_at',
+            ])
+            return Response(
+                {'error': 'Tu cuenta fue desactivada porque no cambiaste la contraseña temporal dentro del plazo. Comunícate con el administrador.'},
+                status=status.HTTP_403_FORBIDDEN
+            )
 
         # Verificar si ya hay sesión activa y no ha expirado. Es lo mismo que preguntarse, existe un token registrado y la hora-actual es < hora-caducada? si si envia error porque ya existe sesion iniciada
         #

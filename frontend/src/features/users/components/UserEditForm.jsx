@@ -1,5 +1,5 @@
 import { Input, Button, IconButton, Select, StatusSwitch, FileInput, Alert, MultiSelect } from "@/shared"
-import React, {useState, useEffect} from "react";
+import React, {useState, useEffect, useMemo} from "react";
 import { getDocumentTypes, getUserTypes } from "@/features/users/services/selectService";
 import { userEditSchema } from "../schemas/userEditShema.js";
 import { useParams, useNavigate, useBlocker } from "react-router-dom";
@@ -8,6 +8,11 @@ import { fileSchema } from "@/shared";
 import { FilePenLine } from "lucide-react";
 import { Ping } from 'ldrs/react'
 import 'ldrs/react/Ping.css'
+import {
+    grupoSinVencimiento,
+    FECHA_FIN_CENTINELA,
+    TEXTO_FECHA_INDEFINIDA,
+} from "../config/indefiniteEndDate";
 
 
 export default function UserEditForm() {
@@ -100,6 +105,46 @@ export default function UserEditForm() {
         })
         .catch(() => setLoading(false)) //en caso de que falle el fetch
     },[id]);
+
+    // getUserTypes solo trae los grupos activos, para que no se pueda asignar
+    // uno desactivado. Pero si el usuario YA pertenece a alguno que después se
+    // apagó (datos viejos), hay que seguir mostrándolo: si no, el MultiSelect
+    // no encontraría la opción y al guardar lo sacaría del grupo sin avisar.
+    const opcionesGrupo = useMemo(() => {
+        const opciones = [...userTypes];
+        (user?.groups ?? []).forEach(g => {
+            if (!opciones.some(o => String(o.value) === String(g.id))) {
+                opciones.push({ value: g.id, label: g.name });
+            }
+        });
+        return opciones;
+    }, [userTypes, user]);
+
+    // Los grupos de planta (Administrador, Instructor de Planta) y el
+    // superadministrador no llevan fecha de fin: el campo se esconde y se
+    // manda la fecha centinela. El backend la fuerza igual por su cuenta.
+    const sinVencimiento = grupoSinVencimiento(
+        formData.userType,
+        opcionesGrupo,
+        user?.is_superuser,
+    );
+
+    // Mantiene el valor alineado con el grupo elegido, para que Zod no falle
+    // por "fecha fin obligatoria" mientras el campo está escondido.
+    // Va antes del return de carga porque los hooks no pueden ir después.
+    useEffect(() => {
+        setFormData(prev => {
+            if (sinVencimiento) {
+                return prev.userDateEnd === FECHA_FIN_CENTINELA
+                    ? prev
+                    : { ...prev, userDateEnd: FECHA_FIN_CENTINELA };
+            }
+            return prev.userDateEnd === FECHA_FIN_CENTINELA
+                ? { ...prev, userDateEnd: "" }
+                : prev;
+        });
+    }, [sinVencimiento]);
+
     if (loading) return (
         <div className="flex flex-col place-items-center gap-2">
             <Ping
@@ -311,7 +356,7 @@ export default function UserEditForm() {
                             <p className="parrafo-edit-style">Tipo de usuario:</p>
                                 <MultiSelect
                                     name="userType"
-                                    options={userTypes}
+                                    options={opcionesGrupo}
                                     value={Array.isArray(formData.userType) ? formData.userType : []}
                                     onChange={(name, newValue) => setFormData(prev => ({ ...prev, [name]: newValue }))}
                                     error={errors.userType}
@@ -331,14 +376,24 @@ export default function UserEditForm() {
                             </div>
                             <div>
                             <p className="parrafo-edit-style">Fecha fin:</p>
-                            <Input
-                                type="date"
-                                name="userDateEnd"
-                                value={formData.userDateEnd}
-                                onChange={handleChange}
-                                variant="isEdit"
-                                error={errors.userDateEnd}
-                            />
+                            {/* Los grupos de planta y el superadministrador no
+                                tienen vencimiento: el campo se esconde */}
+                            {sinVencimiento ? (
+                                /* Texto plano, sin fondo ni borde: se lee como un dato
+                                   fijo y no como un campo que se pueda editar */
+                                <div className="h-10 flex items-center text-text-primary">
+                                    {TEXTO_FECHA_INDEFINIDA}
+                                </div>
+                            ) : (
+                                <Input
+                                    type="date"
+                                    name="userDateEnd"
+                                    value={formData.userDateEnd}
+                                    onChange={handleChange}
+                                    variant="isEdit"
+                                    error={errors.userDateEnd}
+                                />
+                            )}
                             </div>
                             <div>
                                 <p className="parrafo-edit-style">Correo electrónico:</p>

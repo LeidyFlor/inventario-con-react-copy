@@ -7,6 +7,7 @@ from .serializers import UserSerializer, UserCreateSerializer, UserUpdateSeriali
 from django.conf import settings
 from supabase import create_client
 from django.utils import timezone
+from datetime import timedelta
 import requests as http_requests
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
@@ -141,10 +142,22 @@ class UserViewSet(viewsets.ViewSet):
             user = Users.objects.get(pk=pk)
         except Users.DoesNotExist:
             return Response({'error': 'Usuario no encontrado'}, status=status.HTTP_404_NOT_FOUND)
+        # Se guarda el estado previo para detectar una reactivación
+        estaba_inactivo = not user.is_active
+
         serializer = UserUpdateSerializer(user, data=request.data, partial=True)
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         serializer.save()
+
+        # Si el administrador reactiva una cuenta que seguía con la contraseña
+        # temporal sin cambiar, hay que renovarle el plazo. Si no, el usuario
+        # volvería a quedar desactivado en el momento en que intente entrar,
+        # porque password_expires_at seguiría estando en el pasado
+        # (ver LoginView en auth_views.py).
+        if estaba_inactivo and user.is_active and user.must_change_password:
+            user.password_expires_at = timezone.now() + timedelta(hours=2)
+            user.save(update_fields=['password_expires_at'])
         # Guardar imagen  igual que en create
         file = request.FILES.get('user_image')
         if file:
@@ -396,6 +409,14 @@ class GroupViewSet(viewsets.ViewSet):
         # is_active vive en GroupProfile (tabla separada), se actualiza manualmente
         old_is_active = None
         if 'is_active' in request.data:
+            # Misma guardia que en destroy(): un grupo con usuarios adentro no
+            # se puede desactivar. Sin esto, un PUT con is_active=false se
+            # saltaba la validación y dejaba usuarios en un grupo apagado.
+            if not request.data['is_active'] and group.user_set.exists():
+                return Response(
+                    {'error': 'No se puede desactivar un grupo que tiene usuarios asignados'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
             profile, _ = GroupProfile.objects.get_or_create(group=group)
             old_is_active = profile.is_active
             profile.is_active = request.data['is_active']

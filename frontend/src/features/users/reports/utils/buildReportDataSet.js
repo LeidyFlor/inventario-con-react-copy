@@ -1,3 +1,5 @@
+import { esFechaFinIndefinida, TEXTO_FECHA_INDEFINIDA } from "../../config/indefiniteEndDate";
+
 //Funcion utilitaria para construir el dataset de un reporte (tabla)
 //Patron: transporfmacion de datos (input -> output listo para exportar)
 export default function buildReportDataset({
@@ -29,6 +31,13 @@ export default function buildReportDataset({
       //caso especial de los grupos. lee cada nombre de grupo y lo concatena con una coma
       if(field.key === "groups" && Array.isArray(value)){
         return value.map(g => g.name).join(", ")
+      }
+
+      //caso especial de la fecha fin: los usuarios de planta guardan una fecha
+      //centinela muy lejana en la base de datos, pero en el reporte se imprime
+      //la palabra "Indefinido"
+      if (field.key === "user_date_end" && esFechaFinIndefinida(value)) {
+        return TEXTO_FECHA_INDEFINIDA
       }
 
       //Normalizacion: evita undefined o null en el reporte. EN vez de dar error imprima vacio

@@ -1,5 +1,10 @@
 import { Carousel } from "@/shared";
+import { useLogoutOnBack } from "@/features/auth/hooks/useLogoutOnBack";
+
 export default function HomePage() {
+    // Dar "atrás" desde el inicio equivale a cerrar sesión: se borra el token del navegador y el registrado en la base de datos, y se vuelve al login.
+    useLogoutOnBack();
+
     return (
         <div className="mx-auto max-w-7xl">
             {/* Hero */}

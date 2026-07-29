@@ -4,6 +4,29 @@ from datetime import timedelta
 from rest_framework import serializers
 from django.contrib.auth.models import Group
 from .models import Users, GroupProfile
+from .constants import fecha_fin_indefinida, tiene_vencimiento_indefinido
+
+
+def grupo_activo(group):
+    """
+    True si el grupo está habilitado.
+
+    is_active no vive en Group sino en GroupProfile (tabla aparte). Los grupos
+    creados antes de esa funcionalidad no tienen profile y se asumen activos,
+    igual que hace GroupSerializer.
+    """
+    profile = getattr(group, 'profile', None)
+    return profile.is_active if profile else True
+
+
+def _error_grupos_desactivados(grupos):
+    """Mensaje de error compartido por los serializers de crear y editar."""
+    nombres = ', '.join(g.name for g in grupos)
+    return serializers.ValidationError(
+        f'No se pueden asignar grupos desactivados: {nombres}. '
+        'Actívalos en Gestión de grupos si necesitas usarlos.'
+    )
+
 
 class UserSerializer(serializers.ModelSerializer):
     """Serializer para listar y ver detalle de usuarios"""
@@ -29,12 +52,15 @@ class UserSerializer(serializers.ModelSerializer):
             'user_date_end',
             'is_active',
             'is_staff',
+            # Se expone solo para lectura: el frontend lo necesita para saber
+            # que al superadministrador tampoco le aplica la fecha de fin.
+            'is_superuser',
             'is_accountant',
             'user_image',
             'groups',
             'date_joined',
         ]
-        read_only_fields = ['id', 'date_joined']
+        read_only_fields = ['id', 'date_joined', 'is_superuser']
 
 
 class UserCreateSerializer(serializers.ModelSerializer):
@@ -64,6 +90,13 @@ class UserCreateSerializer(serializers.ModelSerializer):
             'groups',
         ]
 
+    def validate_groups(self, value):
+        """Un usuario nuevo no puede quedar en un grupo desactivado."""
+        desactivados = [g for g in value if not grupo_activo(g)]
+        if desactivados:
+            raise _error_grupos_desactivados(desactivados)
+        return value
+
     def create(self, validated_data):
         groups = validated_data.pop('groups')  # sacar antes de crear (es ManyToMany, no va en el constructor)
 
@@ -79,6 +112,14 @@ class UserCreateSerializer(serializers.ModelSerializer):
         validated_data['username'] = validated_data['email'] #se accede con el correo electronico
         validated_data['must_change_password'] = True #validador único para calidar cambio de contraseña por primera vez, despues pasa a ser False
         validated_data['password_expires_at'] = timezone.now() + timedelta(hours=2) #el usuario no cambia la clave en < 2h = usuario desactivado
+
+        # Usuarios de planta: la fecha de fin que venga del formulario se ignora
+        # y se reemplaza por la centinela. El frontend esconde el campo, pero la
+        # decisión se toma aquí para que valga también si alguien llama la API
+        # directamente.
+        if tiene_vencimiento_indefinido(group_names=[g.name for g in groups]):
+            validated_data['user_date_end'] = fecha_fin_indefinida()
+
         #desempaqueta el diccionario de datos de usuario validados, instancia temporal del modelo de usuarios (todavia no se guarda en la bd)
         user = Users(**validated_data)
         user.set_password(password) #hash de la contraseña, nativo de django
@@ -100,6 +141,23 @@ class UserUpdateSerializer(serializers.ModelSerializer):
         required=False
     )
     email = serializers.EmailField(required=False)
+
+    def validate_groups(self, value):
+        """
+        No se pueden agregar grupos desactivados.
+
+        Los que el usuario YA tenía sí se dejan pasar: si un grupo se desactivó
+        con gente adentro (datos viejos), esta validación no debe impedir que se
+        edite el resto del perfil ni obligar a sacarlo del grupo a la fuerza.
+        """
+        actuales = set(self.instance.groups.values_list('id', flat=True)) if self.instance else set()
+        nuevos_desactivados = [
+            g for g in value if g.id not in actuales and not grupo_activo(g)
+        ]
+        if nuevos_desactivados:
+            raise _error_grupos_desactivados(nuevos_desactivados)
+        return value
+
     def validate_email(self, value):
         # Obtiene el usuario que se está editando
         user = self.instance
@@ -133,6 +191,18 @@ class UserUpdateSerializer(serializers.ModelSerializer):
         instance = super().update(instance, validated_data)
         if groups is not None:
             instance.groups.set(groups)
+
+        # Se evalúa después de asignar los grupos, porque el usuario pudo
+        # acabar de entrar (o salir) de un grupo sin vencimiento en esta misma
+        # edición. Si deja de ser de planta, la fecha centinela se conserva:
+        # quitarla exigiría inventar una fecha nueva, así que eso queda a cargo
+        # del administrador editando el campo, que vuelve a estar visible.
+        if tiene_vencimiento_indefinido(user=instance):
+            nueva_fecha = fecha_fin_indefinida()
+            if instance.user_date_end != nueva_fecha:
+                instance.user_date_end = nueva_fecha
+                instance.save(update_fields=['user_date_end'])
+
         return instance
 
 class GroupSerializer(serializers.ModelSerializer):

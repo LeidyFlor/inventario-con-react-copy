@@ -11,6 +11,11 @@ import { TaskCreateModal } from "@/features/tasks";
 import { createTaskForUser } from "@/features/tasks/services/taskService";
 import { usePermissions } from "@/features/permissions/context/PermissionsContext";
 import { PERM } from "@/features/permissions/config/perms";
+import {
+    grupoSinVencimiento,
+    FECHA_FIN_CENTINELA,
+    TEXTO_FECHA_INDEFINIDA,
+} from "../config/indefiniteEndDate";
 
 // Devuelve la fecha local actual en formato YYYY-MM-DD.
 // Se usa getFullYear/Month/Date en vez de toISOString() porque toISOString()
@@ -61,6 +66,28 @@ export default function UserRegisterForm() {
         getDocumentTypes().then(setDocumentTypes);
         getUserTypes().then(setUserTypes);
     },[]); //los [] es para que al menos se ejecute una vez, no tiene dependencia
+
+    // Los grupos de planta (Administrador, Instructor de Planta) no llevan
+    // fecha de fin. El campo se esconde y se envía una fecha centinela; el
+    // backend igual la fuerza por su cuenta.
+    const sinVencimiento = grupoSinVencimiento(formData.userType, userTypes);
+
+    // Mantiene el valor del formulario alineado con el grupo elegido, para que
+    // Zod no falle por "fecha fin obligatoria" cuando el campo está escondido.
+    useEffect(() => {
+        setFormData(prev => {
+            if (sinVencimiento) {
+                return prev.userDateEnd === FECHA_FIN_CENTINELA
+                    ? prev
+                    : { ...prev, userDateEnd: FECHA_FIN_CENTINELA };
+            }
+            // Al quitar el grupo de planta se limpia la centinela para que el
+            // administrador escriba una fecha real
+            return prev.userDateEnd === FECHA_FIN_CENTINELA
+                ? { ...prev, userDateEnd: "" }
+                : prev;
+        });
+    }, [sinVencimiento]);
     //Estado que controla el Switch
     const [isActive, setIsActive] = useState(true);
 
@@ -333,17 +360,30 @@ export default function UserRegisterForm() {
                                 min={localToday()}
                                 required
                             />
-                            {/* Fecha fin usuario — min=hoy para no permitir fechas pasadas */}
-                            <Input
-                                type="date"
-                                name="userDateEnd"
-                                label="Fecha fin"
-                                value={formData.userDateEnd}
-                                onChange={handleChange}
-                                error={errors.userDateEnd}
-                                min={localToday()}
-                                required
-                            />
+                            {/* Fecha fin usuario — se esconde para los grupos de planta,
+                                que no tienen vencimiento */}
+                            {sinVencimiento ? (
+                                <div className="flex flex-col gap-1 w-80">
+                                    <span className="text-caption font-label">Fecha fin</span>
+                                    <div className="h-10 flex items-center px-3 rounded-2xl bg-background-dropdown text-text-muted text-small font-semibold">
+                                        {TEXTO_FECHA_INDEFINIDA}
+                                    </div>
+                                    <span className="text-small text-text-muted">
+                                        Los usuarios de este grupo no tienen fecha de finalización.
+                                    </span>
+                                </div>
+                            ) : (
+                                <Input
+                                    type="date"
+                                    name="userDateEnd"
+                                    label="Fecha fin"
+                                    value={formData.userDateEnd}
+                                    onChange={handleChange}
+                                    error={errors.userDateEnd}
+                                    min={localToday()}
+                                    required
+                                />
+                            )}
                         
                         <div className="flex place-self-center items-center justify-center gap-3">
                             <p className="parrafo-edit-style relative bottom-0.5">¿Es cuentadante?:</p>
