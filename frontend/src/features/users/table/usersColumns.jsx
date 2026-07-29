@@ -57,7 +57,7 @@ function UserStatusCell({ user, setUsers }) {
 function GroupsTags({ groups }) {
     const [expanded, setExpanded] = useState(false)
     if (!groups || groups.length === 0) return <span className="text-text-muted text-small">Sin grupo</span>
-    if (groups.length !== 0) return <span className="bg-brand-soft text-brand text-small px-2 py-0.5 rounded-full">{groups[0].name}</span>
+    if (groups.length !== 0) return <span className=" text-text-primary text-small py-0.5 rounded-full font-medium text-center">{groups[0].name}</span>
 
     const visible = expanded ? groups : [groups[0]]
     return (

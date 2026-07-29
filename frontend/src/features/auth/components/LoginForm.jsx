@@ -70,11 +70,20 @@ export default function LoginForm() {
             // solo informa un estado legítimo para que la persona entienda qué pasa.
             // Cualquier otro error (401, red, etc.) se muestra genérico a propósito,
             // para no revelar si el usuario existe o si la contraseña es incorrecta.
+            //
+            // 403 = la cuenta está desactivada. Pasa cuando el usuario nunca
+            // cambió su contraseña temporal dentro del plazo de 2 horas, o
+            // cuando un administrador lo desactivó. El backend solo devuelve
+            // este estado si la contraseña era correcta, así que mostrarlo no
+            // revela nada de más. Se usa el mensaje que manda el backend para
+            // no repetir el texto en dos lugares.
             if (err.status === 409) {
                 Alert.error(
                     "Sesión ya activa",
                     "Este usuario ya tiene una sesión abierta en otro dispositivo o pestaña. Ciérrala, o espera unos minutos si se cerró abruptamente."
                 )
+            } else if (err.status === 403) {
+                Alert.error("Cuenta desactivada", err.message)
             } else {
                 Alert.error("Credenciales inválidas", "Verifica tus datos e intenta de nuevo.")
             }

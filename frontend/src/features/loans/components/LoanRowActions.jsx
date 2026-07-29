@@ -18,6 +18,13 @@ export default function LoanRowActions({ loan, onRemove }) {
   const canView   = hasPerm(PERM.LOAN_VIEW);
   const canChange = hasPerm(PERM.LOAN_CHANGE);
 
+  // Un préstamo finalizado ya no se puede devolver: el formulario de devolución
+  // no aporta nada nuevo (las cantidades y estados devueltos se consultan en
+  // "Ver préstamo") y el backend rechaza la petición de todas formas.
+  // "Aceptar retorno" sí se deja visible, porque ahí queda el registro de
+  // quién aceptó la devolución y en qué fecha.
+  const finalizado = loan.loanStatus === "finalizado";
+
   // Si no puede ver ni modificar, no se muestra el dropdown de acciones
   const showActions = canView || canChange;
 
@@ -88,7 +95,7 @@ export default function LoanRowActions({ loan, onRemove }) {
                           </Link>
                       </DropdownItem>
                       )}
-                      {canChange && (
+                      {canChange && !finalizado && (
                       <DropdownItem>
                           <Link to={`/dashboard/loans/${loan.id}/return`} className="block w-full">
                               Devolver préstamo

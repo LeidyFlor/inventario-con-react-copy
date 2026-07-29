@@ -106,8 +106,12 @@ export default function LoginRestorePasswordCode() {
                         Ingresa código de recuperación
                     </h1>
                     <img src={logoSigi} alt="Logo del sistema" className="h-auto w-18 " />
+                    {/* El backend solo envía el código si el correo está registrado,
+                        pero responde igual en ambos casos para no revelar qué correos
+                        existen. Por eso el mensaje va en condicional. */}
                     <span className="text-small text-text-muted w-80">
-                        Ingrese el código de recuperación enviado del correo electrónico
+                        Si el correo ingresado está registrado, recibirás un código de
+                        recuperación. Revisa tu bandeja de entrada e ingrésalo aquí.
                     </span>
                 </div>
                 <form className="grid grid-cols-1 w-fit items-center justify-center gap-10 " onSubmit={handleSubmit} noValidate>

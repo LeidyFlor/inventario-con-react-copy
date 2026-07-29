@@ -7,6 +7,7 @@ import ChangePasswordModal from "../components/ChangePasswordModal";
 import { TaskViewModal } from "@/features/tasks";
 import { getMyProfile } from "@/features/permissions/services/permissionsService";
 import { getTasksByUser, getTasksByGroup } from "@/features/tasks/services/taskService";
+import { formatearFechaFin } from "../config/indefiniteEndDate";
 
 /**
  * Página "Mi perfil" — accesible para cualquier usuario autenticado.
@@ -88,7 +89,8 @@ export default function MyProfilePage() {
                     { label: "Número documento",     value: user.user_document },
                     { label: "Grupo",                value: user.groups?.map(g => g.name).join(", ") },
                     { label: "Fecha inicio",         value: formatDate(user.user_date_start) },
-                    { label: "Fecha fin",            value: formatDate(user.user_date_end) },
+                    // Los usuarios de planta muestran "Indefinido" en vez de la fecha centinela
+                    { label: "Fecha fin",            value: formatearFechaFin(user.user_date_end) },
                     { label: "Correo electrónico",   value: user.email },
                     { label: "Número telefónico",    value: user.user_tel },
                     { label: "Dirección",            value: user.user_addres },

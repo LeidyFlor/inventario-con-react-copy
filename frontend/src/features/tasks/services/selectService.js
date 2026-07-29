@@ -16,12 +16,19 @@ export async function getUserName() {
     }))
 }
 
-/** Grupos de Django para asignar tarea a grupo → { label: 'Nombre grupo', value: id } */
+/**
+ * Grupos de Django para asignar tarea a grupo → { label: 'Nombre grupo', value: id }
+ *
+ * Se omiten los desactivados: no tiene sentido asignarle una tarea a un grupo
+ * que ya no está en uso.
+ */
 export async function getUserTypes() {
     const res = await fetch(`${API_URL}/groups/`, { headers: getHeaders() })
     if (!res.ok) throw new Error("Error al obtener grupos")
     const data = await res.json()
-    return data.map(g => ({ label: g.name, value: g.id }))
+    return data
+        .filter(g => g.is_active)
+        .map(g => ({ label: g.name, value: g.id }))
 }
 
 /** Estados disponibles para tareas → { label, value } */

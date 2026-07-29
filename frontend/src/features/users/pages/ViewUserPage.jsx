@@ -10,6 +10,7 @@ import { getUser } from "../services/userService";
 import { createTaskForUser, getTasksByUser, getTasksByGroup } from "@/features/tasks/services/taskService";
 import { usePermissions } from "@/features/permissions/context/PermissionsContext";
 import { PERM } from "@/features/permissions/config/perms";
+import { formatearFechaFin } from "../config/indefiniteEndDate";
 
 export default function ViewUserPage() {
     const navigate = useNavigate();
@@ -95,7 +96,8 @@ export default function ViewUserPage() {
                     { label: "Número documento",     value: user.user_document },
                     { label: "Grupo",                value: user.groups?.map(g => g.name).join(", ") },
                     { label: "Fecha inicio",         value: formatDate(user.user_date_start) },
-                    { label: "Fecha fin",            value: formatDate(user.user_date_end) },
+                    // Los usuarios de planta muestran "Indefinido" en vez de la fecha centinela
+                    { label: "Fecha fin",            value: formatearFechaFin(user.user_date_end) },
                     { label: "Correo electrónico",   value: user.email },
                     { label: "Número telefónico",    value: user.user_tel },
                     { label: "Dirección",            value: user.user_addres },

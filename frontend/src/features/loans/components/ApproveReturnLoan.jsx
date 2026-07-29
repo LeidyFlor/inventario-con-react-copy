@@ -88,6 +88,14 @@ export default function ApproveReturnLoan() {
         });
     };
 
+    // Cuando el préstamo ya está finalizado la pantalla pasa a modo consulta:
+    // se sigue pudiendo entrar (aquí queda el registro de quién aceptó la
+    // devolución y cuándo), pero se ocultan el campo de observación y el botón
+    // de envío. El backend también rechaza la acción en este estado
+    // (loans/views.py, accept_return), así que esto es solo para no mostrar
+    // un formulario que de todos modos no va a funcionar.
+    const finalizado = loan.loanStatus === "finalizado";
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (!loan.returnedAt) {
@@ -216,7 +224,7 @@ export default function ApproveReturnLoan() {
                         <div className="">
                             <h1 className="flex gap-2 text-gradient-title text-h3 pb-0.5">
                                 <Handshake className="text-brand" />
-                                Registro de usuario
+                                Aceptar retorno préstamo
                             </h1>{/*linea degradada del titulo*/}
                             <div className="h-0.5 bg-gradiant-title-line"></div>
 
@@ -281,17 +289,42 @@ export default function ApproveReturnLoan() {
 
                             {/* Columna derecha: observación y submit */}
                             <div className="flex flex-col gap-10 mt-4 md:mt-0">
-                                <Textarea
-                                    label="Observación"
-                                    placeholder="Observación"
-                                    value={observations}
-                                    onChange={e => setObservations(e.target.value)}
-                                />
-                                <div className="flex justify-end">
-                                    <IconButton variant="primary" size="md" type="submit">
-                                        Aceptar
-                                    </IconButton>
-                                </div>
+                                {finalizado ? (
+                                    /* Solo lectura: datos de la aceptación ya registrada */
+                                    <div className="flex flex-col gap-2 w-full md:max-w-xs">
+                                        <span className="inline-block w-fit px-3 py-1 rounded-full text-small font-semibold bg-background text-brand">
+                                            Préstamo finalizado
+                                        </span>
+                                        <div className="flex gap-2">
+                                            <span className="font-bold text-body">Aceptado por:</span>
+                                            <span className="text-body">{loan.acceptedByName ?? "—"}</span>
+                                        </div>
+                                        <div className="flex gap-2">
+                                            <span className="font-bold text-body">Fecha aceptación:</span>
+                                            <span className="text-body">{formatDateTime(loan.acceptedAt)}</span>
+                                        </div>
+                                        <div className="flex flex-col gap-1">
+                                            <span className="font-bold text-body">Observación aceptación:</span>
+                                            <span className="text-body text-text-muted">
+                                                {loan.acceptObservations || "Sin observaciones"}
+                                            </span>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <>
+                                        <Textarea
+                                            label="Observación"
+                                            placeholder="Observación"
+                                            value={observations}
+                                            onChange={e => setObservations(e.target.value)}
+                                        />
+                                        <div className="flex justify-end">
+                                            <IconButton variant="primary" size="md" type="submit">
+                                                Aceptar
+                                            </IconButton>
+                                        </div>
+                                    </>
+                                )}
                             </div>
                         </div>
                     </form>

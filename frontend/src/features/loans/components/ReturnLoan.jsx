@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { Navigate, useNavigate, useParams } from "react-router-dom";
 import { RefreshCcw } from "lucide-react";
 import { Button, IconButton, Input, Select, Textarea, Alert } from "@/shared";
 import DataTable from "@/shared/components/DataTable";
@@ -97,6 +97,14 @@ export default function ReturnLoan() {
         </div>
     );
     if (!loan) return <p>Préstamo no encontrado</p>;
+
+    // Un préstamo finalizado ya no se puede devolver. En LoanRowActions la
+    // opción del menú se oculta, pero esto cubre el caso de entrar escribiendo
+    // la URL a mano. Se redirige a la pantalla de consulta, donde sí se ven las
+    // cantidades devueltas y sus estados.
+    if (loan.loanStatus === "finalizado") {
+        return <Navigate to={`/dashboard/loans/${id}/view`} replace />;
+    }
 
     // ── Handlers modo simple ───────────────────────────────────────────────────
     const handleQtyChange = (itemId, raw) => {
