@@ -22,6 +22,7 @@ export default function ConsumableEditForm() {
 
     const [formData, setFormData] = useState({
         brand: "",
+        materialModel: "",
         inventoryManager: "",
         materialBarcodeSena: "",
         materialName: "",
@@ -70,6 +71,7 @@ export default function ConsumableEditForm() {
                 setImagen(mat.material_image ?? null);
                 setFormData({
                     brand: String(mat.brand ?? ""),
+                    materialModel: mat.material_model ?? "",
                     inventoryManager: String(mat.inventory_manager ?? ""),
                     materialBarcodeSena: mat.material_barcode_sena ?? "",
                     materialName: mat.material_name ?? "",
@@ -254,6 +256,17 @@ export default function ConsumableEditForm() {
                                 onChange={handleChange}
                                 options={brands.map(b => ({ value: String(b.value), label: b.label }))}
                                 error={errors.brand}
+                                variant="isEdit"
+                            />
+                        </div>
+
+                        <div>
+                            <p className="parrafo-edit-style">Modelo:</p>
+                            <Input
+                                name="materialModel"
+                                value={formData.materialModel}
+                                onChange={handleChange}
+                                error={errors.materialModel}
                                 variant="isEdit"
                             />
                         </div>

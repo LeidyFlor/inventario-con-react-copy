@@ -12,6 +12,7 @@ export default function ConsumableRegisterForm() {
     const [formData, setFormData] = useState({
         materialBarcodeSena: "",
         brandName: "",
+        materialModel: "",
         materialName: "",
         inventoryManager: "",
         materialDescription: "",
@@ -142,6 +143,8 @@ export default function ConsumableRegisterForm() {
                                 onChange={handleChange}
                                 error={errors.materialBarcodeSena}
                             />
+                            {/* Marca y modelo son opcionales: hay insumos
+                                genéricos sin marca ni referencia */}
                             <Select
                                 label="Marca"
                                 options={brandName}
@@ -149,7 +152,14 @@ export default function ConsumableRegisterForm() {
                                 value={formData.brandName}
                                 onChange={handleChange}
                                 error={errors.brandName}
-                                required
+                            />
+                            <Input
+                                placeholder="Modelo"
+                                name="materialModel"
+                                label="Modelo"
+                                value={formData.materialModel}
+                                onChange={handleChange}
+                                error={errors.materialModel}
                             />
                             <Input
                                 placeholder="Nombre del elemento"

@@ -15,13 +15,18 @@ export async function createMaterial(formData) {
     const token = sessionStorage.getItem("token")
     const data = new FormData()
 
-    data.append("brand", formData.brandName)
     data.append("inventory_manager", formData.inventoryManager)
     data.append("material_name", formData.materialName)
     data.append("material_description", formData.materialDescription)
     data.append("material_quantity", formData.materialQuantity)
     data.append("material_unit_price", formData.materialUnitPrice)
     data.append("material_location", formData.materialLocation)
+
+    // Marca y modelo son opcionales. La marca se manda aunque venga vacía:
+    // como el envío es multipart, DRF convierte "" en null en los campos con
+    // allow_null, así que el material queda sin marca en vez de fallar.
+    data.append("brand", formData.brandName ?? "")
+    data.append("material_model", formData.materialModel ?? "")
 
     // Placa SENA es opcional
     if (formData.materialBarcodeSena) {
@@ -58,13 +63,17 @@ export async function updateMaterial(id, formData, isActive, materialImage) {
     const token = sessionStorage.getItem("token")
     const data = new FormData()
 
-    data.append("brand", formData.brand)
     data.append("inventory_manager", formData.inventoryManager)
     data.append("material_name", formData.materialName)
     data.append("material_description", formData.materialDescription)
     data.append("material_quantity", formData.materialQuantity)
     data.append("material_unit_price", formData.materialUnitPrice)
     data.append("is_active", isActive)
+
+    // Igual que al crear. Enviarla aunque venga vacía permite además QUITARLE
+    // la marca a un material que ya la tenía
+    data.append("brand", formData.brand ?? "")
+    data.append("material_model", formData.materialModel ?? "")
 
     if (formData.materialBarcodeSena)
         data.append("material_barcode_sena", formData.materialBarcodeSena)

@@ -18,7 +18,8 @@ export async function createReturnable(formData) {
     const token = sessionStorage.getItem("token")
     const data = new FormData()
 
-    data.append("brand",                formData.brandName)
+    // Marca opcional: al ser multipart, DRF convierte "" en null
+    data.append("brand",                formData.brandName ?? "")
     data.append("inventory_manager",    formData.inventoryManager)
     data.append("material_name",        formData.materialName)
     data.append("material_description", formData.materialDescription)

@@ -2,7 +2,13 @@ import { z } from "zod";
 
 export const consumableEditSchema = z
     .object({
-        brand: z.string().min(1, "Selecciona una marca"),
+        // Marca y modelo son opcionales en los dos tipos de material
+        brand: z.string().optional().or(z.literal("")),
+        materialModel: z
+            .string()
+            .max(150, "El modelo es demasiado largo")
+            .optional()
+            .or(z.literal("")),
         inventoryManager: z.string().min(1, "Selecciona un cuentadante"),
         materialName: z.string().min(1, "El nombre es obligatorio"),
         materialDescription: z

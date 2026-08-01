@@ -200,6 +200,7 @@ export default function ReturnableRegisterForm() {
                                 error={errors.returnableMaterialCategory}
                                 required
                             />
+                            {/* Marca opcional, igual que el modelo */}
                             <Select
                                 label="Marca"
                                 options={brands}
@@ -207,7 +208,6 @@ export default function ReturnableRegisterForm() {
                                 value={formData.brandName}
                                 onChange={handleChange}
                                 error={errors.brandName}
-                                required
                             />
                             <Input
                                 label="Modelo"

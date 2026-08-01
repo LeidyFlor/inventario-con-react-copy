@@ -5,7 +5,8 @@ export const returnableEditSchema = z
     // Placa SENA: opcional (se valida condicionalmente en superRefine)
     materialBarcodeSena: z.string().optional().or(z.literal("")),
 
-    brandName: z.string().min(1, "Selecciona una marca"),
+    // Marca opcional: hay materiales genéricos sin marca identificable
+    brandName: z.string().optional().or(z.literal("")),
 
     inventoryManager: z.string().min(1, "Selecciona un cuentadante"),
 

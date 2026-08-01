@@ -1,6 +1,18 @@
 from rest_framework import serializers
 from .models import Brand, ConsumableMaterial, ReturnableMaterial, TechnicalSheetFile
 
+
+# La marca y el modelo son opcionales en los dos tipos de material: hay
+# insumos genéricos sin marca identificable. Se declara aquí una sola vez para
+# no repetir la misma configuración en los cuatro serializers de escritura.
+#
+# allow_null en brand porque es una ForeignKey y el formulario manda vacío
+# cuando no se elige ninguna; allow_blank en material_model porque es texto.
+CAMPOS_OPCIONALES_MATERIAL = {
+    'brand':          {'required': False, 'allow_null': True},
+    'material_model': {'required': False, 'allow_blank': True},
+}
+
 #para el crud de marcas
 class BrandSerializer(serializers.ModelSerializer):
     class Meta:
@@ -37,6 +49,7 @@ class ConsumableMaterialSerializer(serializers.ModelSerializer):
             'inventory_manager_name',
             'material_name',
             'material_description',
+            'material_model',
             'material_barcode_sena',
             'material_quantity',
             'material_quantity_loaned',
@@ -68,6 +81,7 @@ class ConsumableMaterialCreateSerializer(serializers.ModelSerializer):
             'inventory_manager',
             'material_name',
             'material_description',
+            'material_model',
             'material_barcode_sena',
             'material_quantity',
             'material_unit_price',
@@ -75,6 +89,7 @@ class ConsumableMaterialCreateSerializer(serializers.ModelSerializer):
             # material_image NO va aquí — el archivo llega por request.FILES
             # y la view lo sube a Supabase y guarda la URL resultante
         ]
+        extra_kwargs = CAMPOS_OPCIONALES_MATERIAL
 
 #Para editar — permite cambiar is_active y state con sus validaciones
 class ConsumableMaterialUpdateSerializer(serializers.ModelSerializer):
@@ -111,6 +126,7 @@ class ConsumableMaterialUpdateSerializer(serializers.ModelSerializer):
             'inventory_manager',
             'material_name',
             'material_description',
+            'material_model',
             'material_barcode_sena',
             'material_quantity',
             'material_unit_price',
@@ -119,6 +135,7 @@ class ConsumableMaterialUpdateSerializer(serializers.ModelSerializer):
             'material_state',
             # material_image no va aquí — la view lo maneja vía request.FILES
         ]
+        extra_kwargs = CAMPOS_OPCIONALES_MATERIAL
 
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -236,6 +253,7 @@ class ReturnableMaterialCreateSerializer(serializers.ModelSerializer):
             'material_dimensions',
             # material_image no va aquí — la view lo maneja vía request.FILES
         ]
+        extra_kwargs = CAMPOS_OPCIONALES_MATERIAL
 
 
 # Para editar — validaciones de estado + reglas de categoría
@@ -304,3 +322,4 @@ class ReturnableMaterialUpdateSerializer(serializers.ModelSerializer):
             'material_state',
             # material_image no va aquí — la view lo maneja vía request.FILES
         ]
+        extra_kwargs = CAMPOS_OPCIONALES_MATERIAL

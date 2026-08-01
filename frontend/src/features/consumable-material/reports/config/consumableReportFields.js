@@ -9,8 +9,13 @@ export const consumableReportFields = [
         "brand_name",
         label: "Marca",
         default: true  },
-    { 
-        key: 
+    {
+        key:
+        "material_model",
+        label: "Modelo",
+        default: false },
+    {
+        key:
         "material_name",
         label: "Nombre material",
         default: true},

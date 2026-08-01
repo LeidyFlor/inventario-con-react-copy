@@ -39,7 +39,10 @@ async function updateReturnable(id, formData, isActive, newImageFile) {
     const token = sessionStorage.getItem("token");
     const data = new FormData();
 
-    data.append("brand", formData.brandName);
+    // Marca opcional. Se manda aunque venga vacía: al ser multipart, DRF
+    // convierte "" en null en los campos con allow_null, así que también
+    // sirve para QUITARLE la marca a un material que ya la tenía.
+    data.append("brand", formData.brandName ?? "");
     data.append("inventory_manager", formData.inventoryManager);
     data.append("material_name", formData.materialName);
     data.append("material_description", formData.materialDescription);
@@ -166,7 +169,8 @@ export default function ReturnableEditForm() {
                 setIsActive(material.is_active ?? true);
                 setFormData({
                     materialBarcodeSena: material.material_barcode_sena ?? "",
-                    brandName: String(material.brand),
+                    // ?? "" porque la marca ahora puede venir en null
+                    brandName: String(material.brand ?? ""),
                     returnableMaterialModel: material.material_model ?? "",
                     materialName: material.material_name ?? "",
                     inventoryManager: String(material.inventory_manager),

@@ -67,8 +67,9 @@ export default function ViewReturnablePage() {
             <ViewDetailCard fields={[
                 { label: "Placa SENA",          value: material.material_barcode_sena ?? "—" },
                 { label: "Categoría",           value: CATEGORY_LABELS[material.material_category] ?? material.material_category },
-                { label: "Marca",               value: material.brand_name },
-                { label: "Modelo",              value: material.material_model },
+                // Marca y modelo son opcionales, por eso el guion cuando faltan
+                { label: "Marca",               value: material.brand_name || "—" },
+                { label: "Modelo",              value: material.material_model || "—" },
                 { label: "Serial",              value: material.material_serial },
                 { label: "Cuentadante",         value: material.inventory_manager_name },
                 { label: "Cantidad",            value: material.material_quantity },

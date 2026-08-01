@@ -59,7 +59,9 @@ export default function ViewMaterialPage() {
         >
             <ViewDetailCard fields={[
                 { label: "Placa sena",          value: material.material_barcode_sena ?? "—" },
-                { label: "Marca",               value: material.brand_name },
+                // Marca y modelo son opcionales, por eso el guion cuando faltan
+                { label: "Marca",               value: material.brand_name || "—" },
+                { label: "Modelo",              value: material.material_model || "—" },
                 { label: "Cuentadante",         value: material.inventory_manager_name },
                 { label: "Cantidad total",      value: material.material_quantity },
                 { label: "Cantidad prestada",   value: material.material_quantity_loaned },

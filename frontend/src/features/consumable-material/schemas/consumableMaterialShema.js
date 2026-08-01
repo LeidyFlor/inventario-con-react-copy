@@ -8,7 +8,15 @@ export const consumableMaterialShema = z.object({
     .optional()
     .or(z.literal("")),
 
-  brandName: z.string().min(1, "Debe seleccionar una marca"),
+  // Marca y modelo son opcionales: hay insumos genéricos que no tienen
+  // marca identificable ni referencia de modelo
+  brandName: z.string().optional().or(z.literal("")),
+
+  materialModel: z
+    .string()
+    .max(150, "El modelo es demasiado largo")
+    .optional()
+    .or(z.literal("")),
 
   inventoryManager: z.string().min(1, "Debe seleccionar un cuentadante"),
 

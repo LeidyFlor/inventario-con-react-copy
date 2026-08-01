@@ -42,10 +42,13 @@ class Material(models.Model):
     ]
 
     # ForeignKey = relación muchos a uno → muchos materiales, una marca
+    # Opcional: hay materiales genéricos que no tienen marca identificable
     brand = models.ForeignKey(
         Brand,
         on_delete=models.PROTECT,  # PROTECT: no permite borrar una marca si tiene materiales (nunca deberia de ocurrir)
         related_name='%(class)s_set',  # %(class)s se reemplaza por el nombre de la clase hija
+        null=True,
+        blank=True,
     )
 
     # Solo usuarios cuentadantes pueden ser inventary managers
@@ -59,6 +62,10 @@ class Material(models.Model):
 
     material_name = models.CharField(max_length=150)
     material_description = models.TextField()
+
+    # Modelo del fabricante. Vive aquí y no en ReturnableMaterial porque los
+    # materiales de consumo también lo necesitan. Opcional en ambos.
+    material_model = models.CharField(max_length=150, blank=True, default='')
 
     # Placa SENA — opcional (blank/null). Si existe → cantidad obligatoriamente 1
     material_barcode_sena = models.CharField(max_length=100, null=True, blank=True)
@@ -133,7 +140,7 @@ class ReturnableMaterial(Material):
         ('muebles_enseres', 'Muebles y enseres'),
     ]
 
-    material_model = models.CharField(max_length=150, blank=True, default='')
+    # material_model se hereda de Material (lo comparte con los consumibles)
     material_serial = models.CharField(max_length=150, blank=True, default='')
     material_category = models.CharField(max_length=20, choices=CATEGORIES)
 
