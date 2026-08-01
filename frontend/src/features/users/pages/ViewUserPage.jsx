@@ -4,9 +4,9 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { Ping } from "ldrs/react";
 import "ldrs/react/Ping.css";
-import ChangePasswordModal from "../components/ChangePasswordModal";
 import { TaskCreateModal, TaskViewModal } from "@/features/tasks";
-import { getUser } from "../services/userService";
+import { getUser, resetUserPassword } from "../services/userService";
+import { Alert } from "@/shared/components/utils/alert.js";
 import { createTaskForUser, getTasksByUser, getTasksByGroup } from "@/features/tasks/services/taskService";
 import { usePermissions } from "@/features/permissions/context/PermissionsContext";
 import { PERM } from "@/features/permissions/config/perms";
@@ -19,7 +19,6 @@ export default function ViewUserPage() {
     const [user, setUser]         = useState(null);
     const [loading, setLoading]   = useState(true);
     const [tasks, setTasks]       = useState([]);
-    const [showPasswordModal, setShowPasswordModal]     = useState(false);
     const [createTaskModalOpen, setCreateTaskModalOpen] = useState(false);
     const [viewTaskModalOpen, setViewTaskModalOpen]     = useState(false);
 
@@ -54,6 +53,34 @@ export default function ViewUserPage() {
 
     const handleEdit = () => navigate(`/dashboard/users/${user.id}/edit`);
 
+    /**
+     * Restablece la contraseña de ESTE usuario (no la de quien está mirando).
+     *
+     * Antes este botón abría ChangePasswordModal, que llama a
+     * /api/users/change-password/ — un endpoint que siempre actúa sobre
+     * request.user. Es decir, le cambiaba la contraseña al administrador
+     * logueado, no al usuario del perfil, y pedía "contraseña actual" del
+     * usuario equivocado.
+     */
+    const handleResetPassword = async () => {
+        const confirmacion = await Alert.confirm(
+            "¿Restablecer la contraseña?",
+            `Se generará una contraseña temporal y se enviará a ${user.email}. ` +
+            `${user.first_name} tendrá 2 horas para cambiarla antes de que la cuenta se desactive.`
+        );
+        if (!confirmacion.isConfirmed) return;
+
+        try {
+            Alert.loading("Restableciendo contraseña...");
+            const res = await resetUserPassword(user.id);
+            Alert.close();
+            Alert.success("Contraseña restablecida", res.message);
+        } catch (err) {
+            Alert.close();
+            Alert.error("No se pudo restablecer", err.message);
+        }
+    };
+
     const formatDate = (dateString) => {
         if (!dateString) return "—";
         return new Date(dateString).toLocaleDateString("es-CO", {
@@ -83,9 +110,9 @@ export default function ViewUserPage() {
                             <p className="hidden md:block">Tareas</p>
                         </Button>
                         {hasPerm(PERM.USER_CHANGE) && (
-                        <Button variant="outline" size="sm" onClick={() => setShowPasswordModal(true)}>
+                        <Button variant="outline" size="sm" onClick={handleResetPassword}>
                             <KeyRound size={20} />
-                            <p className="hidden md:block">Cambiar contraseña</p>
+                            <p className="hidden md:block">Restablecer contraseña</p>
                         </Button>
                         )}
                     </div>
@@ -139,9 +166,6 @@ export default function ViewUserPage() {
                 </div>
             )}
 
-            {showPasswordModal && (
-                <ChangePasswordModal onClose={() => setShowPasswordModal(false)} />
-            )}
         </>
     );
 }

@@ -9,8 +9,11 @@
  */
 
 // Nombres exactos de los grupos sin vencimiento.
-// El superadministrador no está aquí: se identifica por is_superuser.
-export const GRUPOS_SIN_VENCIMIENTO = ["Administrador", "Instructor de Planta"]
+//
+// Por decisión del cliente quedó vacío: el ÚNICO usuario sin vencimiento es el
+// superadministrador, que no se identifica por grupo sino por is_superuser.
+// Antes estaban aquí "Administrador" e "Instructor de Planta".
+export const GRUPOS_SIN_VENCIMIENTO = []
 
 // Valor que se envía al backend en el campo de fecha fin.
 // El backend igual lo reemplaza por su propia centinela, pero se manda una

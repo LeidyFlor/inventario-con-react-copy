@@ -98,6 +98,12 @@ export const userShema = z
       "La fecha fin es obligatoria",
       "Fecha de fin inválida",
     ),
+    // Estos dos deben estar declarados aunque no tengan validación: Zod
+    // ELIMINA las claves que no aparecen en el esquema, y a createUser se le
+    // pasa result.data (la salida de Zod), no el estado del formulario. Sin
+    // esta línea llegaban como undefined y se guardaban siempre en false.
+    is_accountant: z.boolean().default(false),
+    is_staff: z.boolean().default(false),
     //acepta array vacio, lleno o undefined
     userImage: z.array(z.instanceof(File)).optional(),
   })

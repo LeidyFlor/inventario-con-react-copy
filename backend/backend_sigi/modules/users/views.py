@@ -4,10 +4,12 @@ from rest_framework.response import Response
 from django.contrib.auth.models import Group, Permission
 from .models import Users, GroupProfile
 from .serializers import UserSerializer, UserCreateSerializer, UserUpdateSerializer, ChangePasswordSerializer, GroupSerializer
+from .constants import esta_dentro_de_vigencia
 from django.conf import settings
 from supabase import create_client
 from django.utils import timezone
 from datetime import timedelta
+import random
 import requests as http_requests
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
@@ -148,7 +150,38 @@ class UserViewSet(viewsets.ViewSet):
         serializer = UserUpdateSerializer(user, data=request.data, partial=True)
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        # ── Vigencia del usuario ───────────────────────────────────────────────
+        # Se evalúan los valores que quedarían DESPUÉS de guardar, leyéndolos de
+        # validated_data. Así, si en la misma petición vienen is_active y unas
+        # fechas nuevas, se juzga con las fechas nuevas. Va antes del save()
+        # para no dejar nada a medias si hay que rechazar.
+        nuevo_activo  = serializer.validated_data.get('is_active',        user.is_active)
+        nueva_inicio  = serializer.validated_data.get('user_date_start',  user.user_date_start)
+        nueva_fin     = serializer.validated_data.get('user_date_end',    user.user_date_end)
+        en_vigencia   = esta_dentro_de_vigencia(nueva_inicio, nueva_fin)
+
+        # Activar a alguien fuera de su rango de fechas no sirve de nada:
+        # entraría y volvería a bloquearse en el siguiente login, sin que el
+        # administrador se entere de por qué.
+        if estaba_inactivo and nuevo_activo and not en_vigencia:
+            return Response(
+                {'error': 'No se puede activar el usuario: hoy está fuera de su rango de fechas. '
+                          'Ajusta la fecha de inicio o la fecha fin para que incluyan el día de hoy.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
         serializer.save()
+
+        # Activación automática: si el administrador corrigió las fechas y hoy
+        # quedó dentro del rango, no hace falta que además mueva el switch.
+        # Antes tocaba hacer las dos cosas por separado.
+        aviso = None
+        if estaba_inactivo and not nuevo_activo and en_vigencia:
+            user.is_active = True
+            user.save(update_fields=['is_active'])
+            aviso = ('El usuario se activó automáticamente porque el día de hoy '
+                     'quedó dentro de su rango de fechas.')
 
         # Si el administrador reactiva una cuenta que seguía con la contraseña
         # temporal sin cambiar, hay que renovarle el plazo. Si no, el usuario
@@ -177,7 +210,13 @@ class UserViewSet(viewsets.ViewSet):
                 user.user_image = url
                 user.save()
         log_action(request.user, "EDITAR", "Usuario", user.email)
-        return Response(UserSerializer(user).data)
+
+        # El aviso viaja junto a los datos para que el formulario pueda
+        # explicarle al administrador que el usuario se activó solo
+        data = UserSerializer(user).data
+        if aviso:
+            data['aviso'] = aviso
+        return Response(data)
 
     def partial_update(self, request, pk=None):
         """PATCH /api/users/{id}/ — editar campos parciales (ej: is_active)"""
@@ -245,6 +284,114 @@ class UserViewSet(viewsets.ViewSet):
 
         return Response({'message': 'Imagen subida correctamente', 'user_image': url})
     
+    @action(detail=True, methods=['post'], url_path='reset-password')
+    def reset_password(self, request, pk=None):
+        """
+        POST /api/users/{id}/reset-password/ — el administrador le restablece
+        la contraseña a OTRO usuario.
+
+        No confundir con change-password, que actúa sobre request.user (la
+        propia). Aquí se genera una contraseña temporal nueva, se envía por
+        correo y se reinicia el plazo de 2 horas para cambiarla.
+        """
+        deny = deny_if_no_perm(request, 'users.change_users')
+        if deny: return deny
+
+        try:
+            user = Users.objects.get(pk=pk)
+        except Users.DoesNotExist:
+            return Response({'error': 'Usuario no encontrado'}, status=status.HTTP_404_NOT_FOUND)
+
+        if not user.email:
+            return Response(
+                {'error': 'El usuario no tiene correo registrado, no se le puede enviar la contraseña.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Misma fórmula que al crear el usuario: nombre + documento + carácter
+        nombre    = (user.first_name or 'user').replace(' ', '')
+        documento = user.user_document or '0000'
+        caracter  = random.choice(list('!.+-*#$%&'))
+        nueva_password = f"{nombre}{documento}{caracter}"
+
+        html_body = self._reset_password_email_html(user, nueva_password)
+        try:
+            send_mail(
+                subject="SIGI - Tu contraseña fue restablecida",
+                message=strip_tags(html_body),
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[user.email],
+                html_message=html_body,
+                fail_silently=False,
+            )
+        except Exception as e:
+            # Si el correo falla NO se cambia la contraseña: dejaríamos al
+            # usuario sin poder entrar y sin saber su clave nueva.
+            return Response(
+                {'error': f'No se pudo enviar el correo, la contraseña no fue modificada. Detalle: {e}'},
+                status=status.HTTP_502_BAD_GATEWAY
+            )
+
+        user.set_password(nueva_password)
+        user.must_change_password = True
+        user.password_expires_at  = timezone.now() + timedelta(hours=2)
+        # Se corta la sesión que pudiera tener abierta con la clave anterior
+        user.current_token_jti = None
+        user.current_token_expires_at = None
+        user.save(update_fields=[
+            'password', 'must_change_password', 'password_expires_at',
+            'current_token_jti', 'current_token_expires_at',
+        ])
+
+        log_action(request.user, "RESTABLECER CONTRASEÑA", "Usuario", user.email)
+        return Response({
+            'message': f'Se envió una contraseña temporal a {user.email}. '
+                       'El usuario tiene 2 horas para cambiarla.'
+        })
+
+    @staticmethod
+    def _reset_password_email_html(user, plain_password):
+        """Correo de restablecimiento, con el mismo estilo del de bienvenida."""
+        return f"""
+        <!DOCTYPE html>
+        <html lang="es">
+        <head>
+            <meta charset="UTF-8">
+            <style>
+                body {{ margin: 0; padding: 0; background-color: #f9fafb; font-family: Arial, Helvetica, sans-serif; color: #242424; }}
+                .container {{ max-width: 500px; background-color: #ffffff; border-radius: 1rem; border: 2px solid #E1F2D8; margin: 20px auto; overflow: hidden; }}
+                .header {{ background: linear-gradient(to right, #72277C, #163F5C); padding: 24px; text-align: center; }}
+                .header h1 {{ color: #ffffff; margin: 0; font-size: 1.5rem; font-weight: 700; letter-spacing: 1px; }}
+                .content {{ padding: 32px 24px; }}
+                .credentials {{ background-color: #F5FAF2; border: 2px dashed #39A900; border-radius: 0.75rem; padding: 20px; margin: 24px 0; }}
+                .label {{ font-size: 0.75rem; color: #007A33; font-weight: 600; text-transform: uppercase; margin-bottom: 4px; }}
+                .value {{ font-size: 1rem; font-weight: 700; color: #242424; margin: 0 0 12px 0; }}
+                .footer {{ padding: 24px; text-align: center; border-top: 1px solid #D1D1D1; background-color: #fafafa; }}
+                .footer p {{ margin: 0; font-size: 0.75rem; color: #878787; }}
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="header"><h1>SIGI</h1></div>
+                <div class="content">
+                    <h2 style="margin-top:0; color:#007A33;">Hola, {user.first_name}</h2>
+                    <p>Un administrador restableció tu contraseña. Entra con estos datos:</p>
+                    <div class="credentials">
+                        <p class="label">Correo electrónico</p>
+                        <p class="value">{user.email}</p>
+                        <p class="label">Contraseña temporal</p>
+                        <p class="value">{plain_password}</p>
+                    </div>
+                    <p>Tienes <strong>2 horas</strong> para iniciar sesión y cambiarla. Pasado ese plazo la cuenta se desactiva y tendrás que pedirle al administrador que la reactive.</p>
+                </div>
+                <div class="footer">
+                    <p>Si no solicitaste este cambio, contacta al administrador de inmediato.</p>
+                </div>
+            </div>
+        </body>
+        </html>
+        """
+
     @action(detail=False, methods=['post'], url_path='change-password')
     def change_password(self, request):
         serializer = ChangePasswordSerializer(data=request.data)

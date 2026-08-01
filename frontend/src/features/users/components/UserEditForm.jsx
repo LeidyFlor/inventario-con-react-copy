@@ -40,6 +40,10 @@ export default function UserEditForm() {
         userDateStart: "",
         userDateEnd: "",
         is_active: true,
+        // Sin estos dos, updateUser los enviaba en false y la edición le
+        // borraba la marca de cuentadante a cualquier usuario
+        is_accountant: false,
+        is_staff: false,
         userImage: [],
     });
     const [isActive, setIsActive] = useState(true);
@@ -98,6 +102,8 @@ export default function UserEditForm() {
                 userDocumentType: data.user_document_type ?? "",
                 userDateStart: formatDateForInput(data.user_date_start),
                 userDateEnd: formatDateForInput(data.user_date_end),
+                is_accountant: data.is_accountant ?? false,
+                is_staff: data.is_staff ?? false,
                 userImage: []
             })
             setIsActive(data.is_active ?? true)
@@ -218,10 +224,18 @@ export default function UserEditForm() {
         //result.data contiene los datos ya validados por Zod
         try {
             Alert.loading("Guardando cambios...")
-            await updateUser(id, result.data)
+            // isActive vive en su propio estado (el switch de Estado), no en
+            // formData, así que se agrega aquí: Zod solo devuelve las claves
+            // que declara su esquema.
+            const actualizado = await updateUser(id, { ...result.data, is_active: isActive })
             setIsDirty(false)//caundo los datos son correctos se quita el bloqueo de la navegacion
             Alert.close()
-            await Alert.success("Usuario Actualizado", "Los cambios fueron guardados correctamente")
+            // El backend manda 'aviso' cuando activó al usuario por su cuenta,
+            // porque el día de hoy quedó dentro del nuevo rango de fechas
+            await Alert.success(
+                "Usuario Actualizado",
+                actualizado?.aviso ?? "Los cambios fueron guardados correctamente"
+            )
             navigate(`/dashboard/users/${user.id}/view`)
 
         } catch (error) {
@@ -447,6 +461,27 @@ export default function UserEditForm() {
                                     onChange={handleChange}
                                     error={errors.userEmail2}
                                     variant="isEdit"
+                                />
+                            </div>
+                            {/* Estos dos switches faltaban. Sin ellos el formulario
+                                enviaba is_accountant en false y cada edición le
+                                quitaba la marca de cuentadante al usuario. */}
+                            <div className="flex items-center gap-3">
+                                <p className="parrafo-edit-style relative bottom-0.5">¿Es cuentadante?:</p>
+                                <StatusSwitch
+                                    checked={formData.is_accountant}
+                                    onChange={(val) => setFormData(prev => ({ ...prev, is_accountant: val }))}
+                                    size="md"
+                                    className="inline-flex"
+                                />
+                            </div>
+                            <div className="flex items-center gap-3">
+                                <p className="parrafo-edit-style relative bottom-0.5">¿Es Staff?:</p>
+                                <StatusSwitch
+                                    checked={formData.is_staff}
+                                    onChange={(val) => setFormData(prev => ({ ...prev, is_staff: val }))}
+                                    size="md"
+                                    className="inline-flex"
                                 />
                             </div>
                             {/* botones de accion */}

@@ -10,6 +10,8 @@ from datetime import timedelta
 from .models import Users
 from .serializers import UserSerializer
 from .backends import HEARTBEAT_GRACE_PERIOD
+from .constants import vencimiento_pasado
+from backend_sigi.utils.password_rules import errores_de_password
 import random
 import string
 from django.core.mail import send_mail
@@ -63,6 +65,32 @@ class LoginView(APIView):
             ])
             return Response(
                 {'error': 'Tu cuenta fue desactivada porque no cambiaste la contraseña temporal dentro del plazo. Comunícate con el administrador.'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        # Vencimiento del usuario (user_date_end).
+        #
+        # Igual que con la contraseña temporal, se revisa en el momento del
+        # login en vez de con un proceso programado: la cuenta solo estorba
+        # cuando alguien intenta usarla.
+        #
+        # Se desactiva la cuenta a propósito. Para devolverle el acceso, el
+        # administrador tiene que hacer DOS cosas: activarla y extenderle la
+        # fecha fin. Si solo la activa, vuelve a bloquearse en el siguiente
+        # intento, que es justamente lo que se busca.
+        #
+        # La fecha fin es INCLUSIVA: el bloqueo empieza al día siguiente, no el
+        # mismo día. vencimiento_pasado() compara por día justamente por eso, y
+        # además deja pasar al superadministrador (fecha centinela del 2200).
+        if vencimiento_pasado(user.user_date_end):
+            user.is_active = False
+            user.current_token_jti = None
+            user.current_token_expires_at = None
+            user.save(update_fields=[
+                'is_active', 'current_token_jti', 'current_token_expires_at',
+            ])
+            return Response(
+                {'error': 'Tu cuenta fue desactivada porque llegó a su fecha de finalización. Comunícate con el administrador.'},
                 status=status.HTTP_403_FORBIDDEN
             )
 
@@ -221,6 +249,13 @@ class ResetPasswordView(APIView):
         # Validar que vengan todos los campos necesarios
         if not all([email, code, new_password]):
             return Response({'error': 'Todos los campos son obligatorios'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Mismas reglas que el esquema Zod del frontend. El formulario ya las
+        # revisa, pero esta ruta es pública (AllowAny): sin esta validación se
+        # podría fijar una contraseña débil llamando la API directamente.
+        errores = errores_de_password(new_password)
+        if errores:
+            return Response({'error': ' '.join(errores)}, status=status.HTTP_400_BAD_REQUEST)
 
         # Verificar el código de nuevo por seguridad
         # (el usuario pudo haber manipulado el flujo saltándose el paso de verificación)

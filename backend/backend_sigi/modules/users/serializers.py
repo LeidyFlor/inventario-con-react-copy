@@ -5,6 +5,7 @@ from rest_framework import serializers
 from django.contrib.auth.models import Group
 from .models import Users, GroupProfile
 from .constants import fecha_fin_indefinida, tiene_vencimiento_indefinido
+from backend_sigi.utils.password_rules import errores_de_password
 
 
 def grupo_activo(group):
@@ -181,6 +182,7 @@ class UserUpdateSerializer(serializers.ModelSerializer):
             'user_date_end',
             'is_active',
             'is_accountant',
+            'is_staff',
             'groups',
         ]
     def update(self, instance, validated_data): #se activa automaticamente
@@ -227,10 +229,24 @@ class GroupSerializer(serializers.ModelSerializer):
 
 class ChangePasswordSerializer(serializers.Serializer):
     password_actual = serializers.CharField(write_only=True)
-    password_nueva = serializers.CharField(write_only=True, min_length=8)
+    # Sin min_length: la longitud la revisa errores_de_password junto con el
+    # resto de reglas, para que todos los mensajes salgan del mismo lugar
+    password_nueva = serializers.CharField(write_only=True)
     password_nueva_confirmacion = serializers.CharField(write_only=True)
+
+    def validate_password_nueva(self, value):
+        """
+        Mismas reglas que el esquema Zod del frontend: mínimo 8 caracteres,
+        una mayúscula, una minúscula, un número y un carácter especial.
+        """
+        errores = errores_de_password(value)
+        if errores:
+            raise serializers.ValidationError(errores)
+        return value
 
     def validate(self, data):
         if data['password_nueva'] != data['password_nueva_confirmacion']:
             raise serializers.ValidationError('Las contraseñas nuevas no coinciden')
+        if data['password_nueva'] == data['password_actual']:
+            raise serializers.ValidationError('La nueva contraseña debe ser distinta a la actual')
         return data

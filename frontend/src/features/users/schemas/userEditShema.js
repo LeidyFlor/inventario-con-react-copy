@@ -49,6 +49,10 @@ export const userEditSchema = z
     userAddres: z.string().min(10).max(100),
     userDateStart: datePreprocess("La fecha de inicio es obligatoria"),
     userDateEnd: datePreprocess("La fecha fin es obligatoria"),
+    // Igual que en userShema: si no se declaran, Zod los elimina y updateUser
+    // los manda en false, borrándole la marca a cualquier usuario que se edite.
+    is_accountant: z.boolean().default(false),
+    is_staff: z.boolean().default(false),
     userImage: z.array(z.instanceof(File)).optional(),
   })
   .refine((data) => !data.userTel || data.userTel !== data.userTel2, {

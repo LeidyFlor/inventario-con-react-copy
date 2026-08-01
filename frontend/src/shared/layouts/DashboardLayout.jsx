@@ -5,6 +5,7 @@ import { LoginForm } from "@/features/auth";
 import { useState } from "react";
 import { PermissionsProvider } from "@/features/permissions/context/PermissionsContext";
 import { useHeartbeat } from "@/features/auth/hooks/useHeartbeat";
+import RequirePasswordChange from "@/features/auth/components/RequirePasswordChange";
 
 export default function DashboardLayout() {
     const navigate = useNavigate();
@@ -44,7 +45,11 @@ export default function DashboardLayout() {
             {/* Contenido dinamico de las paginas */}
             <main className="lg:ml-31 items-center lg:justify-center min-h-[calc(100vh-72px)] pt-[124px] px-4 ">
 
-                <Outlet />
+                {/* Si el usuario sigue con la contraseña temporal, no lo deja
+                    salir del formulario de cambio obligatorio */}
+                <RequirePasswordChange>
+                    <Outlet />
+                </RequirePasswordChange>
 
             </main>
 

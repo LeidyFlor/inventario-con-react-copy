@@ -1,6 +1,7 @@
 import { useState } from "react"
 import { KeyRound } from "lucide-react"
 import { Input, Button, Modal, Alert, IconButton } from "@/shared"
+import { restorePasswordSchema } from "@/features/auth/schemas/restorePasswordSchema"
 
 async function changePassword({ password_actual, password_nueva, password_nueva_confirmacion }) {
     const token = sessionStorage.getItem("token")
@@ -19,7 +20,19 @@ async function changePassword({ password_actual, password_nueva, password_nueva_
     return res.json()
 }
 
-export default function ChangePasswordModal({ onClose }) {
+/**
+ * Cambio de la contraseña propia. Usa /api/users/change-password/, que actúa
+ * sobre el usuario logueado.
+ *
+ * @param {Function} onClose   Cierra el modal
+ * @param {boolean}  forced    Modo obligatorio del primer ingreso: esconde
+ *                             Cancelar, no cierra al hacer clic afuera y
+ *                             explica por qué hay que cambiarla. La contraseña
+ *                             actual es la temporal que llegó por correo.
+ * @param {Function} onSuccess Se ejecuta después de cambiarla. Si no se pasa,
+ *                             simplemente cierra.
+ */
+export default function ChangePasswordModal({ onClose, forced = false, onSuccess }) {
     const [formData, setFormData] = useState({
         password_actual: "",
         password_nueva: "",
@@ -34,18 +47,52 @@ export default function ChangePasswordModal({ onClose }) {
         setErrors(prev => ({ ...prev, [name]: "" }))
     }
 
+    // Nombres de los campos de restorePasswordSchema → campos de este modal
+    const MAPA_CAMPOS = {
+        userPassword:       "password_nueva",
+        userPasswordConfir: "password_nueva_confirmacion",
+    }
+
+    /**
+     * Valida con restorePasswordSchema, el mismo esquema Zod que usa la
+     * recuperación de contraseña, para que las reglas sean idénticas por
+     * cualquier camino: mínimo 8 caracteres, una mayúscula, una minúscula,
+     * un número y un carácter especial.
+     *
+     * El esquema solo cubre la contraseña nueva y su confirmación, así que la
+     * contraseña actual (que no tiene por qué cumplir esas reglas, y de hecho
+     * la temporal generada no las cumple) se revisa aparte.
+     */
     const validate = () => {
         const newErrors = {}
-        if (!formData.password_actual)
-            newErrors.password_actual = "Ingresa tu contraseña actual"
-        if (!formData.password_nueva)
-            newErrors.password_nueva = "Ingresa la nueva contraseña"
-        else if (formData.password_nueva.length < 8)
-            newErrors.password_nueva = "Mínimo 8 caracteres"
-        if (!formData.password_nueva_confirmacion)
-            newErrors.password_nueva_confirmacion = "Confirma la nueva contraseña"
-        else if (formData.password_nueva !== formData.password_nueva_confirmacion)
-            newErrors.password_nueva_confirmacion = "Las contraseñas no coinciden"
+
+        if (!formData.password_actual) {
+            newErrors.password_actual = forced
+                ? "Ingresa la contraseña temporal que recibiste"
+                : "Ingresa tu contraseña actual"
+        }
+
+        const result = restorePasswordSchema.safeParse({
+            userPassword:       formData.password_nueva,
+            userPasswordConfir: formData.password_nueva_confirmacion,
+        })
+        if (!result.success) {
+            result.error.issues.forEach((issue) => {
+                const campo = MAPA_CAMPOS[issue.path[0]]
+                // Se conserva el primer error de cada campo, que es el más
+                // específico según el orden en que están escritas las reglas
+                if (campo && !newErrors[campo]) newErrors[campo] = issue.message
+            })
+        }
+
+        if (
+            !newErrors.password_nueva &&
+            formData.password_nueva &&
+            formData.password_nueva === formData.password_actual
+        ) {
+            newErrors.password_nueva = "La nueva contraseña debe ser distinta a la actual"
+        }
+
         return newErrors
     }
 
@@ -63,7 +110,8 @@ export default function ChangePasswordModal({ onClose }) {
             await changePassword(formData)
             Alert.close()
             await Alert.success("Contraseña actualizada", "Tu contraseña fue cambiada correctamente.")
-            onClose()
+            if (onSuccess) onSuccess()
+            else onClose()
         } catch (error) {
             Alert.close()
             const msg = error?.error || error?.password_actual?.[0] || "No se pudo cambiar la contraseña."
@@ -74,7 +122,7 @@ export default function ChangePasswordModal({ onClose }) {
     }
 
     return (
-        <Modal onClose={onClose}>
+        <Modal onClose={onClose} dismissable={!forced}>
             <div className="mb-6 max-w-max">
                 <h1 className="flex gap-2 text-gradient-title text-h3 pb-0.5">
                     <KeyRound className="text-brand" />
@@ -83,10 +131,21 @@ export default function ChangePasswordModal({ onClose }) {
                 <div className="h-0.5 bg-gradiant-title-line"></div>
             </div>
 
+            {forced && (
+                <p className="text-small text-text-primary max-w-xs mb-5 text-center">
+                    Estás usando la contraseña temporal que te llegó por correo.
+                    Debes cambiarla antes de continuar: si no lo haces dentro de
+                    las 2 horas siguientes, tu cuenta se desactivará.
+                </p>
+            )}
+
             <form onSubmit={handleSubmit} className="flex flex-col items-center gap-5">
+                <p className="text-small text-text-primary max-w-xs mb-5 text-center">
+                    La contraseña debe de ser de 7-8 caractéres y contener: 1 Mayúscula, 1 Minúscula, 1 Caracter especial, 1 número 
+                </p>
                 <Input
-                    label="Contraseña actual"
-                    placeholder="Contraseña actual"
+                    label={forced ? "Contraseña temporal" : "Contraseña actual"}
+                    placeholder={forced ? "Contraseña temporal" : "Contraseña actual"}
                     type="password"
                     name="password_actual"
                     value={formData.password_actual}
@@ -113,9 +172,13 @@ export default function ChangePasswordModal({ onClose }) {
                 />
 
                 <div className="flex gap-3">
-                    <Button variant="secondary" size="sm" type="button" onClick={onClose}>
-                        Cancelar
-                    </Button>
+                    {/* En modo obligatorio no hay Cancelar: la única salida es
+                        cambiar la contraseña o cerrar sesión */}
+                    {!forced && (
+                        <Button variant="secondary" size="sm" type="button" onClick={onClose}>
+                            Cancelar
+                        </Button>
+                    )}
                     <Button variant="primary" size="md" type="submit" disabled={loading} showIcon={false}>
                         {loading ? "Guardando..." : "Guardar"}
                     </Button>

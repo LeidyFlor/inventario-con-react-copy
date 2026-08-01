@@ -19,6 +19,30 @@ export async function getUser(id) {
     return response.json()
 }
 
+/**
+ * El administrador le restablece la contraseña a OTRO usuario.
+ *
+ * No confundir con el cambio de contraseña de Mi perfil, que usa
+ * /api/users/change-password/ y siempre actúa sobre el usuario logueado.
+ * Aquí el backend genera una contraseña temporal, se la manda por correo al
+ * usuario indicado y reinicia su plazo de 2 horas para cambiarla.
+ */
+export async function resetUserPassword(id) {
+    const token = sessionStorage.getItem("token")
+    const response = await fetch(`${API_URL}/users/${id}/reset-password/`, {
+        method: "POST",
+        headers: {
+            "Authorization": `Bearer ${token}`,
+            "Content-Type": "application/json",
+        },
+    })
+    const data = await response.json().catch(() => ({}))
+    if (!response.ok) {
+        throw new Error(data.error ?? "No se pudo restablecer la contraseña")
+    }
+    return data
+}
+
 export async function toggleUserStatus(id, isActive) {
     const token = sessionStorage.getItem("token")
     const response = await fetch(`${API_URL}/users/${id}/`, {
@@ -29,7 +53,13 @@ export async function toggleUserStatus(id, isActive) {
         },
         body: JSON.stringify({ is_active: isActive }),
     })
-    if (!response.ok) throw new Error("Error al actualizar estado del usuario")
+    if (!response.ok) {
+        // El backend puede rechazar la activación con un motivo concreto
+        // (por ejemplo, que la fecha fin del usuario siga vencida). Se
+        // conserva ese mensaje en vez de mostrar uno genérico.
+        const error = await response.json().catch(() => ({}))
+        throw new Error(error.error ?? "Error al actualizar estado del usuario")
+    }
     return response.json()
 }
 
@@ -117,7 +147,15 @@ export async function updateUser(id, formData) {
         ? formData.userDateEnd.toISOString().split("T")[0]
         : formData.userDateEnd,
     );
-    data.append("is_accountant",formData.is_accountant ? 1 : 0)
+    data.append("is_accountant", formData.is_accountant ? 1 : 0)
+    data.append("is_staff",      formData.is_staff      ? 1 : 0)
+    // El switch de Estado del formulario no se estaba enviando, así que
+    // activar o desactivar desde ahí no tenía ningún efecto. Además, mandarlo
+    // junto con la fecha fin permite reactivar y extender el plazo en una sola
+    // operación (el backend rechaza activar si la fecha sigue vencida).
+    if (formData.is_active !== undefined) {
+        data.append("is_active", formData.is_active ? 1 : 0)
+    }
      if (Array.isArray(formData.userType)){
         // se debe iterar sobre array y se hace append por cada valor
         formData.userType.forEach((groupId) =>{
@@ -139,8 +177,10 @@ export async function updateUser(id, formData) {
     })
 
     if (!response.ok) {
-        const error = await response.json()
-        throw new Error(JSON.stringify(error))
+        const error = await response.json().catch(() => ({}))
+        // Si el backend mandó un motivo legible (clave 'error'), se muestra tal
+        // cual. Si son errores por campo de DRF, se cae al JSON crudo.
+        throw new Error(error.error ?? JSON.stringify(error))
     }
     return response.json()
 }

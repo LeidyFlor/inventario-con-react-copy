@@ -5,6 +5,7 @@ import React, {useState} from "react";
 import  logoSigi  from "@/assets/images/LOGO-SIGI.png";
 import { useNavigate, Link } from "react-router-dom";
 import { login } from "../services/authService";
+import { setMustChangePassword } from "../services/passwordFlag";
 import { Alert } from "@/shared";
 
 export default function LoginForm() {
@@ -60,7 +61,12 @@ export default function LoginForm() {
             Alert.close()
             Alert.success("Inicio de sesión exitoso")
             sessionStorage.setItem("token", data.access)
-            navigate("/dashboard")
+            // Si el usuario todavía tiene la contraseña temporal, el backend
+            // manda must_change_password en true. Se guarda la marca y se
+            // entra directo a la pantalla de cambio obligatorio, de la que no
+            // se puede salir hasta cambiarla.
+            setMustChangePassword(data.must_change_password)
+            navigate(data.must_change_password ? "/dashboard/change-password" : "/dashboard")
         } catch (err) {
             Alert.close()
 
@@ -138,10 +144,13 @@ export default function LoginForm() {
                         <Link to={"restore"} className="h-12">
                             <span className="text-small font-label">¿Olvidó su contraseña?</span>
                         </Link>
-                    </div> 
+                    </div>
+                     
             </form>
             </div>
-
+            <p className="mt-4 text-small text-text-muted">
+                Para registrarse comunícarse al correo yleon@sena.edu.co.
+            </p>
         </div>
     )
 };

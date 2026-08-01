@@ -14,6 +14,7 @@ import { ListPermissionsPage } from "@/features/permissions";
 import RequirePerm from "@/features/permissions/components/RequirePerm";
 import { PERM } from "@/features/permissions/config/perms";
 import { LoginForm, LoginRestorePassword, LoginRestorePasswordCode, LoginRestoreNewPassword } from "@/features/auth";
+import ForcePasswordChange from "@/features/auth/components/ForcePasswordChange";
 import { AuthLayout, DashboardLayout, ProtectedRoute } from "@/shared/";
 import { HomePage } from "@/features/home";
 
@@ -57,6 +58,11 @@ const router = createBrowserRouter([
         children: [
             { index: true, element: <HomePage /> },
             { path: "auth", element: <LoginForm /> },
+
+            // Cambio obligatorio del primer ingreso. Sin RequirePerm: cualquier
+            // usuario autenticado tiene que poder llegar aquí, y de hecho
+            // RequirePasswordChange lo obliga mientras la marca esté activa.
+            { path: "change-password", element: <ForcePasswordChange /> },
 
             // ── Usuarios ──────────────────────────────────────────────
             // El formulario de creación carga el select de grupos al montarse

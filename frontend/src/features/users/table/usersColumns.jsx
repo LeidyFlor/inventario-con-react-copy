@@ -30,8 +30,14 @@ function UserStatusCell({ user, setUsers }) {
             setUsers(prev =>
                 prev.map(u => u.id === user.id ? { ...u, is_active: newValue } : u)
             )
-        } catch {
-            Alert.error("Error", "No se pudo actualizar el estado del usuario")
+        } catch (err) {
+            // Se refresca la lista para que el switch vuelva a su posición real,
+            // ya que el cambio no se aplicó en el backend
+            setUsers(prev => [...prev])
+            Alert.error(
+                "No se pudo cambiar el estado",
+                err.message || "No se pudo actualizar el estado del usuario"
+            )
         }
     }
 

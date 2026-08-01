@@ -101,7 +101,7 @@ export default function MyProfilePage() {
                 ]} />
 
                 <p className="mt-4 text-small text-text-muted">
-                    Para modificar tus datos personales comunícate con un administrador.
+                    Para modificar tus datos personales comunícarse al correo yleon@sena.edu.co.
                 </p>
             </ViewPageTemplate>
 

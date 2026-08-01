@@ -1,4 +1,6 @@
 //Cerrar sesion eliminando jwt
+import { clearMustChangePassword } from "./passwordFlag";
+
 const API_URL = "/api/auth";
 export async function logout() {
   const token = sessionStorage.getItem("token");
@@ -13,4 +15,7 @@ export async function logout() {
   });
   //Borra token del frontend
   sessionStorage.removeItem("token");
+  // Y la marca de cambio obligatorio, para que no quede pegada si el
+  // siguiente usuario que entra en esta pestaña sí tiene su contraseña al día
+  clearMustChangePassword();
 }
