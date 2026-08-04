@@ -13,7 +13,7 @@ export const loansColumnsView = [
     },
     {
         accessorKey: "serial",
-        header: "Serial",
+        header: "S/N",
     },
     {
         accessorKey: "cantidad",

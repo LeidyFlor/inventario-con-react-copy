@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import { ViewPageTemplate, ViewDetailCard } from "@/shared/";
-import { Cable } from "lucide-react";
+import { ViewPageTemplate, ViewDetailCard, Button, TechnicalFilesModal } from "@/shared/";
+import { Cable, FileText } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import { getMaterial } from "../services/materialService";
 import { Ping } from "ldrs/react";
@@ -21,6 +21,14 @@ const formatPrice = (value) =>
         ? `$${Number(value).toLocaleString("es-CO")}`
         : "—";
 
+// Las fechas llegan como "YYYY-MM-DD". Se parten a mano en vez de usar
+// new Date(), que las interpreta en UTC y en Colombia muestra el día anterior.
+const formatDate = (value) => {
+    if (!value) return "—";
+    const [anio, mes, dia] = String(value).split("-");
+    return `${dia}/${mes}/${anio}`;
+};
+
 export default function ViewMaterialPage() {
     const navigate = useNavigate();
     const { id } = useParams();
@@ -28,6 +36,9 @@ export default function ViewMaterialPage() {
 
     const [material, setMaterial] = useState(null);
     const [loading, setLoading] = useState(true);
+    // Las fichas técnicas se consultan desde aquí en modo solo lectura, para
+    // que también las pueda ver quien no tiene permiso de edición
+    const [showFilesModal, setShowFilesModal] = useState(false);
 
     useEffect(() => {
         getMaterial(id)
@@ -46,6 +57,7 @@ export default function ViewMaterialPage() {
     if (!material) return <p>Material no encontrado</p>;
 
     return (
+        <>
         <ViewPageTemplate
             title="Visualizar material de consumo"
             icon={<Cable className="text-brand" />}
@@ -56,21 +68,47 @@ export default function ViewMaterialPage() {
             onEdit={hasPerm(PERM.CONSUMABLE_CHANGE)
                 ? () => navigate(`/dashboard/consumable-materials/${material.id}/edit`)
                 : undefined}
+            topActions={
+                // Mismo botón que en el formulario de edición, pero abre el
+                // modal en modo consulta. Sin hasPerm: ver la ficha técnica no
+                // debería exigir permiso de edición.
+                <Button type="button" size="sm" variant="ghost" onClick={() => setShowFilesModal(true)}>
+                    <FileText size={18} />
+                    Fichas
+                </Button>
+            }
         >
             <ViewDetailCard fields={[
                 { label: "Placa sena",          value: material.material_barcode_sena ?? "—" },
                 // Marca y modelo son opcionales, por eso el guion cuando faltan
                 { label: "Marca",               value: material.brand_name || "—" },
                 { label: "Modelo",              value: material.material_model || "—" },
+                { label: "S/N",                 value: material.material_serial || "—" },
                 { label: "Cuentadante",         value: material.inventory_manager_name },
                 { label: "Cantidad total",      value: material.material_quantity },
                 { label: "Cantidad prestada",   value: material.material_quantity_loaned },
                 { label: "Cantidad disponible", value: material.material_quantity_available },
                 { label: "Valor unitario",      value: formatPrice(material.material_unit_price) },
                 { label: "Valor total",         value: formatPrice(material.material_total_price) },
+                { label: "Fecha de compra",     value: formatDate(material.material_purchase_date) },
+                { label: "Fecha de ingreso",    value: formatDate(material.material_entry_date) },
                 { label: "Ubicación",           value: material.material_location || "—" },
                 { label: "Estado",              value: material.is_active ? "Disponible" : (STATE_LABELS[material.material_state] ?? material.material_state) },
             ]} />
         </ViewPageTemplate>
+
+        {/* Modo solo lectura: se ven las fichas y se pueden abrir, pero no
+            subir ni eliminar. Por eso los setters van vacíos. */}
+        <TechnicalFilesModal
+            readOnly
+            isOpen={showFilesModal}
+            onClose={() => setShowFilesModal(false)}
+            existingFiles={material.technical_files ?? []}
+            setExistingFiles={() => {}}
+            newTechFiles={[]}
+            setNewTechFiles={() => {}}
+            setRemovedFileIds={() => {}}
+        />
+        </>
     );
 }

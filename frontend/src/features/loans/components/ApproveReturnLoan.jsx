@@ -142,7 +142,7 @@ export default function ApproveReturnLoan() {
         },
         {
             accessorKey: "serial",
-            header: "Serial",
+            header: "S/N",
             cell: ({ row }) => (
                 <span className="block min-w-28 py-3 whitespace-nowrap">
                     {row.original.serial ?? "—"}

@@ -18,7 +18,11 @@ export const consumableMaterialShema = z.object({
     .optional()
     .or(z.literal("")),
 
-  inventoryManager: z.string().min(1, "Debe seleccionar un cuentadante"),
+  // Un material puede tener varios cuentadantes, mínimo uno.
+  // El MultiSelect entrega un arreglo de ids como texto.
+  inventoryManagers: z
+  .array(z.string())
+  .min(1, "Debe seleccionar al menos un cuentadante"),
 
   materialDescription: z
       .string()
@@ -53,12 +57,44 @@ export const consumableMaterialShema = z.object({
     .string()
     .max(150, "Resuma la ubicación del material")
     .optional(),
+
+  // S/N (número de serie): opcional, igual que en devolutivo
+  materialSerial: z
+    .string()
+    .max(100, "El S/N es demasiado largo")
+    .optional()
+    .or(z.literal("")),
+
+  // Fechas de adquisición: obligatorias, llegan como "YYYY-MM-DD"
+  materialPurchaseDate: z.string().min(1, "La fecha de compra es obligatoria"),
+  materialEntryDate: z.string().min(1, "La fecha de ingreso es obligatoria"),
+
+  materialImage: z.array(z.instanceof(File)).optional(),
+
+  // La ficha técnica es obligatoria: al menos un archivo. El backend también
+  // lo valida, porque los archivos no pasan por el serializer.
+  materialTechnicalSheet: z
+    .array(z.instanceof(File))
+    .min(1, "Debes adjuntar al menos una ficha técnica"),
 }).superRefine((data, ctx) => {
     if (data.materialBarcodeSena?.trim() && data.materialQuantity !== 1) {
         ctx.addIssue({
             code: z.ZodIssueCode.custom,
             message: "Si el material tiene placa SENA, la cantidad debe ser 1",
             path: ["materialQuantity"],
+        })
+    }
+
+    // La compra no puede ser posterior al ingreso
+    if (
+        data.materialPurchaseDate &&
+        data.materialEntryDate &&
+        data.materialPurchaseDate > data.materialEntryDate
+    ) {
+        ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "La fecha de ingreso no puede ser anterior a la de compra",
+            path: ["materialEntryDate"],
         })
     }
 });

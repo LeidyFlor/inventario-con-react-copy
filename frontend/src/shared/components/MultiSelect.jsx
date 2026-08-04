@@ -10,7 +10,23 @@ export default function MultiSelect({
     onChange,
     error,
     variant = "default",
-    required
+    required,
+
+    // Ancho del campo.
+    //
+    // Por defecto ocupa todo el espacio disponible, que es lo correcto cuando
+    // el contenedor padre tiene un ancho definido.
+    //
+    // Cuando el padre se ajusta al contenido (w-fit), hay que pasarle un ancho
+    // fijo. Si no, el texto de las opciones seleccionadas hace crecer el campo,
+    // y con él toda la columna y el formulario. En ese caso min-w-0 no ayuda:
+    // no existe un ancho contra el cual encoger.
+    //
+    // Los formularios de material usan "w-full lg:w-60": fijo en escritorio,
+    // donde el espacio es limitado por la rejilla de varias columnas, y libre
+    // en móvil, donde el formulario es de una sola columna y el ancho lo manda
+    // la pantalla.
+    widthClass = "w-full",
 }) {
     const variants = {
         default: "rounded-2xl border-2 border-input-border text-medium text-text-primary bg-input-fill placeholder-text-muted hover:border-2 hover:border-focus-border focus:outline-none focus:ring-1 focus:ring-focus-ring",
@@ -33,7 +49,7 @@ export default function MultiSelect({
 
     return (
         // min-w-0 permite encoger el input si el espacio no da
-        <div className="w-full relative min-w-0" ref={containerRef}>
+        <div className={`${widthClass} relative min-w-0`} ref={containerRef}>
             {/* si se ingresa label: */}
             {label && (
                 <label className={`
@@ -50,19 +66,26 @@ export default function MultiSelect({
             )}
             {/* campo que abre el dropdown */}
             {/*  trigger */}
+            {/* overflow-hidden refuerza el truncate del texto: sin él, un
+                nombre muy largo podría desbordar el borde del campo */}
             <div onClick={() => setOpen(prev => !prev)}
                 className={`w-full
                 h-10
                 px-4
                 py-2
-                flex 
-                items-center 
+                flex
+                items-center
                 justify-between
+                overflow-hidden
                 transition-all duration-300
                 ${variants[variant]}
                 ${error ? "border-2 border-red-800" : "border border-border"}
                 `}>
-                <span className={`${value.length === 0 ? "text-text-muted truncate": "text-text-primary"}
+                {/* flex-1 min-w-0 truncate: la combinación que corta el texto
+                    con "..." en vez de estirar el campo. min-w-0 es
+                    imprescindible, porque por defecto un hijo flex no se
+                    encoge más allá de su contenido. */}
+                <span className={`${value.length === 0 ? "text-text-muted" : "text-text-primary"}
                     flex-1 min-w-0 truncate text-left
                 `}>
                     {value.length === 0

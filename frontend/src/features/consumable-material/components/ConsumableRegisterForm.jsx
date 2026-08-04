@@ -1,4 +1,4 @@
-import { Input, Button, IconButton, Select, FileInput, Textarea, Alert } from "@/shared"
+import { Input, Button, IconButton, Select, MultiSelect, FileInput, Textarea, Alert } from "@/shared"
 import React, {useState, useEffect} from "react";
 import { getInventoryManagers, getBrands } from "@/features/consumable-material/services/selectService.js";
 import { createMaterial } from "@/features/consumable-material/services/materialService.js";
@@ -14,12 +14,16 @@ export default function ConsumableRegisterForm() {
         brandName: "",
         materialModel: "",
         materialName: "",
-        inventoryManager: "",
+        inventoryManagers: [],
         materialDescription: "",
         materialQuantity: "",
         materialUnitPrice: "",
         materialLocation: "",
-        materialImage: []
+        materialSerial: "",
+        materialPurchaseDate: "",
+        materialEntryDate: "",
+        materialImage: [],
+        materialTechnicalSheet: [],
     });
     const [errors, setErrors] = useState({});
     const [userName, setUserName] = useState([]); //use state para cuentadante
@@ -93,9 +97,9 @@ export default function ConsumableRegisterForm() {
     return (
         <div className="flex flex-col place-items-center justify-items-center relative">
             {/* contenedor verde */}
-            <div className="bg-gradient-container-green border-4 border-border-green-container p-6 rounded-4xl w-fit mt-2 h-fit">
+            <div className="bg-gradient-container-green border-4 border-border-green-container p-6 rounded-4xl w-fit h-fit">
                 {/* contenenedor del titulo y la linea */}
-                <div className="mb-3 max-w-max ">
+                <div className="mb-1 max-w-max ">
                     <h1 className="flex gap-2 text-gradient-title text-h3 pb-0.5">
                         <Cable className="text-brand"/>
                         Crear material de Consumo
@@ -126,15 +130,34 @@ export default function ConsumableRegisterForm() {
                                 {errors.materialImage && (
                                 <span className="text-red-800 text-sm">{errors.materialImage}</span>
                                 )}
-                    
+
                             </div>
-                    
-                                               
+
+                            {/* Ficha técnica — obligatoria, igual que en devolutivo */}
+                            <h2 className="mt-6 mb-4 font-bold text-body">
+                                Agregar ficha técnica
+                            </h2>
+                            <div className="flex flex-col gap-3 place-items-center">
+                                <p className="text-text-muted text-small text-center">
+                                    Se admiten hasta 3 archivos (PNG, JPG, PDF). Máx 10MB.
+                                </p>
+                                <FileInput
+                                    value={formData.materialTechnicalSheet ?? []}
+                                    onChange={(files) =>
+                                        setFormData((prev) => ({ ...prev, materialTechnicalSheet: files }))
+                                    }
+                                    multiple={true}
+                                />
+                                {errors.materialTechnicalSheet && (
+                                    <span className="text-red-800 text-sm">{errors.materialTechnicalSheet}</span>
+                                )}
+                            </div>
+
                         </div>
                     </div>
                     {/* Inputs */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 md:gap-10">
-                        <div className="flex flex-col gap-2">
+                    <div className="grid grid-cols-1 md:grid-cols-2 md:gap-10 min-w-0">
+                        <div className="flex flex-col gap-0.5">
                             <Input
                                 placeholder="Placa Sena"
                                 name= "materialBarcodeSena"
@@ -162,6 +185,14 @@ export default function ConsumableRegisterForm() {
                                 error={errors.materialModel}
                             />
                             <Input
+                                placeholder="S/N del elemento"
+                                name="materialSerial"
+                                label="S/N"
+                                value={formData.materialSerial}
+                                onChange={handleChange}
+                                error={errors.materialSerial}
+                            />
+                            <Input
                                 placeholder="Nombre del elemento"
                                 name="materialName"
                                 label="Nombre del elemento"
@@ -182,16 +213,28 @@ export default function ConsumableRegisterForm() {
                             />
 
                         </div>
-                        <div className="flex flex-col gap-2">
-                            <Select
-                                label="Seleccione cuentadante"
-                                options={userName}
-                                name="inventoryManager"
-                                value={formData.inventoryManager}
-                                onChange={handleChange}
-                                error={errors.inventoryManager}
-                                required
-                            />
+                        {/* min-w-0: sin esto, el hijo de un grid puede crecer
+                            más allá de su columna y el MultiSelect se estira
+                            con todos los nombres en vez de cortarlos */}
+                        <div className="flex flex-col gap-0.5 min-w-0">
+                            {/* Un material puede quedar a cargo de varios
+                                cuentadantes, mínimo uno. MultiSelect no usa
+                                event.target, entrega (name, valor) directo. */}
+                            <div className="w-full lg:w-60">
+                                <MultiSelect
+                                    widthClass="w-full lg:w-60"
+                                    label="Seleccione cuentadante(s)"
+                                    options={userName}
+                                    name="inventoryManagers"
+                                    value={formData.inventoryManagers}
+                                    onChange={(name, newValue) =>
+                                        setFormData(prev => ({ ...prev, [name]: newValue }))
+                                    }
+                                    error={errors.inventoryManagers}
+                                    required
+                                />
+
+                            </div>
                             <Input
                                 placeholder="Cantidad"
                                 type="number"
@@ -220,9 +263,28 @@ export default function ConsumableRegisterForm() {
                                 onChange={handleChange}
                                 error={errors.materialLocation}
                             />
+                            {/* Fechas de adquisición — obligatorias */}
+                            <Input
+                                type="date"
+                                name="materialPurchaseDate"
+                                label="Fecha de compra"
+                                value={formData.materialPurchaseDate}
+                                onChange={handleChange}
+                                error={errors.materialPurchaseDate}
+                                required
+                            />
+                            <Input
+                                type="date"
+                                name="materialEntryDate"
+                                label="Fecha de ingreso"
+                                value={formData.materialEntryDate}
+                                onChange={handleChange}
+                                error={errors.materialEntryDate}
+                                required
+                            />
 
                             {/* Acciones */}
-                            <div className="flex justify-end mt-22">
+                            <div className="flex justify-end mt-2">
                                 <IconButton
                                     variant="primary"
                                     size="md"

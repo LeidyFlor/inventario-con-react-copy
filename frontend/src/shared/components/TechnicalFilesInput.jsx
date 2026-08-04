@@ -21,6 +21,11 @@ export default function TechnicalFilesInput({
 
     accept = "image/*,application/pdf",
     maxFiles = 3,                 // límite total (existentes + nuevos)
+
+    // Modo consulta: se ven los archivos y se pueden abrir, pero no subir ni
+    // eliminar. Lo usan las pantallas de visualizar material, para que alguien
+    // sin permiso de edición igual pueda consultar las fichas.
+    readOnly = false,
 }) {
     const inputRef = useRef()
     const [isLoading, setIsLoading] = useState(false)
@@ -81,8 +86,8 @@ export default function TechnicalFilesInput({
         onNewFilesChange(copy)
     }
 
-    //  Cuántos archivos más se pueden agregar 
-    const canAddMore = existingFiles.length + newFiles.length < maxFiles
+    //  Cuántos archivos más se pueden agregar
+    const canAddMore = !readOnly && existingFiles.length + newFiles.length < maxFiles
 
     return (
         <div className="grid grid-cols-3 gap-2">
@@ -125,21 +130,24 @@ export default function TechnicalFilesInput({
                         >
                             <ArrowDownToLine size={14} />
                         </button>
-                        {/* Eliminar */}
-                        <button
-                            type="button"
-                            onClick={() => onRemoveExisting(file.id)}
-                            className="w-7 h-7 bg-white rounded-full flex items-center justify-center shadow text-error text-xs"
-                            title="Eliminar archivo"
-                        >
-                            ✕
-                        </button>
+                        {/* Eliminar — oculto en modo consulta */}
+                        {!readOnly && (
+                            <button
+                                type="button"
+                                onClick={() => onRemoveExisting(file.id)}
+                                className="w-7 h-7 bg-white rounded-full flex items-center justify-center shadow text-error text-xs"
+                                title="Eliminar archivo"
+                            >
+                                ✕
+                            </button>
+                        )}
                     </div>
                 </div>
             ))}
 
-            {/*  Archivos nuevos (File objects, aún no subidos)  */}
-            {newFiles.map((file, i) => (
+            {/*  Archivos nuevos (File objects, aún no subidos)
+                 En modo consulta no existen: no se puede subir nada  */}
+            {!readOnly && newFiles.map((file, i) => (
                 <div
                     key={`new-${i}`}
                     draggable

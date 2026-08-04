@@ -281,7 +281,7 @@ export default function MaterialsLoan({ selectedMaterials, setSelectedMaterials 
         },
         {
             accessorKey: "material_serial",
-            header: "Serial",
+            header: "S/N",
             cell: ({ row }) => (
                 <DisabledCell active={selectedReturnableIds.has(row.original.id)} className="min-w-36 whitespace-nowrap">
                     {getField(row.original, "material_serial", "returnableMaterialSerial") || "—"}

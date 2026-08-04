@@ -9,7 +9,11 @@ export const consumableEditSchema = z
             .max(150, "El modelo es demasiado largo")
             .optional()
             .or(z.literal("")),
-        inventoryManager: z.string().min(1, "Selecciona un cuentadante"),
+        // Un material puede tener varios cuentadantes, mínimo uno.
+        // El MultiSelect entrega un arreglo de ids como texto.
+        inventoryManagers: z
+        .array(z.string())
+        .min(1, "Debe seleccionar al menos un cuentadante"),
         materialName: z.string().min(1, "El nombre es obligatorio"),
         materialDescription: z
             .string()
@@ -25,6 +29,11 @@ export const consumableEditSchema = z
             z.number().min(1, "El precio debe ser mayor a 0")
         ),
         materialLocation: z.string().optional().or(z.literal("")),
+        // S/N opcional, igual que en devolutivo
+        materialSerial: z.string().optional().or(z.literal("")),
+        // Fechas de adquisición: obligatorias, llegan como "YYYY-MM-DD"
+        materialPurchaseDate: z.string().min(1, "La fecha de compra es obligatoria"),
+        materialEntryDate: z.string().min(1, "La fecha de ingreso es obligatoria"),
         materialState: z.string().optional().or(z.literal("")),
         isActive: z.boolean(),
     })
@@ -41,6 +50,18 @@ export const consumableEditSchema = z
                 code: z.ZodIssueCode.custom,
                 message: "Si el material tiene placa SENA, la cantidad debe ser 1",
                 path: ["materialQuantity"],
+            });
+        }
+        // La compra no puede ser posterior al ingreso
+        if (
+            data.materialPurchaseDate &&
+            data.materialEntryDate &&
+            data.materialPurchaseDate > data.materialEntryDate
+        ) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: "La fecha de ingreso no puede ser anterior a la de compra",
+                path: ["materialEntryDate"],
             });
         }
     });

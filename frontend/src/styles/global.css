@@ -214,7 +214,7 @@
     }
     /* Texto para subtitulos de informacion seccion editar */
     .parrafo-edit-style{
-        font-size: var(--text-medium);
+        font-size: var(--text-small);
         font-weight: var(--font-weight-semibold);
         color: var(--color-text-primary);
     }

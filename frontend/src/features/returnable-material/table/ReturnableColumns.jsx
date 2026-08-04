@@ -65,7 +65,7 @@ export const getReturnableColumns = (setReturnables) => [
     // Serial
     {
         accessorKey: "material_serial",
-        header: "Serial",
+        header: "S/N",
     },
 
     // Categoría con etiqueta legible

@@ -12,7 +12,11 @@ export const returnableMaterialSchema = z
     // Marca opcional: hay materiales genéricos sin marca identificable
     brandName: z.string().optional().or(z.literal("")),
 
-    inventoryManager: z.string().min(1, "Debe seleccionar un cuentadante"),
+    // Un material puede tener varios cuentadantes, mínimo uno.
+    // El MultiSelect entrega un arreglo de ids como texto.
+    inventoryManagers: z
+    .array(z.string())
+    .min(1, "Debe seleccionar al menos un cuentadante"),
 
     materialName: z
       .string()
@@ -66,9 +70,18 @@ export const returnableMaterialSchema = z
     // Opcional salvo cuando la categoría es muebles_enseres (se valida con superRefine)
     returnableMaterialDimensions: z.string().optional().or(z.literal("")),
 
+    // Fechas de adquisición: obligatorias. Son campos date, así que llegan
+    // como "YYYY-MM-DD" y basta con verificar que no estén vacías.
+    materialPurchaseDate: z.string().min(1, "La fecha de compra es obligatoria"),
+    materialEntryDate: z.string().min(1, "La fecha de ingreso es obligatoria"),
+
     //  Archivos
     materialImage: z.array(z.instanceof(File)).optional(),
-    materialTechnicalSheet: z.array(z.instanceof(File)).optional(),
+    // La ficha técnica es obligatoria: al menos un archivo. El backend también
+    // lo valida, porque los archivos no pasan por el serializer.
+    materialTechnicalSheet: z
+      .array(z.instanceof(File))
+      .min(1, "Debes adjuntar al menos una ficha técnica"),
   })
   .superRefine((data, ctx) => {
     const category = data.returnableMaterialCategory;
@@ -119,5 +132,19 @@ export const returnableMaterialSchema = z
           path: ["returnableMaterialDimensions"],
         });
       }
+    }
+
+    // La compra no puede ser posterior al ingreso: no se puede recibir en el
+    // almacén algo que todavía no se ha comprado
+    if (
+      data.materialPurchaseDate &&
+      data.materialEntryDate &&
+      data.materialPurchaseDate > data.materialEntryDate
+    ) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "La fecha de ingreso no puede ser anterior a la de compra",
+        path: ["materialEntryDate"],
+      });
     }
   });

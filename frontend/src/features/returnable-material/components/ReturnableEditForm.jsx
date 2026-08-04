@@ -8,6 +8,7 @@ import {
     Input,
     Button,
     Select,
+    MultiSelect,
     Textarea,
     Alert,
     IconButton,
@@ -15,7 +16,9 @@ import {
 } from "@/shared";
 
 import ImageModal from "./ReturnableModalImage";
-import TechnicalFilesModal from "./ReturnableModalTechnicalFile";
+// El modal se movió a shared: ahora lo usan también los materiales de consumo
+// y las dos pantallas de visualizar (en modo solo lectura)
+import { TechnicalFilesModal } from "@/shared";
 
 import {
     getBrands,
@@ -43,7 +46,11 @@ async function updateReturnable(id, formData, isActive, newImageFile) {
     // convierte "" en null en los campos con allow_null, así que también
     // sirve para QUITARLE la marca a un material que ya la tenía.
     data.append("brand", formData.brandName ?? "");
-    data.append("inventory_manager", formData.inventoryManager);
+    // Varios cuentadantes: se envía una entrada por cada uno bajo la misma
+    // clave, que es como DRF espera un ManyToMany en multipart
+    ;(formData.inventoryManagers ?? []).forEach(managerId => {
+        data.append("inventory_managers", Number(managerId))
+    })
     data.append("material_name", formData.materialName);
     data.append("material_description", formData.materialDescription);
     data.append("material_barcode_sena", formData.materialBarcodeSena || "");
@@ -51,6 +58,9 @@ async function updateReturnable(id, formData, isActive, newImageFile) {
     data.append("material_location", formData.materialLocation || "");
     data.append("material_model", formData.returnableMaterialModel || "");
     data.append("material_serial", formData.returnableMaterialSerial || "");
+    // Fechas de adquisición — obligatorias. Son campos date: solo "YYYY-MM-DD"
+    data.append("material_purchase_date", formData.materialPurchaseDate);
+    data.append("material_entry_date", formData.materialEntryDate);
     data.append("material_category", formData.returnableMaterialCategory);
     data.append("material_quantity", formData.materialQuantity || "1");
     data.append("is_active", isActive);
@@ -92,7 +102,7 @@ export default function ReturnableEditForm() {
         brandName: "",
         returnableMaterialModel: "",
         materialName: "",
-        inventoryManager: "",
+        inventoryManagers: [],
         materialDescription: "",
         materialUnitPrice: "",
         materialLocation: "",
@@ -100,6 +110,8 @@ export default function ReturnableEditForm() {
         returnableMaterialSerial: "",
         returnableMaterialCategory: "",
         returnableMaterialDimensions: "",
+        materialPurchaseDate: "",
+        materialEntryDate: "",
         materialState: "",
     });
 
@@ -173,7 +185,7 @@ export default function ReturnableEditForm() {
                     brandName: String(material.brand ?? ""),
                     returnableMaterialModel: material.material_model ?? "",
                     materialName: material.material_name ?? "",
-                    inventoryManager: String(material.inventory_manager),
+                    inventoryManagers: (material.inventory_managers ?? []).map(String),
                     materialDescription: material.material_description ?? "",
                     materialUnitPrice: material.material_unit_price ?? "",
                     materialLocation: material.material_location ?? "",
@@ -181,6 +193,9 @@ export default function ReturnableEditForm() {
                     returnableMaterialSerial: material.material_serial ?? "",
                     returnableMaterialCategory: material.material_category ?? "",
                     returnableMaterialDimensions: material.material_dimensions ?? "",
+                    // Vienen como "YYYY-MM-DD", que es justo lo que espera el input date
+                    materialPurchaseDate: material.material_purchase_date ?? "",
+                    materialEntryDate: material.material_entry_date ?? "",
                     materialState: material.material_state ?? "",
                 });
 
@@ -268,7 +283,7 @@ export default function ReturnableEditForm() {
             <div className="w-full bg-gradient-container-green p-3 rounded-3xl">
 
                 {/* Header + Botones */}
-                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-2 gap-2">
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-1 gap-2">
                     <div className="max-w-max mb-1">
                         <h1 className="flex gap-2 text-gradient-title text-h3">
                             <FilePenLine className="text-brand" />
@@ -319,7 +334,7 @@ export default function ReturnableEditForm() {
                         </div>
 
                         <div>
-                            <p className="parrafo-edit-style">Serial:</p>
+                            <p className="parrafo-edit-style">S/N:</p>
                             <Input
                                 name="returnableMaterialSerial"
                                 value={formData.returnableMaterialSerial}
@@ -328,6 +343,8 @@ export default function ReturnableEditForm() {
                                 variant="isEdit"
                             />
                         </div>
+
+                        
 
                         {/* Estado — Switch + motivo condicional */}
                         <div className="flex flex-col gap-2">
@@ -368,12 +385,6 @@ export default function ReturnableEditForm() {
                                 variant="isEdit"
                             />
                         </div>
-
-                    </div>
-
-                    {/* CENTRO */}
-                    <div className="bg-background p-4 rounded-xl flex flex-col gap-3">
-
                         <div>
                             <p className="parrafo-edit-style">Modelo:</p>
                             <Input
@@ -381,6 +392,35 @@ export default function ReturnableEditForm() {
                                 value={formData.returnableMaterialModel}
                                 onChange={handleChange}
                                 error={errors.returnableMaterialModel}
+                                variant="isEdit"
+                            />
+                        </div>
+
+                    </div>
+
+                    {/* CENTRO */}
+                    <div className="bg-background p-4 rounded-xl flex flex-col gap-3">
+                        {/* Fechas de adquisición — obligatorias */}
+                        <div>
+                            <p className="parrafo-edit-style">Fecha de compra:</p>
+                            <Input
+                                type="date"
+                                name="materialPurchaseDate"
+                                value={formData.materialPurchaseDate}
+                                onChange={handleChange}
+                                error={errors.materialPurchaseDate}
+                                variant="isEdit"
+                            />
+                        </div>
+
+                        <div>
+                            <p className="parrafo-edit-style">Fecha de ingreso:</p>
+                            <Input
+                                type="date"
+                                name="materialEntryDate"
+                                value={formData.materialEntryDate}
+                                onChange={handleChange}
+                                error={errors.materialEntryDate}
                                 variant="isEdit"
                             />
                         </div>
@@ -419,11 +459,24 @@ export default function ReturnableEditForm() {
                                 </p>
                             </div>
                         )}
+                        {/* Dimensiones solo si es muebles_enseres */}
+                        {formData.returnableMaterialCategory === "muebles_enseres" && (
+                            <div>
+                                <p className="parrafo-edit-style">Dimensiones:</p>
+                                <Input
+                                    name="returnableMaterialDimensions"
+                                    value={formData.returnableMaterialDimensions}
+                                    onChange={handleChange}
+                                    error={errors.returnableMaterialDimensions}
+                                    variant="isEdit"
+                                />
+                            </div>
+                        )}
 
                     </div>
 
                     {/* DERECHA */}
-                    <div className="bg-background p-4 rounded-xl flex flex-col gap-3">
+                    <div className="bg-background p-4 rounded-xl flex flex-col gap-3 min-w-0">
 
                         <div>
                             <p className="parrafo-edit-style">Marca:</p>
@@ -438,13 +491,18 @@ export default function ReturnableEditForm() {
                         </div>
 
                         <div>
-                            <p className="parrafo-edit-style">Cuentadante:</p>
-                            <Select
+                            <p className="parrafo-edit-style">Cuentadante(s):</p>
+                            {/* Varios cuentadantes, mínimo uno. MultiSelect no
+                                usa event.target: entrega (name, valor) directo */}
+                            <MultiSelect
+                                widthClass="w-full lg:w-60"
                                 options={managers}
-                                name="inventoryManager"
-                                value={formData.inventoryManager}
-                                onChange={handleChange}
-                                error={errors.inventoryManager}
+                                name="inventoryManagers"
+                                value={formData.inventoryManagers}
+                                onChange={(name, newValue) =>
+                                    setFormData(prev => ({ ...prev, [name]: newValue }))
+                                }
+                                error={errors.inventoryManagers}
                                 variant="isEdit"
                             />
                         </div>
@@ -469,20 +527,6 @@ export default function ReturnableEditForm() {
                                 variant="isEdit"
                             />
                         </div>
-
-                        {/* Dimensiones solo si es muebles_enseres */}
-                        {formData.returnableMaterialCategory === "muebles_enseres" && (
-                            <div>
-                                <p className="parrafo-edit-style">Dimensiones:</p>
-                                <Input
-                                    name="returnableMaterialDimensions"
-                                    value={formData.returnableMaterialDimensions}
-                                    onChange={handleChange}
-                                    error={errors.returnableMaterialDimensions}
-                                    variant="isEdit"
-                                />
-                            </div>
-                        )}
 
                     </div>
 

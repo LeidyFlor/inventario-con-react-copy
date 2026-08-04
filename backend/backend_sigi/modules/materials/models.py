@@ -51,21 +51,33 @@ class Material(models.Model):
         blank=True,
     )
 
-    # Solo usuarios cuentadantes pueden ser inventary managers
-    # limit_choices_to filtra automáticamente en el admin y en los serializers
-    inventory_manager = models.ForeignKey(
+    # Un material puede estar a cargo de varios cuentadantes.
+    # Solo usuarios cuentadantes pueden serlo: limit_choices_to filtra
+    # automáticamente en el admin y en los serializers.
+    #
+    # Reemplaza al antiguo inventory_manager (uno solo), que se eliminó
+    # después de copiar sus datos aquí.
+    inventory_managers = models.ManyToManyField(
         Users,
-        on_delete=models.PROTECT,
         limit_choices_to={'is_accountant': True},
-        related_name='%(class)s_set',
+        related_name='%(class)s_managed',
+        blank=True,   # la obligatoriedad (mínimo 1) la exigen los serializers
     )
 
     material_name = models.CharField(max_length=150)
     material_description = models.TextField()
 
-    # Modelo del fabricante. Vive aquí y no en ReturnableMaterial porque los
-    # materiales de consumo también lo necesitan. Opcional en ambos.
+    # Modelo del fabricante y S/N (número de serie). Viven aquí y no en
+    # ReturnableMaterial porque los materiales de consumo también los
+    # necesitan. Opcionales en ambos.
     material_model = models.CharField(max_length=150, blank=True, default='')
+    material_serial = models.CharField(max_length=150, blank=True, default='')
+
+    # Fechas de adquisición. Obligatorias en el formulario (los serializers las
+    # exigen), pero nullable en la base de datos para no tener que inventarle
+    # una fecha de compra a los materiales que ya existían.
+    material_purchase_date = models.DateField(null=True, blank=True)
+    material_entry_date    = models.DateField(null=True, blank=True)
 
     # Placa SENA — opcional (blank/null). Si existe → cantidad obligatoriamente 1
     material_barcode_sena = models.CharField(max_length=100, null=True, blank=True)
@@ -140,8 +152,8 @@ class ReturnableMaterial(Material):
         ('muebles_enseres', 'Muebles y enseres'),
     ]
 
-    # material_model se hereda de Material (lo comparte con los consumibles)
-    material_serial = models.CharField(max_length=150, blank=True, default='')
+    # material_model y material_serial se heredan de Material (los comparte
+    # con los consumibles)
     material_category = models.CharField(max_length=20, choices=CATEGORIES)
 
     # Solo si categoría es 'muebles_enseres' — formato: "120x75x20cm"
@@ -162,19 +174,50 @@ class ReturnableMaterial(Material):
 class TechnicalSheetFile(models.Model):
     """
     Tabla separada para los archivos de ficha técnica.
-    Un material devolutivo puede tener varios archivos.
+    Un material puede tener varios archivos.
+
+    Sirve para los dos tipos de material. Como Material es abstracto no se le
+    puede apuntar con una ForeignKey, así que se usan dos claves foráneas
+    nulables y exactamente una debe estar llena. Es el mismo patrón que usa
+    LoanItem con consumable_material / returnable_material.
+
+    El campo se sigue llamando 'material' (y no 'returnable_material') para no
+    romper los registros ni el código que ya existía.
     """
     material = models.ForeignKey(
         ReturnableMaterial,
         on_delete=models.CASCADE,  # Si se borra el material, se borran sus archivos
+        null=True, blank=True,
+        related_name='technical_files'
+    )
+    consumable_material = models.ForeignKey(
+        ConsumableMaterial,
+        on_delete=models.CASCADE,
+        null=True, blank=True,
         related_name='technical_files'
     )
     file_url = models.URLField()
     file_name = models.CharField(max_length=255)  # nombre original del archivo
     uploaded_at = models.DateTimeField(auto_now_add=True)
 
+    @property
+    def owner(self):
+        """El material dueño del archivo, sea del tipo que sea."""
+        return self.material or self.consumable_material
+
     class Meta:
         db_table = 'technical_sheet_file'
+        # Garantiza que nunca queden ambas FK llenas o ambas vacías
+        constraints = [
+            models.CheckConstraint(
+                name='technical_sheet_one_material_type',
+                condition=(
+                    models.Q(material__isnull=False, consumable_material__isnull=True) |
+                    models.Q(material__isnull=True,  consumable_material__isnull=False)
+                ),
+            )
+        ]
 
     def __str__(self):
-        return f"{self.material.material_name} - {self.file_name}"
+        dueno = self.owner
+        return f"{dueno.material_name if dueno else 'sin material'} - {self.file_name}"

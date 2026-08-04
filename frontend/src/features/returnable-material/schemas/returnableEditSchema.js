@@ -8,7 +8,11 @@ export const returnableEditSchema = z
     // Marca opcional: hay materiales genéricos sin marca identificable
     brandName: z.string().optional().or(z.literal("")),
 
-    inventoryManager: z.string().min(1, "Selecciona un cuentadante"),
+    // Un material puede tener varios cuentadantes, mínimo uno.
+    // El MultiSelect entrega un arreglo de ids como texto.
+    inventoryManagers: z
+    .array(z.string())
+    .min(1, "Debe seleccionar al menos un cuentadante"),
 
     materialName: z
       .string()
@@ -50,6 +54,10 @@ export const returnableEditSchema = z
           : Number(val),
       z.number().min(1, "La cantidad debe ser mayor a 0").optional(),
     ),
+
+    // Fechas de adquisición: obligatorias, llegan como "YYYY-MM-DD"
+    materialPurchaseDate: z.string().min(1, "La fecha de compra es obligatoria"),
+    materialEntryDate: z.string().min(1, "La fecha de ingreso es obligatoria"),
 
     isActive: z.boolean(),
 
@@ -110,5 +118,18 @@ export const returnableEditSchema = z
           path: ["returnableMaterialDimensions"],
         });
       }
+    }
+
+    // La compra no puede ser posterior al ingreso
+    if (
+      data.materialPurchaseDate &&
+      data.materialEntryDate &&
+      data.materialPurchaseDate > data.materialEntryDate
+    ) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "La fecha de ingreso no puede ser anterior a la de compra",
+        path: ["materialEntryDate"],
+      });
     }
   });

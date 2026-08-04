@@ -16,6 +16,21 @@ export const consumableReportFields = [
         default: false },
     {
         key:
+        "material_serial",
+        label: "S/N",
+        default: false },
+    {
+        key:
+        "material_purchase_date",
+        label: "Fecha de compra",
+        default: false },
+    {
+        key:
+        "material_entry_date",
+        label: "Fecha de ingreso",
+        default: false },
+    {
+        key:
         "material_name",
         label: "Nombre material",
         default: true},

@@ -1,10 +1,15 @@
-import { Input, Button, Select, StatusSwitch, FileInput, Alert, Textarea, IconButton } from "@/shared";
+import { Input, Button, Select, MultiSelect, StatusSwitch, FileInput, Alert, Textarea, IconButton, TechnicalFilesModal } from "@/shared";
 import { useState, useEffect } from "react";
 import { useParams, useNavigate, useBlocker } from "react-router-dom";
-import { FilePenLine } from "lucide-react";
+import { FilePenLine, FileText } from "lucide-react";
 import { Ping } from "ldrs/react";
 import "ldrs/react/Ping.css";
-import { getMaterial, updateMaterial } from "../services/materialService";
+import {
+    getMaterial,
+    updateMaterial,
+    uploadTechnicalFiles,
+    deleteTechnicalFile,
+} from "../services/materialService";
 import { getBrands, getInventoryManagers, getMaterialStates } from "../services/selectService";
 import { consumableEditSchema } from "../schemas/consumableEditSchema";
 
@@ -20,16 +25,26 @@ export default function ConsumableEditForm() {
     const [managers, setManagers] = useState([]);
     const materialStateOptions = getMaterialStates();
 
+    /* Fichas técnicas — mismo manejo que en el editar de devolutivo:
+       lo existente se marca para borrar y lo nuevo se sube al guardar */
+    const [existingFiles, setExistingFiles]   = useState([]);
+    const [newTechFiles, setNewTechFiles]     = useState([]);
+    const [removedFileIds, setRemovedFileIds] = useState([]);
+    const [showFilesModal, setShowFilesModal] = useState(false);
+
     const [formData, setFormData] = useState({
         brand: "",
         materialModel: "",
-        inventoryManager: "",
+        inventoryManagers: [],
         materialBarcodeSena: "",
         materialName: "",
         materialDescription: "",
         materialQuantity: "",
         materialUnitPrice: "",
         materialLocation: "",
+        materialSerial: "",
+        materialPurchaseDate: "",
+        materialEntryDate: "",
         materialState: "",
     });
 
@@ -69,16 +84,21 @@ export default function ConsumableEditForm() {
                 setManagers(managersData);
                 setIsActive(mat.is_active ?? true);
                 setImagen(mat.material_image ?? null);
+                setExistingFiles(mat.technical_files ?? []);
                 setFormData({
                     brand: String(mat.brand ?? ""),
                     materialModel: mat.material_model ?? "",
-                    inventoryManager: String(mat.inventory_manager ?? ""),
+                    inventoryManagers: (mat.inventory_managers ?? []).map(String),
                     materialBarcodeSena: mat.material_barcode_sena ?? "",
                     materialName: mat.material_name ?? "",
                     materialDescription: mat.material_description ?? "",
                     materialQuantity: mat.material_quantity ?? "",
                     materialUnitPrice: mat.material_unit_price ?? "",
                     materialLocation: mat.material_location ?? "",
+                    materialSerial: mat.material_serial ?? "",
+                    // Vienen como "YYYY-MM-DD", que es justo lo que espera el input date
+                    materialPurchaseDate: mat.material_purchase_date ?? "",
+                    materialEntryDate: mat.material_entry_date ?? "",
                     materialState: mat.material_state ?? "",
                 });
             })
@@ -109,6 +129,16 @@ export default function ConsumableEditForm() {
         try {
             Alert.loading("Guardando cambios...");
             await updateMaterial(id, formData, isActive, materialImage);
+
+            // Fichas técnicas: primero se borran las marcadas y luego se suben
+            // las nuevas. El backend rechaza dejar el material sin ninguna.
+            for (const fileId of removedFileIds) {
+                await deleteTechnicalFile(id, fileId);
+            }
+            if (newTechFiles.length > 0) {
+                await uploadTechnicalFiles(id, newTechFiles);
+            }
+
             setIsDirty(false);
             Alert.close();
             await Alert.success("Material actualizado", "Los cambios se guardaron correctamente.");
@@ -144,22 +174,30 @@ export default function ConsumableEditForm() {
             <div className="w-full bg-gradient-container-green p-3 rounded-3xl">
 
                 {/* Header */}
-                <div className="max-w-max mb-4">
-                    <h1 className="flex gap-2 text-gradient-title text-h3">
-                        <FilePenLine className="text-brand" />
-                        Editar material de consumo
-                    </h1>
-                    <div className="h-0.5 bg-gradiant-title-line"></div>
+                <div className="flex justify-between items-start mb-1">
+                    <div className="max-w-max">
+                        <h1 className="flex gap-2 text-gradient-title text-h3">
+                            <FilePenLine className="text-brand" />
+                            Editar material de consumo
+                        </h1>
+                        <div className="h-0.5 bg-gradiant-title-line"></div>
+                    </div>
+
+                    {/* Mismo botón que en el editar de devolutivo */}
+                    <Button type="button" size="sm" variant="ghost" onClick={() => setShowFilesModal(true)}>
+                        <FileText size={18} />
+                        Fichas
+                    </Button>
                 </div>
 
                 <form
                     onSubmit={handleSubmit}
                     noValidate
-                    className="grid lg:grid-cols-3 gap-4"
+                    className="grid lg:grid-cols-3 gap-x-3 gap-y-0.5"
                 >
 
                     {/* IZQUIERDA — imagen + estado */}
-                    <div className="p-4 flex flex-col gap-3 items-center justify-center">
+                    <div className="p-2 flex flex-col gap-3 items-center justify-center">
 
                         {imagen ? (
                             <img
@@ -196,6 +234,16 @@ export default function ConsumableEditForm() {
                                 multiple={false}
                             />
                         )}
+                        <div>
+                            <Input
+                                name="materialName"
+                                value={formData.materialName}
+                                onChange={handleChange}
+                                error={errors.materialName}
+                                variant="nameEdit"
+                                label="Nombre del elemento"
+                            />
+                        </div>
 
                         <div className="flex items-center gap-3 mt-2">
                             <p className="parrafo-edit-style">Estado:</p>
@@ -209,13 +257,14 @@ export default function ConsumableEditForm() {
                         </div>
                         {!isActive && (
                             <div>
-                                <p className="parrafo-edit-style mb-2">Motivo inactividad:</p>
+                                
                                 <Select
                                     name="materialState"
                                     options={materialStateOptions}
                                     value={formData.materialState}
                                     onChange={handleChange}
                                     error={errors.materialState}
+                                    label="Motivo inactividad"
                                     
                                 />
                             </div>
@@ -224,7 +273,7 @@ export default function ConsumableEditForm() {
                     </div>
 
                     {/* CENTRO — identificación + responsable */}
-                    <div className="bg-background p-4 rounded-xl flex flex-col gap-3">
+                    <div className="bg-background p-4 rounded-xl flex flex-col gap-1 min-w-0">
 
                         <div>
                             <p className="parrafo-edit-style">Placa SENA:</p>
@@ -233,17 +282,6 @@ export default function ConsumableEditForm() {
                                 value={formData.materialBarcodeSena}
                                 onChange={handleChange}
                                 error={errors.materialBarcodeSena}
-                                variant="isEdit"
-                            />
-                        </div>
-
-                        <div>
-                            <p className="parrafo-edit-style">Nombre del elemento:</p>
-                            <Input
-                                name="materialName"
-                                value={formData.materialName}
-                                onChange={handleChange}
-                                error={errors.materialName}
                                 variant="isEdit"
                             />
                         </div>
@@ -273,12 +311,28 @@ export default function ConsumableEditForm() {
 
                         <div>
                             <p className="parrafo-edit-style">Cuentadante:</p>
-                            <Select
-                                name="inventoryManager"
-                                value={formData.inventoryManager}
-                                onChange={handleChange}
+                            {/* Varios cuentadantes, mínimo uno. MultiSelect no
+                                usa event.target: entrega (name, valor) directo */}
+                            <MultiSelect
+                                widthClass="w-full lg:w-60"
+                                name="inventoryManagers"
+                                value={formData.inventoryManagers}
+                                onChange={(name, newValue) =>
+                                    setFormData(prev => ({ ...prev, [name]: newValue }))
+                                }
                                 options={managers.map(m => ({ value: String(m.value), label: m.label }))}
-                                error={errors.inventoryManager}
+                                error={errors.inventoryManagers}
+                                variant="isEdit"
+                            />
+                        </div>
+
+                        <div>
+                            <p className="parrafo-edit-style">S/N:</p>
+                            <Input
+                                name="materialSerial"
+                                value={formData.materialSerial}
+                                onChange={handleChange}
+                                error={errors.materialSerial}
                                 variant="isEdit"
                             />
                         </div>
@@ -294,10 +348,35 @@ export default function ConsumableEditForm() {
                             />
                         </div>
 
+                        
                     </div>
 
                     {/* DERECHA — cantidades + descripción */}
-                    <div className="bg-background p-4 rounded-xl flex flex-col gap-3">
+                    <div className="bg-background p-4 rounded-xl flex flex-col gap-1">
+                        {/* Fechas de adquisición — obligatorias */}
+                        <div>
+                            <p className="parrafo-edit-style">Fecha de compra:</p>
+                            <Input
+                                type="date"
+                                name="materialPurchaseDate"
+                                value={formData.materialPurchaseDate}
+                                onChange={handleChange}
+                                error={errors.materialPurchaseDate}
+                                variant="isEdit"
+                            />
+                        </div>
+
+                        <div>
+                            <p className="parrafo-edit-style">Fecha de ingreso:</p>
+                            <Input
+                                type="date"
+                                name="materialEntryDate"
+                                value={formData.materialEntryDate}
+                                onChange={handleChange}
+                                error={errors.materialEntryDate}
+                                variant="isEdit"
+                            />
+                        </div>
 
                         <div>
                             <p className="parrafo-edit-style">Cantidad:</p>
@@ -338,6 +417,7 @@ export default function ConsumableEditForm() {
                                 onChange={handleChange}
                                 error={errors.materialDescription}
                                 variant="isEdit"
+                                rows={3}
                             />
                         </div>
                         
@@ -360,6 +440,17 @@ export default function ConsumableEditForm() {
                 </form>
 
             </div>
+
+            {/* Modal de fichas técnicas — el mismo que usa devolutivo */}
+            <TechnicalFilesModal
+                isOpen={showFilesModal}
+                onClose={() => setShowFilesModal(false)}
+                existingFiles={existingFiles}
+                setExistingFiles={setExistingFiles}
+                newTechFiles={newTechFiles}
+                setNewTechFiles={setNewTechFiles}
+                setRemovedFileIds={setRemovedFileIds}
+            />
 
         </div>
     );

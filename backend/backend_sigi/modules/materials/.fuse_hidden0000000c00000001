@@ -176,7 +176,7 @@ class ConsumableMaterialViewSet(viewsets.ViewSet):
         deny = deny_if_no_perm(request, 'materials.listar_consumablematerial')
         if deny: return deny
         materials = ConsumableMaterial.objects.select_related(
-            'brand'
+            'brand', 'inventory_manager'
         ).prefetch_related('technical_files', 'inventory_managers').all()
         serializer = ConsumableMaterialSerializer(materials, many=True)
         return Response(serializer.data)
@@ -186,7 +186,7 @@ class ConsumableMaterialViewSet(viewsets.ViewSet):
         if deny: return deny
         try:
             material = ConsumableMaterial.objects.select_related(
-                'brand'
+                'brand', 'inventory_manager'
             ).prefetch_related('technical_files', 'inventory_managers').get(pk=pk)
         except ConsumableMaterial.DoesNotExist:
             return Response({'error': 'Material no encontrado'}, status=status.HTTP_404_NOT_FOUND)
@@ -405,7 +405,7 @@ class ReturnableMaterialViewSet(viewsets.ViewSet):
         deny = deny_if_no_perm(request, 'materials.listar_returnablematerial')
         if deny: return deny
         materials = ReturnableMaterial.objects.select_related(
-            'brand'
+            'brand', 'inventory_manager'
         ).prefetch_related('technical_files', 'inventory_managers').all()
         serializer = ReturnableMaterialSerializer(materials, many=True)
         return Response(serializer.data)
@@ -415,7 +415,7 @@ class ReturnableMaterialViewSet(viewsets.ViewSet):
         if deny: return deny
         try:
             material = ReturnableMaterial.objects.select_related(
-                'brand'
+                'brand', 'inventory_manager'
             ).prefetch_related('technical_files', 'inventory_managers').get(pk=pk)
         except ReturnableMaterial.DoesNotExist:
             return Response({'error': 'Material no encontrado'}, status=status.HTTP_404_NOT_FOUND)

@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import { Router } from "lucide-react"
-import { Input, Button, Select, FileInput, Textarea, Alert, IconButton } from "@/shared"
+import { Input, Button, Select, MultiSelect, FileInput, Textarea, Alert, IconButton } from "@/shared"
 import { getBrands, getInventoryManagers, getMaterialCategories } from "../services/selectService"
 import { createReturnable } from "../services/returnableService"
 import { returnableMaterialSchema } from "../schemas/returnableMaterialSchema"
@@ -16,7 +16,7 @@ export default function ReturnableRegisterForm() {
         brandName: "",
         returnableMaterialModel:"",
         materialName:"",
-        inventoryManager:"",
+        inventoryManagers: [],
         materialDescription:  "",
         materialUnitPrice:"",
         materialLocation:"",
@@ -24,6 +24,8 @@ export default function ReturnableRegisterForm() {
         returnableMaterialSerial:"",
         returnableMaterialCategory:"",
         returnableMaterialDimensions:  "",
+        materialPurchaseDate: "",
+        materialEntryDate: "",
         materialImage: [],
         materialTechnicalSheet: [],
     })
@@ -84,7 +86,7 @@ export default function ReturnableRegisterForm() {
             <div className="bg-gradient-container-green border-4 border-border-green-container p-6 rounded-4xl w-fit h-fit">
 
                 {/* Título */}
-                <div className="mb-3 max-w-max">
+                <div className="mb-1 max-w-max">
                     <h1 className="flex gap-2 text-gradient-title text-h3 pb-0.5">
                         <Router className="text-brand" />
                         Crear material devolutivo
@@ -98,7 +100,7 @@ export default function ReturnableRegisterForm() {
                     noValidate
                 >
                     {/*  Columna de archivos  */}
-                    <div className="flex flex-col items-center gap-6">
+                    <div className="flex flex-col items-center gap-1 md:gap-6">
 
                         {/* Imagen principal */}
                         <div className="flex flex-col gap-3 items-center text-center">
@@ -138,10 +140,10 @@ export default function ReturnableRegisterForm() {
                     </div>
 
                     {/*  Columna de campos  */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-10">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-10 min-w-0">
 
                         {/* Columna izquierda */}
-                        <div className="flex flex-col gap-2">
+                        <div className="flex flex-col gap-0.5 min-w-0">
                             <Input
                                 label="Placa SENA"
                                 placeholder="Placa SENA"
@@ -152,12 +154,31 @@ export default function ReturnableRegisterForm() {
                                 required
                             />
                             <Input
-                                label="Serial"
-                                placeholder="Serial del elemento"
+                                label="S/N"
+                                placeholder="S/N del elemento"
                                 name="returnableMaterialSerial"
                                 value={formData.returnableMaterialSerial}
                                 onChange={handleChange}
                                 error={errors.returnableMaterialSerial}
+                            />
+                            {/* Fechas de adquisición — obligatorias */}
+                            <Input
+                                type="date"
+                                label="Fecha de compra"
+                                name="materialPurchaseDate"
+                                value={formData.materialPurchaseDate}
+                                onChange={handleChange}
+                                error={errors.materialPurchaseDate}
+                                required
+                            />
+                            <Input
+                                type="date"
+                                label="Fecha de ingreso"
+                                name="materialEntryDate"
+                                value={formData.materialEntryDate}
+                                onChange={handleChange}
+                                error={errors.materialEntryDate}
+                                required
                             />
                             
                             <Input
@@ -169,15 +190,7 @@ export default function ReturnableRegisterForm() {
                                 error={errors.materialName}
                                 required
                             />
-                            <Select
-                                label="Cuentadante"
-                                options={managers}
-                                name="inventoryManager"
-                                value={formData.inventoryManager}
-                                onChange={handleChange}
-                                error={errors.inventoryManager}
-                                required
-                            />
+                            
                             <Textarea
                                 label="Descripción"
                                 placeholder="Descripción del elemento"
@@ -185,12 +198,28 @@ export default function ReturnableRegisterForm() {
                                 value={formData.materialDescription}
                                 onChange={handleChange}
                                 error={errors.materialDescription}
+                                rows={3}
                                 required
                             />
                         </div>
 
                         {/* Columna derecha */}
-                        <div className="flex flex-col gap-2">
+                        <div className="flex flex-col gap-0.5">
+                            {/* Un material puede quedar a cargo de varios
+                                cuentadantes, mínimo uno. MultiSelect no usa
+                                event.target, entrega (name, valor) directo. */}
+                            <MultiSelect
+                                widthClass="w-full lg:w-60"
+                                label="Cuentadante(s)"
+                                options={managers}
+                                name="inventoryManagers"
+                                value={formData.inventoryManagers}
+                                onChange={(name, newValue) =>
+                                    setFormData(prev => ({ ...prev, [name]: newValue }))
+                                }
+                                error={errors.inventoryManagers}
+                                required
+                            />
                             <Select
                                 label="Categoría"
                                 options={categories}

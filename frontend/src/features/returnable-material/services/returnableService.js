@@ -20,7 +20,11 @@ export async function createReturnable(formData) {
 
     // Marca opcional: al ser multipart, DRF convierte "" en null
     data.append("brand",                formData.brandName ?? "")
-    data.append("inventory_manager",    formData.inventoryManager)
+    // Varios cuentadantes: se envía una entrada por cada uno bajo la misma
+    // clave, que es como DRF espera un ManyToMany en multipart
+    ;(formData.inventoryManagers ?? []).forEach(managerId => {
+        data.append("inventory_managers", Number(managerId))
+    })
     data.append("material_name",        formData.materialName)
     data.append("material_description", formData.materialDescription)
     data.append("material_barcode_sena",formData.materialBarcodeSena || "")
@@ -28,6 +32,9 @@ export async function createReturnable(formData) {
     data.append("material_location",    formData.materialLocation || "")
     data.append("material_model",       formData.returnableMaterialModel || "")
     data.append("material_serial",      formData.returnableMaterialSerial || "")
+    // Fechas de adquisición — obligatorias. Son campos date: solo "YYYY-MM-DD"
+    data.append("material_purchase_date", formData.materialPurchaseDate)
+    data.append("material_entry_date",    formData.materialEntryDate)
     // Cantidad: solo relevante para herramienta sin placa; el backend la fuerza a 1 en los demás casos
     if (formData.materialQuantity) {
         data.append("material_quantity", formData.materialQuantity)
@@ -108,6 +115,10 @@ export async function deleteTechnicalFile(materialId, fileId) {
             headers: { "Authorization": `Bearer ${token}` },
         }
     )
-    if (!response.ok) throw new Error("Error al eliminar la ficha técnica")
+    if (!response.ok) {
+        // El backend explica el motivo cuando se intenta borrar la única ficha
+        const error = await response.json().catch(() => ({}))
+        throw new Error(error.error ?? "Error al eliminar la ficha técnica")
+    }
     return response.json()
 }

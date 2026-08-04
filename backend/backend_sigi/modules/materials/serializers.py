@@ -9,9 +9,55 @@ from .models import Brand, ConsumableMaterial, ReturnableMaterial, TechnicalShee
 # allow_null en brand porque es una ForeignKey y el formulario manda vacío
 # cuando no se elige ninguna; allow_blank en material_model porque es texto.
 CAMPOS_OPCIONALES_MATERIAL = {
-    'brand':          {'required': False, 'allow_null': True},
-    'material_model': {'required': False, 'allow_blank': True},
+    'brand':           {'required': False, 'allow_null': True},
+    'material_model':  {'required': False, 'allow_blank': True},
+    'material_serial': {'required': False, 'allow_blank': True},
+    # Las fechas de compra e ingreso son obligatorias en el formulario. En el
+    # modelo son nullable solo para no inventarle una fecha a los materiales
+    # que ya existían antes de agregar estos campos.
+    'material_purchase_date': {'required': True, 'allow_null': False},
+    'material_entry_date':    {'required': True, 'allow_null': False},
 }
+
+
+# Campos que comparten los dos tipos de material y que se agregaron juntos.
+# Se listan aquí para no repetirlos en los seis serializers.
+CAMPOS_COMUNES_NUEVOS = [
+    'material_model',
+    'material_serial',
+    'material_purchase_date',
+    'material_entry_date',
+]
+
+
+def nombre_legible(user):
+    """Nombre completo del usuario, o su correo si no tiene nombre cargado."""
+    return f"{user.first_name} {user.last_name}".strip() or user.email
+
+
+class CuentadantesMixin(metaclass=serializers.SerializerMetaclass):
+    """
+    Un material puede estar a cargo de varios cuentadantes, y al menos uno es
+    obligatorio.
+
+    inventory_manager_name se conserva con ese nombre (en singular) para no
+    romper las tablas, los reportes ni la pantalla de préstamos, que ya lo
+    consumen. Ahora devuelve los nombres separados por coma.
+
+    El metaclass=SerializerMetaclass es obligatorio: DRF solo recoge los campos
+    declarados de las clases base que lo tengan. Sin él, el
+    SerializerMethodField de abajo se ignora y el serializer falla al buscar
+    'inventory_manager_name' como campo del modelo.
+    """
+    inventory_manager_name = serializers.SerializerMethodField()
+
+    def get_inventory_manager_name(self, obj):
+        return ", ".join(nombre_legible(u) for u in obj.inventory_managers.all())
+
+    def validate_inventory_managers(self, value):
+        if not value:
+            raise serializers.ValidationError('Debes asignar al menos un cuentadante.')
+        return value
 
 #para el crud de marcas
 class BrandSerializer(serializers.ModelSerializer):
@@ -19,8 +65,17 @@ class BrandSerializer(serializers.ModelSerializer):
         model = Brand
         fields = ['id', 'name', 'is_active']
 
+
+# Serializer de fichas técnicas — se usa anidado en los DOS tipos de material.
+# Va aquí arriba porque ConsumableMaterialSerializer también lo necesita.
+class TechnicalSheetFileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TechnicalSheetFile
+        fields = ['id', 'file_url', 'file_name', 'uploaded_at']
+        read_only_fields = ['id', 'uploaded_at']
+
 #Para listar — incluye campos calculados y nombres legibles en vez de solo ids"
-class ConsumableMaterialSerializer(serializers.ModelSerializer):
+class ConsumableMaterialSerializer(CuentadantesMixin, serializers.ModelSerializer):
 
     # Campos calculados (@property del modelo) — read_only porque no se guardan en BD
     material_total_price = serializers.SerializerMethodField()
@@ -28,7 +83,10 @@ class ConsumableMaterialSerializer(serializers.ModelSerializer):
 
     # Nombres legibles — source indica de dónde sacar el valor
     brand_name = serializers.CharField(source='brand.name', read_only=True)
-    inventory_manager_name = serializers.SerializerMethodField()
+
+    # Fichas técnicas anidadas — igual que en devolutivo. Solo lectura: se
+    # gestionan con las acciones upload/delete del ViewSet.
+    technical_files = TechnicalSheetFileSerializer(many=True, read_only=True)
 
     def get_material_total_price(self, obj):
         return obj.material_total_price  # llama al @property del modelo
@@ -36,20 +94,17 @@ class ConsumableMaterialSerializer(serializers.ModelSerializer):
     def get_material_quantity_available(self, obj):
         return obj.material_quantity_available
 
-    def get_inventory_manager_name(self, obj):
-        return f"{obj.inventory_manager.first_name} {obj.inventory_manager.last_name}"
-
     class Meta:
         model = ConsumableMaterial
         fields = [
             'id',
             'brand',           # ID de la marca (para edición)
             'brand_name',      # Nombre legible (para mostrar)
-            'inventory_manager',
+            'inventory_managers',
             'inventory_manager_name',
             'material_name',
             'material_description',
-            'material_model',
+            *CAMPOS_COMUNES_NUEVOS,
             'material_barcode_sena',
             'material_quantity',
             'material_quantity_loaned',
@@ -60,11 +115,12 @@ class ConsumableMaterialSerializer(serializers.ModelSerializer):
             'material_image',
             'is_active',
             'material_state',
+            'technical_files',
         ]
         read_only_fields = ['id', 'material_quantity_loaned']
 
 #Para crear — sin quantity_loaned (empieza en 0) ni state (empieza disponible)
-class ConsumableMaterialCreateSerializer(serializers.ModelSerializer):
+class ConsumableMaterialCreateSerializer(CuentadantesMixin, serializers.ModelSerializer):
 
     def validate(self, data):
         # Si tiene placa SENA la cantidad debe ser exactamente 1
@@ -78,10 +134,10 @@ class ConsumableMaterialCreateSerializer(serializers.ModelSerializer):
         model = ConsumableMaterial
         fields = [
             'brand',
-            'inventory_manager',
+            'inventory_managers',
             'material_name',
             'material_description',
-            'material_model',
+            *CAMPOS_COMUNES_NUEVOS,
             'material_barcode_sena',
             'material_quantity',
             'material_unit_price',
@@ -92,7 +148,7 @@ class ConsumableMaterialCreateSerializer(serializers.ModelSerializer):
         extra_kwargs = CAMPOS_OPCIONALES_MATERIAL
 
 #Para editar — permite cambiar is_active y state con sus validaciones
-class ConsumableMaterialUpdateSerializer(serializers.ModelSerializer):
+class ConsumableMaterialUpdateSerializer(CuentadantesMixin, serializers.ModelSerializer):
 
     def validate(self, data):
         # self.instance es el objeto actual en BD (disponible en updates)
@@ -123,10 +179,10 @@ class ConsumableMaterialUpdateSerializer(serializers.ModelSerializer):
         model = ConsumableMaterial
         fields = [
             'brand',
-            'inventory_manager',
+            'inventory_managers',
             'material_name',
             'material_description',
-            'material_model',
+            *CAMPOS_COMUNES_NUEVOS,
             'material_barcode_sena',
             'material_quantity',
             'material_unit_price',
@@ -142,16 +198,8 @@ class ConsumableMaterialUpdateSerializer(serializers.ModelSerializer):
 # MATERIAL DEVOLUTIVO
 # ──────────────────────────────────────────────────────────────────────────────
 
-# Serializer de fichas técnicas — usado como nested en ReturnableMaterialSerializer
-class TechnicalSheetFileSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = TechnicalSheetFile
-        fields = ['id', 'file_url', 'file_name', 'uploaded_at']
-        read_only_fields = ['id', 'uploaded_at']
-
-
 # Para listar/ver detalle — expone fichas técnicas y nombres legibles
-class ReturnableMaterialSerializer(serializers.ModelSerializer):
+class ReturnableMaterialSerializer(CuentadantesMixin, serializers.ModelSerializer):
 
     # Campos calculados heredados del modelo abstracto
     material_total_price = serializers.SerializerMethodField()
@@ -159,7 +207,6 @@ class ReturnableMaterialSerializer(serializers.ModelSerializer):
 
     # Nombres legibles para FK
     brand_name = serializers.CharField(source='brand.name', read_only=True)
-    inventory_manager_name = serializers.SerializerMethodField()
 
     # Fichas técnicas anidadas (solo lectura — se gestionan con acciones separadas)
     technical_files = TechnicalSheetFileSerializer(many=True, read_only=True)
@@ -171,16 +218,13 @@ class ReturnableMaterialSerializer(serializers.ModelSerializer):
     def get_material_quantity_available(self, obj):
         return obj.material_quantity_available
 
-    def get_inventory_manager_name(self, obj):
-        return f"{obj.inventory_manager.first_name} {obj.inventory_manager.last_name}"
-
     class Meta:
         model = ReturnableMaterial
         fields = [
             'id',
             'brand',
             'brand_name',
-            'inventory_manager',
+            'inventory_managers',
             'inventory_manager_name',
             'material_name',
             'material_description',
@@ -192,8 +236,7 @@ class ReturnableMaterialSerializer(serializers.ModelSerializer):
             'material_total_price',
             'material_location',
             'material_image',
-            'material_model',
-            'material_serial',
+            *CAMPOS_COMUNES_NUEVOS,
             'material_category',
             'material_dimensions',
             'is_active',
@@ -204,7 +247,7 @@ class ReturnableMaterialSerializer(serializers.ModelSerializer):
 
 
 # Para crear
-class ReturnableMaterialCreateSerializer(serializers.ModelSerializer):
+class ReturnableMaterialCreateSerializer(CuentadantesMixin, serializers.ModelSerializer):
 
     # Cantidad opcional en el request — se calcula en validate()
     material_quantity = serializers.IntegerField(required=False, default=1)
@@ -240,15 +283,14 @@ class ReturnableMaterialCreateSerializer(serializers.ModelSerializer):
         model = ReturnableMaterial
         fields = [
             'brand',
-            'inventory_manager',
+            'inventory_managers',
             'material_name',
             'material_description',
             'material_barcode_sena',
             'material_quantity',
             'material_unit_price',
             'material_location',
-            'material_model',
-            'material_serial',
+            *CAMPOS_COMUNES_NUEVOS,
             'material_category',
             'material_dimensions',
             # material_image no va aquí — la view lo maneja vía request.FILES
@@ -257,7 +299,7 @@ class ReturnableMaterialCreateSerializer(serializers.ModelSerializer):
 
 
 # Para editar — validaciones de estado + reglas de categoría
-class ReturnableMaterialUpdateSerializer(serializers.ModelSerializer):
+class ReturnableMaterialUpdateSerializer(CuentadantesMixin, serializers.ModelSerializer):
 
     # Cantidad opcional — solo editable para herramienta sin placa
     material_quantity = serializers.IntegerField(required=False)
@@ -307,15 +349,14 @@ class ReturnableMaterialUpdateSerializer(serializers.ModelSerializer):
         model = ReturnableMaterial
         fields = [
             'brand',
-            'inventory_manager',
+            'inventory_managers',
             'material_name',
             'material_description',
             'material_barcode_sena',
             'material_quantity',
             'material_unit_price',
             'material_location',
-            'material_model',
-            'material_serial',
+            *CAMPOS_COMUNES_NUEVOS,
             'material_category',
             'material_dimensions',
             'is_active',
