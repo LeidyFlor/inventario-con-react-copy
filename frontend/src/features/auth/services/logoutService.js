@@ -5,17 +5,26 @@ const API_URL = "/api/auth";
 export async function logout() {
   const token = sessionStorage.getItem("token");
 
-  //avisar al bakend para quitar el token de la bd. el await hace peticoin http al backend y espera hasta que este responda. authorization es le token enviado al backend para que este sea destruido, y tambien session_expires_at
-  await fetch("/api/users/logout/", {
+  // Se limpia el navegador PRIMERO, sin esperar al backend. Dos razones:
+  //
+  // 1. Si la petición tarda (con la base remota puede tardar segundos), el
+  //    usuario ya quedó desconectado en su navegador y la interfaz responde
+  //    de inmediato en vez de congelarse.
+  // 2. Mientras la petición viaja, el heartbeat u otra llamada en curso
+  //    podrían seguir usando el token. Al borrarlo ya no lo encuentran.
+  sessionStorage.removeItem("token");
+  clearMustChangePassword();
+
+  if (!token) return;
+
+  // Avisar al backend para quitar el token de la base de datos.
+  // No se espera la respuesta ni se propaga el error: si falla, la sesión
+  // del servidor caduca sola por el tope de 8 horas o por el heartbeat.
+  fetch("/api/users/logout/", {
     method: "POST",
     headers: {
       Authorization: `Bearer ${token}`,
       "Content-Type": "application/json",
     },
-  });
-  //Borra token del frontend
-  sessionStorage.removeItem("token");
-  // Y la marca de cambio obligatorio, para que no quede pegada si el
-  // siguiente usuario que entra en esta pestaña sí tiene su contraseña al día
-  clearMustChangePassword();
+  }).catch(() => {});
 }

@@ -4,7 +4,7 @@ import './styles/global.css'
 import App from './app/App' //ubicacion de codigo que proyecta el sistema
 
 createRoot(document.getElementById('root')).render(
-  <StrictMode>
+  // <StrictMode>
     <App />
-  </StrictMode>,
+  // </StrictMode>,
 )

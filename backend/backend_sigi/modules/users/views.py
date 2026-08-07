@@ -32,7 +32,11 @@ class UserViewSet(viewsets.ViewSet):
         """GET /api/users/ — listar usuarios"""
         deny = deny_if_no_perm(request, 'users.listar_usuarios')
         if deny: return deny
-        users = Users.objects.all()
+        # prefetch_related es indispensable: UserSerializer.get_groups hace
+        # obj.groups.all() por cada usuario. Sin esto, listar N usuarios
+        # lanzaba 1 + N consultas, y con la base en otro país cada una suma
+        # su propio viaje de ida y vuelta.
+        users = Users.objects.prefetch_related('groups').all()
         serializer = UserSerializer(users, many=True)
         return Response(serializer.data)
 
@@ -166,7 +170,7 @@ class UserViewSet(viewsets.ViewSet):
         # administrador se entere de por qué.
         if estaba_inactivo and nuevo_activo and not en_vigencia:
             return Response(
-                {'error': 'No se puede activar el usuario: hoy está fuera de su rango de fechas. '
+                {'error': 'No se puede activar el usuario: El día de hoy está fuera de su rango de fechas. '
                           'Ajusta la fecha de inicio o la fecha fin para que incluyan el día de hoy.'},
                 status=status.HTTP_400_BAD_REQUEST
             )

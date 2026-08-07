@@ -23,23 +23,30 @@ export default function ViewUserPage() {
     const [viewTaskModalOpen, setViewTaskModalOpen]     = useState(false);
 
     useEffect(() => {
-        getUser(id)
-            .then(async (userData) => {
+        // El perfil y las tareas individuales no dependen entre sí, así que
+        // van en paralelo. Antes iban encadenados: primero el usuario, después
+        // sus tareas, y solo entonces las de cada grupo. Con una base remota
+        // eso significaba sumar el tiempo de ida y vuelta de cada petición.
+        Promise.all([
+            getUser(id),
+            getTasksByUser(id).catch(() => []),
+        ])
+            .then(async ([userData, userTasks]) => {
                 setUser(userData)
+                // La pantalla ya puede dibujarse con los datos del perfil;
+                // las tareas de los grupos siguen cargando en segundo plano
+                // en vez de bloquear todo el render.
+                setLoading(false)
 
-                // Tareas individuales del usuario
-                const userTasks = await getTasksByUser(id).catch(() => [])
-
-                // Tareas de cada grupo al que pertenece el usuario
                 const groupTasksArrays = await Promise.all(
                     (userData.groups ?? []).map(g => getTasksByGroup(g.id).catch(() => []))
                 )
-                const groupTasks = groupTasksArrays.flat()
-
-                setTasks([...userTasks, ...groupTasks])
+                setTasks([...userTasks, ...groupTasksArrays.flat()])
             })
-            .catch(console.error)
-            .finally(() => setLoading(false));
+            .catch((error) => {
+                console.error(error)
+                setLoading(false)
+            });
     }, [id]);
 
     if (loading) return (

@@ -68,7 +68,10 @@ const router = createBrowserRouter([
             // El formulario de creación carga el select de grupos al montarse
             { path: "user-create",     element: <RequirePerm allOf={[PERM.USER_ADD, PERM.GROUP_VIEW]}><CreateUserPage /></RequirePerm> },
             { path: "user-list",       element: <RequirePerm perm={PERM.USER_LIST}><ListUserPage /></RequirePerm> },
-            { path: "users/:id/edit",  element: <RequirePerm perm={PERM.USER_CHANGE}><EditUserPage /></RequirePerm> },
+            // Igual que user-create: el formulario carga el select de grupos al
+            // montarse, así que sin auth.view_group la pantalla entra y luego
+            // recibe un 403 de /api/groups/
+            { path: "users/:id/edit",  element: <RequirePerm allOf={[PERM.USER_CHANGE, PERM.GROUP_VIEW]}><EditUserPage /></RequirePerm> },
             { path: "users/:id/view",  element: <RequirePerm perm={PERM.USER_VIEW}><ViewUserPage /></RequirePerm> },
             // Mi perfil — accesible para cualquier usuario autenticado, sin permisos
             { path: "my-profile",      element: <MyProfilePage /> },

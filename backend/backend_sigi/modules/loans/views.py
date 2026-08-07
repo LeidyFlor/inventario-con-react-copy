@@ -42,15 +42,34 @@ class LoanViewSet(viewsets.ViewSet):
     # LIST  GET /api/loans/
     # ──────────────────────────────────────────────────────────────
     def list(self, request):
+        """
+        Por defecto devuelve los préstamos SIN sus materiales, que es lo único
+        que necesita la tabla de listado.
+
+        Con ?include_materials=1 se agregan los ítems de cada préstamo. Solo lo
+        usa el reporte, que sí los imprime. Antes se enviaban siempre: eso
+        obligaba a consultar los materiales de todos los préstamos y triplicaba
+        el tamaño de la respuesta cada vez que alguien abría la lista.
+        """
         deny = deny_if_no_perm(request, 'loans.listar_loan')
         if deny: return deny
+
+        incluir_materiales = request.query_params.get('include_materials') == '1'
+
         loans = (
             Loan.objects
             .select_related('loan_user_requester', 'loan_user_lender')
-            .prefetch_related('items__consumable_material', 'items__returnable_material')
             .order_by('-created_at')
         )
-        serializer = LoanDetailSerializer(loans, many=True)
+
+        if incluir_materiales:
+            loans = loans.prefetch_related(
+                'items__consumable_material', 'items__returnable_material'
+            )
+            serializer = LoanDetailSerializer(loans, many=True)
+        else:
+            serializer = LoanListSerializer(loans, many=True)
+
         return Response(serializer.data)
 
     # ──────────────────────────────────────────────────────────────

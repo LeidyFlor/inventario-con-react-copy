@@ -46,14 +46,14 @@ export default function Carousel() {
 
             {/* Flechas */}
                 <IconButtonReal className={`absolute right-3 top-1/2 -translate-y-1/2 flex items-center justify-center`}
-                    onClick={() => goTo(current + 1)} arialLabel="Siguiente" variant="ghost">
+                    onClick={() => goTo(current + 1)} arialLabel="Siguiente" variant="secundary">
 
                     <ChevronRight />
 
                 </IconButtonReal>
 
                 <IconButtonReal className={`absolute left-3 top-1/2 -translate-y-1/2 flex items-center justify-center`}
-                    onClick={() => goTo(current - 1)} arialLabel="Anterior" variant="ghost">
+                    onClick={() => goTo(current - 1)} arialLabel="Anterior" variant="secundary">
 
                     <ChevronLeft />
 

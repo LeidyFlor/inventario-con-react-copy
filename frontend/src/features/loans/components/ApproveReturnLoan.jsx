@@ -1,32 +1,26 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { ClipboardList, Handshake } from "lucide-react";
-import { Button, IconButton, Textarea, Alert } from "@/shared";
+import { Button, IconButton, Textarea, Alert, Modal } from "@/shared";
 import DataTable from "@/shared/components/DataTable";
 import { getLoan, acceptReturn } from "../services/loanService";
 import { Ping } from "ldrs/react";
 import "ldrs/react/Ping.css";
-//  Modal reutilizable (idéntico al de MaterialsLoan) 
+// Envoltorio delgado sobre el Modal compartido. Conserva la firma
+// (isOpen / title / onClose) que ya usan las llamadas de esta pantalla,
+// para no tener que tocarlas.
 function MaterialModal({ title, isOpen, onClose, children }) {
     if (!isOpen) return null;
     return (
-        <div
-            className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/50"
-            onClick={onClose}
+        <Modal
+            title={title}
+            titleVariant="gradient"
+            size="xl"
+            onBack={onClose}
+            onClose={onClose}
         >
-            <div
-                className="w-full flex flex-col max-h-[90vh] rounded-2xl bg-background p-5 shadow-2xl max-w-5xl"
-                onClick={(e) => e.stopPropagation()}
-            >
-                <div className="flex items-center mb-4">
-                    <Button variant="secondary" onClick={onClose}>Atrás</Button>
-                    {title && (
-                        <h2 className="text-gradient-title text-h3 font-bold flex-1 pl-56">{title}</h2>
-                    )}
-                </div>
-                {children}
-            </div>
-        </div>
+            {children}
+        </Modal>
     );
 }
 

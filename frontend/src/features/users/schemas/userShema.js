@@ -104,6 +104,16 @@ export const userShema = z
     // esta línea llegaban como undefined y se guardaban siempre en false.
     is_accountant: z.boolean().default(false),
     is_staff: z.boolean().default(false),
+
+    // Autorización de tratamiento de datos (Ley 1581 de 2012).
+    // No se guarda en la base de datos: es un requisito para poder enviar el
+    // formulario. userService no lo incluye en el FormData, así que aunque
+    // viaje en result.data nunca llega al backend.
+    aceptaTratamientoDatos: z
+      .boolean()
+      .refine((valor) => valor === true, {
+        message: "Debes aceptar el tratamiento de datos personales",
+      }),
     //acepta array vacio, lleno o undefined
     userImage: z.array(z.instanceof(File)).optional(),
   })

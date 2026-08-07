@@ -55,6 +55,11 @@ export function PermissionsProvider({ children }) {
             setLoading(false)
             return
         }
+        // Con la base remota esta petición puede tardar varios segundos.
+        // Sin aviso, el menú aparece vacío mientras tanto y se malinterpreta
+        // como "no tengo permisos". El Alert es modal a propósito: impide
+        // hacer clic en una interfaz que todavía no refleja lo que se puede.
+        Alert.loading("Cargando permisos", "Estamos preparando tu sesión...")
         try {
             const data = await getMyPermissions()
             setPermissions(data.permissions ?? [])
@@ -63,6 +68,8 @@ export function PermissionsProvider({ children }) {
         } catch {
             setPermissions([])
         } finally {
+            // En el finally para que se cierre también si la petición falla
+            Alert.close()
             setLoading(false)
         }
     }, [])
@@ -95,7 +102,23 @@ export function PermissionsProvider({ children }) {
             const url = typeof args[0] === "string" ? args[0] : args[0]?.url ?? ""
             const isOwnApi = url.includes("/api/")
 
-            if (response.status === 401 && isOwnApi && !handling401Ref.current) {
+            // El cierre de sesión se queda por fuera: si su token ya no vale,
+            // el backend responde 401 y eso NO es una sesión caída, es
+            // exactamente lo que se estaba pidiendo. Sin esta excepción,
+            // cerrar sesión mostraba la alerta de "Sesión finalizada" como si
+            // hubiera ocurrido un problema.
+            const esLogout = url.includes("/api/users/logout/")
+
+            // El heartbeat también: es una llamada de fondo cada 2 minutos.
+            // Si llega justo después de cerrar sesión, su 401 no debe
+            // disparar la alerta de sesión caída. Cuando la sesión sí se cae
+            // de verdad, la siguiente petición real del usuario lo detecta.
+            const esHeartbeat = url.includes("/api/users/heartbeat/")
+
+            if (
+                response.status === 401 && isOwnApi &&
+                !esLogout && !esHeartbeat && !handling401Ref.current
+            ) {
                 handling401Ref.current = true
 
                 sessionStorage.removeItem("token")

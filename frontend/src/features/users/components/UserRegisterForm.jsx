@@ -1,4 +1,4 @@
-import { Input, Button, IconButton, Select, StatusSwitch, FileInput, MultiSelect } from "@/shared"
+import { Input, Button, IconButton, Select, StatusSwitch, FileInput, MultiSelect, Checkbox, Modal } from "@/shared"
 import React, {useState, useEffect} from "react";
 import { getDocumentTypes, getUserTypes } from "@/features/users/services/selectService";
 import { userShema } from "../schemas/userShema.js";
@@ -49,8 +49,13 @@ export default function UserRegisterForm() {
         userDateStart: "",
         is_accountant: false,
         is_staff: false,
+        // Autorización de tratamiento de datos (Ley 1581 de 2012). No se
+        // guarda en la base de datos, solo habilita el envío del formulario.
+        aceptaTratamientoDatos: false,
         userImage: []
     });
+    // Modal informativo de la política de tratamiento de datos
+    const [datosModalOpen, setDatosModalOpen] = useState(false);
     const [errors, setErrors] = useState({});
     // useState que me trae el arreglo mediante el get en servicios
     const [documentTypes, setDocumentTypes] = useState([]);
@@ -385,24 +390,59 @@ export default function UserRegisterForm() {
                                 />
                             )}
                         
-                        <div className="flex place-self-center items-center justify-center gap-3">
-                            <p className="parrafo-edit-style relative bottom-0.5">¿Es cuentadante?:</p>
-                            <StatusSwitch
-                                checked={formData.is_accountant}
-                                onChange={(val) => setFormData(prev => ({ ...prev, is_accountant: val }))}
-                                size="md"
-                                className="inline-flex"
-                            />
+                       
+                        <div className="gap-2 flex justify-between">
+                            <div className="flex place-self-center items-center justify-center gap-3">
+                                <p className="parrafo-edit-style relative bottom-0.5">¿Es cuentadante?:</p>
+                                <StatusSwitch
+                                    checked={formData.is_accountant}
+                                    onChange={(val) => setFormData(prev => ({ ...prev, is_accountant: val }))}
+                                    size="md"
+                                    className="inline-flex"
+                                />
+                            </div>
+
+                            <div className="flex place-self-center items-center justify-center gap-3">
+                                <p className="parrafo-edit-style relative bottom-0.5">¿Es Staff?:</p>
+                                <StatusSwitch
+                                    checked={formData.is_staff}
+                                    onChange={(val) => setFormData(prev => ({ ...prev, is_staff: val }))}
+                                    size="md"
+                                    className="inline-flex"
+                                />
+                            </div>
                         </div>
 
-                        <div className="flex place-self-center items-center justify-center gap-3">
-                            <p className="parrafo-edit-style relative bottom-0.5">¿Es Staff?:</p>
-                            <StatusSwitch
-                                checked={formData.is_staff}
-                                onChange={(val) => setFormData(prev => ({ ...prev, is_staff: val }))}
-                                size="md"
-                                className="inline-flex"
-                            />
+                        {/* Autorización de tratamiento de datos — obligatoria.
+                            El texto va como botón aparte y NO dentro del label
+                            del Checkbox: si estuviera dentro, al hacer clic
+                            para leer la política se marcaría la casilla. */}
+                        <div className="flex flex-col place-self-center items-center gap-1">
+                            <div className="flex items-center gap-2">
+                                <Checkbox
+                                    id="aceptaTratamientoDatos"
+                                    name="aceptaTratamientoDatos"
+                                    checked={formData.aceptaTratamientoDatos}
+                                    onChange={(e) =>
+                                        setFormData(prev => ({
+                                            ...prev,
+                                            aceptaTratamientoDatos: e.target.checked,
+                                        }))
+                                    }
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setDatosModalOpen(true)}
+                                    className="text-small text-text-primary underline hover:opacity-70 transition-opacity text-left"
+                                >
+                                    Acepto tratamiento de datos personales
+                                </button>
+                            </div>
+                            {errors.aceptaTratamientoDatos && (
+                                <span className="text-red-800 text-sm">
+                                    {errors.aceptaTratamientoDatos}
+                                </span>
+                            )}
                         </div>
 
                         {/* Agregar tarea requiere el permiso propio de tareas */}
@@ -464,6 +504,38 @@ export default function UserRegisterForm() {
                         />
                     </div>
                 </div>
+            )}
+
+            {/* Política de tratamiento de datos personales */}
+            {datosModalOpen && (
+                <Modal
+                    title="Tratamiento de datos personales"
+                    titleVariant="gradient"
+                    cancelLabel="Cerrar"
+                    onClose={() => setDatosModalOpen(false)}
+                >
+                    <div className="flex flex-col gap-4">
+                        <p className="text-body text-text-primary text-justify">
+                            De acuerdo con La Ley 1581 de 2012, Protección de Datos
+                            Personales, el Servicio Nacional de Aprendizaje SENA, se
+                            compromete a garantizar la seguridad y protección de los
+                            datos personales que se encuentran almacenados en este
+                            documento, y les dará el tratamiento correspondiente en
+                            cumplimiento de lo establecido legalmente.
+                        </p>
+
+                        {/* rel="noopener noreferrer" evita que la pestaña nueva
+                            pueda manipular esta ventana */}
+                        <a
+                            href="https://www.sena.edu.co/es-co/transparencia/Paginas/habeas_data.aspx"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-small text-brand underline break-all hover:opacity-70 transition-opacity"
+                        >
+                            https://www.sena.edu.co/es-co/transparencia/Paginas/habeas_data.aspx
+                        </a>
+                    </div>
+                </Modal>
             )}
         </div>
 

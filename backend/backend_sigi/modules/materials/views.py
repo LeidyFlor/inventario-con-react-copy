@@ -581,6 +581,10 @@ class ReturnableMaterialViewSet(viewsets.ViewSet):
 @permission_classes([IsAuthenticated])
 def inventory_managers(request):
     """GET /api/inventory-managers/ — retorna solo usuarios con is_accountant=True"""
-    managers = Users.objects.filter(is_accountant=True, is_active=True)
+    # prefetch_related por lo mismo que en la lista de usuarios:
+    # UserSerializer.get_groups consulta los grupos de cada uno
+    managers = Users.objects.filter(
+        is_accountant=True, is_active=True
+    ).prefetch_related('groups')
     serializer = UserSerializer(managers, many=True)
     return Response(serializer.data)

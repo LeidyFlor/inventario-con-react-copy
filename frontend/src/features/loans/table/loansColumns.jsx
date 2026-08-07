@@ -1,7 +1,7 @@
 // @refresh reset
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { StatusSwitch, Button } from "@/shared/";
+import { StatusSwitch, Modal } from "@/shared/";
 import LoanRowActions from "../components/LoanRowActions";
 
 // Componente separado para poder usar el hook useNavigate
@@ -35,32 +35,14 @@ function TruncatedCell({ value, maxChars = 30 }) {
             </button>
 
             {open && (
-                <div
-                    className="fixed inset-0 z-50 flex items-center justify-center bg-black/30"
-                    onClick={() => setOpen(false)}
+                <Modal
+                    title="Justificación de uso"
+                    size="sm"
+                    cancelLabel="Cerrar"
+                    onClose={() => setOpen(false)}
                 >
-                    <div
-                        className="bg-surface items-center rounded-2xl shadow-lg max-w-sm w-full mx-4 p-6"
-                        
-                        onClick={(e) => e.stopPropagation()}
-                    >
-                        <div
-                            className="text-text-primary pb-2 font-semibold text-center"
-                        >
-                            Justificación de uso
-                        </div>
-                        <p className="text-body text-text-primary">{value}</p>
-                            <div className="flex justify-center pt-2">
-                                <Button
-                                    size="sm"
-                                    variant="secondary"
-                                    onClick={() => setOpen(false)}
-                                >
-                                    Cerrar
-                                </Button>
-                            </div>
-                    </div>
-                </div>
+                    <p className="text-body text-text-primary">{value}</p>
+                </Modal>
             )}
         </>
     );

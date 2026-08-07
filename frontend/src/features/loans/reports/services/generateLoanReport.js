@@ -10,7 +10,9 @@ export async function generateLoanReport({
     loanStudentsGroup,
     loanUserRequester,
 }) {
-    const loans = await getLoans();
+    // El reporte sí imprime los materiales de cada préstamo, así que aquí
+    // (y solo aquí) se piden al backend
+    const loans = await getLoans({ includeMaterials: true });
 
     const { headers, rows } = buildReportDataset({
         loans,

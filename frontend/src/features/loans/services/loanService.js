@@ -60,8 +60,16 @@ function mapLoan(loan) {
 
 //  GET /api/loans/ ─
 
-export async function getLoans() {
-    const response = await fetch(`${API_URL}/loans/`, {
+/**
+ * Lista de préstamos.
+ *
+ * Por defecto NO trae los materiales de cada préstamo: la tabla del listado no
+ * los muestra y pedirlos obliga al backend a consultarlos para todos. Solo el
+ * reporte los necesita, y por eso pasa includeMaterials.
+ */
+export async function getLoans({ includeMaterials = false } = {}) {
+    const query = includeMaterials ? "?include_materials=1" : ""
+    const response = await fetch(`${API_URL}/loans/${query}`, {
         headers: { Authorization: `Bearer ${getToken()}` },
     })
     if (!response.ok) throw new Error("Error al obtener préstamos")

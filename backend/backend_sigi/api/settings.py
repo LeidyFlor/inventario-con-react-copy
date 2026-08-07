@@ -97,11 +97,42 @@ DATABASES = {
         'PASSWORD': os.getenv('DB_PASSWORD', ''),
         'HOST': os.getenv('DB_HOST', ''),
         'PORT': os.getenv('DB_PORT', '5432'),
+
+        # Se usa el TRANSACTION POOLER de Supabase (puerto 6543), no el de
+        # sesión (5432).
+        #
+        # Reutiliza la conexión hasta 10 minutos. Medido contra esta base:
+        # abrir una conexión cuesta ~1,8 s (la base está en us-east-1), y las
+        # consultas en sí menos de 1 s. Con CONN_MAX_AGE = 0 cada petición
+        # pagaba esos 1,8 s por separado, así que una pantalla con 14
+        # peticiones perdía unos 25 segundos solo en conectar.
+        #
+        # Mantener la conexión abierta es seguro precisamente por usar el
+        # pooler de TRANSACCIONES: está hecho para muchos clientes conectados
+        # de forma persistente, multiplexados sobre pocas conexiones reales.
+        # Con el pooler de SESIÓN (5432) esto sí agotaría el cupo, porque allí
+        # cada cliente ocupa una conexión real del servidor.
+        'CONN_MAX_AGE': 600,
+
+        # Comprueba que la conexión guardada siga viva antes de reutilizarla.
+        # Sin esto, una conexión cerrada por el otro extremo hace fallar la
+        # petición con "server closed the connection unexpectedly".
+        'CONN_HEALTH_CHECKS': True,
+
         'OPTIONS': {
             'sslmode': 'require',  # Supabase requiere SSL
+
+            # Sin límite explícito, psycopg2 puede quedarse esperando decenas
+            # de segundos cuando el pooler no responde
+            'connect_timeout': 10,
         },
     }
 }
+
+# Obligatorio al usar un pooler en modo transacción: en ese modo la conexión
+# cambia de sesión entre consultas, y los cursores del lado del servidor
+# (que Django usa en iterator()) dejan de ser válidos.
+DISABLE_SERVER_SIDE_CURSORS = True
 
 SUPABASE_URL = os.getenv('SUPABASE_URL', '')
 SUPABASE_SERVICE_KEY = os.getenv('SUPABASE_SERVICE_KEY', '')

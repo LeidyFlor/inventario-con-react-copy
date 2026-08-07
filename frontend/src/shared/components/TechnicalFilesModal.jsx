@@ -1,5 +1,4 @@
-import { X } from "lucide-react";
-import { TechnicalFilesInput, IconButtonReal } from "@/shared";
+import { TechnicalFilesInput, Modal } from "@/shared";
 
 /**
  * Modal de fichas técnicas. Lo usan los dos tipos de material, tanto en los
@@ -26,27 +25,13 @@ export default function TechnicalFilesModal({
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center">
-
-            <div className="bg-background rounded-3xl p-6 w-[750px] max-w-[90vw]">
-
-                {/* Header */}
-                <div className="flex justify-between items-center mb-6">
-
-                    <h2 className="text-h3 font-bold">
-                        Fichas técnicas
-                    </h2>
-
-                    <IconButtonReal
-                        variant="outline"
-                        onClick={onClose}
-                        arialLabel="Cerrar"
-                    >
-                        <X size={28} />
-                    </IconButtonReal>
-
-                </div>
-
+        <Modal
+            title="Fichas técnicas"
+            titleVariant="gradient"
+            size="lg"
+            cancelLabel="Cerrar"
+            onClose={onClose}
+        >
                 {/* Contenido */}
                 <div className="flex flex-col gap-4 items-center">
 
@@ -81,8 +66,6 @@ export default function TechnicalFilesModal({
                     />
 
                 </div>
-
-            </div>
-        </div>
+        </Modal>
     );
 }

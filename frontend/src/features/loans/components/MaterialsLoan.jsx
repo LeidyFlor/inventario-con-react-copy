@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Button, Checkbox, IconButton, Input } from "@/shared";
+import { Button, Checkbox, IconButton, Input, Modal } from "@/shared";
 import DataTable from "@/shared/components/DataTable";
 import { ArrowLeft, CheckCheck } from "lucide-react";
 import { getMaterials } from "@/features/consumable-material/services/materialService";
@@ -25,36 +25,21 @@ const getField = (item, ...keys) => {
     return key ? item[key] : "";
 };
 
-// Backdrop cierra el modal al hacer click fuera del contenido
+// Envoltorio delgado sobre el Modal compartido. Conserva la firma
+// (isOpen / title / onClose) que ya usan las llamadas de esta pantalla,
+// para no tener que tocarlas.
 function MaterialModal({ title, isOpen, onClose, children }) {
-    // Si no está abierto no se monta nada en el DOM
     if (!isOpen) return null;
-
     return (
-        // z-50 para que quede por encima del resto de la página; el click aquí llama onClose
-        <div
-            className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/50"
-            onClick={onClose}
+        <Modal
+            title={title}
+            titleVariant="gradient"
+            size="xl"
+            onBack={onClose}
+            onClose={onClose}
         >
-            {/* stopPropagation evita que el click dentro del panel propague al backdrop */}
-            <div
-                className="w-full flex flex-col max-h-[90vh] rounded-2xl bg-background p-5 shadow-2xl max-w-5xl"
-                onClick={(e) => e.stopPropagation()}
-            >
-                <div className="flex items-center mb-4">
-                    <div>
-                        <Button
-                            variant="secondary"
-                            onClick={onClose}
-                        >
-                            Atrás
-                        </Button>
-                    </div>
-                    {title && <h2 className="text-gradient-title text-h3 font-bold flex-1 pl-56">{title}</h2>}
-                </div>
-                {children}
-            </div>
-        </div>
+            {children}
+        </Modal>
     );
 }
 

@@ -1,5 +1,4 @@
 import { useState } from "react"
-import { KeyRound } from "lucide-react"
 import { Input, Button, Modal, Alert, IconButton } from "@/shared"
 import { restorePasswordSchema } from "@/features/auth/schemas/restorePasswordSchema"
 
@@ -122,15 +121,15 @@ export default function ChangePasswordModal({ onClose, forced = false, onSuccess
     }
 
     return (
-        <Modal onClose={onClose} dismissable={!forced}>
-            <div className="mb-6 max-w-max">
-                <h1 className="flex gap-2 text-gradient-title text-h3 pb-0.5">
-                    <KeyRound className="text-brand" />
-                    Cambiar contraseña
-                </h1>
-                <div className="h-0.5 bg-gradiant-title-line"></div>
-            </div>
-
+        <Modal
+            title="Cambiar contraseña"
+            titleVariant="gradient"
+            onClose={onClose}
+            dismissable={!forced}
+            // En modo obligatorio no hay flecha de regreso: la única salida es
+            // cambiar la contraseña o cerrar sesión
+            onBack={forced ? undefined : onClose}
+        >
             {forced && (
                 <p className="text-small text-text-primary max-w-xs mb-5 text-center">
                     Estás usando la contraseña temporal que te llegó por correo.
@@ -171,18 +170,11 @@ export default function ChangePasswordModal({ onClose, forced = false, onSuccess
                     error={errors.password_nueva_confirmacion}
                 />
 
-                <div className="flex gap-3">
-                    {/* En modo obligatorio no hay Cancelar: la única salida es
-                        cambiar la contraseña o cerrar sesión */}
-                    {!forced && (
-                        <Button variant="secondary" size="sm" type="button" onClick={onClose}>
-                            Cancelar
-                        </Button>
-                    )}
-                    <Button variant="primary" size="md" type="submit" disabled={loading} showIcon={false}>
-                        {loading ? "Guardando..." : "Guardar"}
-                    </Button>
-                </div>
+                {/* Cancelar ya no va aquí: esa función la cumple la flecha de
+                    regreso del encabezado, que en modo obligatorio no aparece */}
+                <Button variant="primary" size="md" type="submit" disabled={loading} showIcon={false}>
+                    {loading ? "Guardando..." : "Guardar"}
+                </Button>
             </form>
         </Modal>
     )
