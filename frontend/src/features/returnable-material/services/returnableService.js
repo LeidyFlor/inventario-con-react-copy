@@ -20,6 +20,9 @@ export async function createReturnable(formData) {
 
     // Marca opcional: al ser multipart, DRF convierte "" en null
     data.append("brand",                formData.brandName ?? "")
+    // Inventario y categoría son obligatorios (validados por Zod y por el serializer)
+    data.append("inventory_name",       formData.inventoryName)
+    data.append("category",             formData.category)
     // Varios cuentadantes: se envía una entrada por cada uno bajo la misma
     // clave, que es como DRF espera un ManyToMany en multipart
     ;(formData.inventoryManagers ?? []).forEach(managerId => {
@@ -39,9 +42,9 @@ export async function createReturnable(formData) {
     if (formData.materialQuantity) {
         data.append("material_quantity", formData.materialQuantity)
     }
-    data.append("material_category",    formData.returnableMaterialCategory)
+    data.append("material_type",    formData.returnableMaterialType)
 
-    // Dimensiones solo si la categoría es muebles_enseres
+    // Dimensiones solo si el tipo es muebles_enseres
     if (formData.returnableMaterialDimensions) {
         data.append("material_dimensions", formData.returnableMaterialDimensions)
     }

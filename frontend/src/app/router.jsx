@@ -2,6 +2,8 @@ import { createBrowserRouter, Navigate } from "react-router-dom";
 import MainLayout from "@/shared/layouts/MainLayout";
 import { CreateUserPage, EditUserPage, ListUserPage, ViewUserPage, MyProfilePage } from "@/features/users";
 import { CreateBrandPage, ListBrandPage, EditBrandPage } from "@/features/brands";
+import { ListInventoryNamePage } from "@/features/inventory-names";
+import { ListCategoryPage } from "@/features/categories";
 import { CreateLoanPage, ReturnLoan, ApproveReturnLoan, ListLoanPage, ViewLoanPage, LoanEditPage, ConfirmIdentityPage } from "@/features/loans";
 import { CreateTaskPage } from "@/features/tasks";
 import { ListGroupPage } from "@/features/groups";
@@ -103,6 +105,10 @@ const router = createBrowserRouter([
             { path: "brand-list",       element: <RequirePerm perm={PERM.BRAND_LIST}><ListBrandPage /></RequirePerm> },
             { path: "brand-edit",       element: <RequirePerm perm={PERM.BRAND_CHANGE}><EditBrandPage /></RequirePerm> },
             { path: "group-list",       element: <RequirePerm perm={PERM.GROUP_VIEW}><ListGroupPage /></RequirePerm> },
+            // Crear y editar se hacen en modales dentro del listado, igual que
+            // en marcas, así que solo hace falta la ruta del listado.
+            { path: "inventory-name-list", element: <RequirePerm perm={PERM.INVENTORY_NAME_LIST}><ListInventoryNamePage /></RequirePerm> },
+            { path: "category-list",       element: <RequirePerm perm={PERM.CATEGORY_LIST}><ListCategoryPage /></RequirePerm> },
 
             // ── Tareas ────────────────────────────────────────────────
             // La gestión de tareas escribe usando el permiso de edición de

@@ -8,7 +8,7 @@ import "ldrs/react/Ping.css";
 import { usePermissions } from "@/features/permissions/context/PermissionsContext";
 import { PERM } from "@/features/permissions/config/perms";
 
-const CATEGORY_LABELS = {
+const MATERIAL_TYPE_LABELS = {
     herramienta:       "Herramienta",
     maquinaria_equipos:"Maquinaria y equipos",
     muebles_enseres:   "Muebles y enseres",
@@ -87,7 +87,10 @@ export default function ViewReturnablePage() {
         >
             <ViewDetailCard fields={[
                 { label: "Placa SENA",          value: material.material_barcode_sena ?? "—" },
-                { label: "Categoría",           value: CATEGORY_LABELS[material.material_category] ?? material.material_category },
+                { label: "Tipo de material",           value: MATERIAL_TYPE_LABELS[material.material_type] ?? material.material_type },
+                // Inventario y categoría se administran desde Configuración
+                { label: "Nombre de inventario", value: material.inventory_name_display || "—" },
+                { label: "Categoría",           value: material.category_display || "—" },
                 // Marca y modelo son opcionales, por eso el guion cuando faltan
                 { label: "Marca",               value: material.brand_name || "—" },
                 { label: "Modelo",              value: material.material_model || "—" },

@@ -9,6 +9,7 @@ export async function generateReturnableReport({
     scope,
     materialBarcodeSena,
     materialName,
+    inventoryName,
 }) {
     const materials = await getReturnables();
 
@@ -18,6 +19,7 @@ export async function generateReturnableReport({
         scope,
         materialBarcodeSena,
         materialName,
+        inventoryName,
     });
 
     if (!rows.length) {

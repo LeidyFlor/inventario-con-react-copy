@@ -18,6 +18,11 @@ export const consumableMaterialShema = z.object({
     .optional()
     .or(z.literal("")),
 
+  // Inventario y categoría son obligatorios. El Select entrega el id como
+  // texto, así que basta con exigir que no venga vacío.
+  inventoryName: z.string().min(1, "Debe seleccionar un nombre de inventario"),
+  category: z.string().min(1, "Debe seleccionar una categoría"),
+
   // Un material puede tener varios cuentadantes, mínimo uno.
   // El MultiSelect entrega un arreglo de ids como texto.
   inventoryManagers: z

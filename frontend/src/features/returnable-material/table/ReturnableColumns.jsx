@@ -24,14 +24,14 @@ function ReturnableNameCell({ material }) {
     );
 }
 
-// Muestra la categoría como texto legible
-function CategoryTag({ category }) {
+// Muestra el tipo de material como texto legible
+function MaterialTypeTag({ tipo }) {
     const labels = {
         herramienta:        "Herramienta",
         maquinaria_equipos: "Maquinaria y equipos",
         muebles_enseres:    "Muebles y enseres",
     }
-    return <span className="text-small">{labels[category] ?? category}</span>
+    return <span className="text-small">{labels[tipo] ?? tipo}</span>
 }
 
 // Muestra el estado: "Disponible" si activo, o el motivo si inactivo
@@ -68,11 +68,11 @@ export const getReturnableColumns = (setReturnables) => [
         header: "S/N",
     },
 
-    // Categoría con etiqueta legible
+    // Tipo de material con etiqueta legible
     {
-        id: "categoria",
-        header: "Categoría",
-        cell: ({ row }) => <CategoryTag category={row.original.material_category} />,
+        id: "tipoMaterial",
+        header: "Tipo de material",
+        cell: ({ row }) => <MaterialTypeTag tipo={row.original.material_type} />,
     },
 
     // Cuentadante

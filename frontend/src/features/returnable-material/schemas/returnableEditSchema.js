@@ -8,6 +8,11 @@ export const returnableEditSchema = z
     // Marca opcional: hay materiales genéricos sin marca identificable
     brandName: z.string().optional().or(z.literal("")),
 
+    // Inventario y categoría son obligatorios. El Select entrega el id como
+    // texto, así que basta con exigir que no venga vacío.
+    inventoryName: z.string().min(1, "Debe seleccionar un nombre de inventario"),
+    category: z.string().min(1, "Debe seleccionar una categoría"),
+
     // Un material puede tener varios cuentadantes, mínimo uno.
     // El MultiSelect entrega un arreglo de ids como texto.
     inventoryManagers: z
@@ -42,7 +47,7 @@ export const returnableEditSchema = z
 
     returnableMaterialSerial: z.string().optional().or(z.literal("")),
 
-    returnableMaterialCategory: z.string().min(1, "Selecciona una categoría"),
+    returnableMaterialType: z.string().min(1, "Selecciona un tipo de material"),
 
     returnableMaterialDimensions: z.string().optional().or(z.literal("")),
 
@@ -64,15 +69,15 @@ export const returnableEditSchema = z
     materialState: z.string().optional().or(z.literal("")),
   })
   .superRefine((data, ctx) => {
-    const category = data.returnableMaterialCategory;
+    const tipo = data.returnableMaterialType;
     const barcode = data.materialBarcodeSena?.trim() ?? "";
-    const esHerramienta = category === "herramienta";
+    const esHerramienta = tipo === "herramienta";
 
     // Placa SENA obligatoria para maquinaria y muebles
     if (!esHerramienta && !barcode) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: "La placa SENA es obligatoria para esta categoría",
+        message: "La placa SENA es obligatoria para este tipo de material",
         path: ["materialBarcodeSena"],
       });
     }
@@ -99,7 +104,7 @@ export const returnableEditSchema = z
     }
 
     // Dimensiones obligatorias para muebles_enseres
-    if (category === "muebles_enseres") {
+    if (tipo === "muebles_enseres") {
       if (!data.returnableMaterialDimensions?.trim()) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,

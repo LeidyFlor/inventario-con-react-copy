@@ -12,9 +12,17 @@ function BrandStatusCell({ brand, setBrands }) {
 
     const handleChange = async (newValue) => {
         if (!newValue) {
+            // Desactivar no rompe nada: los materiales que ya la tienen la
+            // conservan. Aun así se avisa a cuántos afecta. Mismo criterio que
+            // inventario y categoría.
+            const enUso = brand.materials_count ?? 0
+            const detalle = enUso > 0
+                ? ` Hay ${enUso} material(es) con esta marca: la conservan, y al editarlos aparecerá marcada como inactiva.`
+                : ""
+
             const result = await Alert.confirm(
                 "¿Desactivar marca?",
-                `La marca "${brand.name}" quedará inactiva.`
+                `La marca "${brand.name}" quedará inactiva y dejará de aparecer al registrar materiales.${detalle}`
             )
             if (!result.isConfirmed) {
                 setBrands(prev => [...prev])

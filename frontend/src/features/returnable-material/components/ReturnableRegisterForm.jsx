@@ -3,7 +3,7 @@ import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import { Router } from "lucide-react"
 import { Input, Button, Select, MultiSelect, FileInput, Textarea, Alert, IconButton } from "@/shared"
-import { getBrands, getInventoryManagers, getMaterialCategories } from "../services/selectService"
+import { getBrands, getInventoryManagers, getMaterialTypes, getInventoryNames, getCategories } from "../services/selectService"
 import { createReturnable } from "../services/returnableService"
 import { returnableMaterialSchema } from "../schemas/returnableMaterialSchema"
 
@@ -14,6 +14,8 @@ export default function ReturnableRegisterForm() {
     const [formData, setFormData] = useState({
         materialBarcodeSena: "",
         brandName: "",
+        inventoryName: "",
+        category: "",
         returnableMaterialModel:"",
         materialName:"",
         inventoryManagers: [],
@@ -22,7 +24,7 @@ export default function ReturnableRegisterForm() {
         materialLocation:"",
         materialQuantity: "",
         returnableMaterialSerial:"",
-        returnableMaterialCategory:"",
+        returnableMaterialType:"",
         returnableMaterialDimensions:  "",
         materialPurchaseDate: "",
         materialEntryDate: "",
@@ -35,12 +37,16 @@ export default function ReturnableRegisterForm() {
     //  Opciones de selects 
     const [brands,     setBrands]     = useState([])
     const [managers,   setManagers]   = useState([])
-    // Las categorías son constantes — se inicializan directamente
-    const categories = getMaterialCategories()
+    const [inventoryNames, setInventoryNames] = useState([])
+    const [categories, setCategories] = useState([])
+    // Los tipos de material son constantes — se inicializan directamente
+    const materialTypes = getMaterialTypes()
 
     useEffect(() => {
         getBrands().then(setBrands)
         getInventoryManagers().then(setManagers)
+        getInventoryNames().then(setInventoryNames)
+        getCategories().then(setCategories)
     }, [])
 
     //  Handlers 
@@ -221,12 +227,32 @@ export default function ReturnableRegisterForm() {
                                 required
                             />
                             <Select
+                                label="Tipo de material"
+                                options={materialTypes}
+                                name="returnableMaterialType"
+                                value={formData.returnableMaterialType}
+                                onChange={handleChange}
+                                error={errors.returnableMaterialType}
+                                required
+                            />
+                            {/* Inventario y categoría: obligatorios, se
+                                administran desde Configuración */}
+                            <Select
+                                label="Nombre de inventario"
+                                options={inventoryNames}
+                                name="inventoryName"
+                                value={formData.inventoryName}
+                                onChange={handleChange}
+                                error={errors.inventoryName}
+                                required
+                            />
+                            <Select
                                 label="Categoría"
                                 options={categories}
-                                name="returnableMaterialCategory"
-                                value={formData.returnableMaterialCategory}
+                                name="category"
+                                value={formData.category}
                                 onChange={handleChange}
-                                error={errors.returnableMaterialCategory}
+                                error={errors.category}
                                 required
                             />
                             {/* Marca opcional, igual que el modelo */}
@@ -257,7 +283,7 @@ export default function ReturnableRegisterForm() {
                                 required
                             />
                             {/* Cantidad editable solo para herramienta sin placa */}
-                            {formData.returnableMaterialCategory === "herramienta" && !formData.materialBarcodeSena?.trim() && (
+                            {formData.returnableMaterialType === "herramienta" && !formData.materialBarcodeSena?.trim() && (
                                 <Input
                                     label="Cantidad"
                                     placeholder="Cantidad"
@@ -276,8 +302,8 @@ export default function ReturnableRegisterForm() {
                                 onChange={handleChange}
                                 error={errors.materialLocation}
                             />
-                            {/* Dimensiones solo aparece si la categoría es muebles_enseres */}
-                            {formData.returnableMaterialCategory === "muebles_enseres" && (
+                            {/* Dimensiones solo aparece si el tipo es muebles_enseres */}
+                            {formData.returnableMaterialType === "muebles_enseres" && (
                                 <Input
                                     label="Dimensiones"
                                     placeholder="Ej: 120x75x20cm"

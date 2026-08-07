@@ -10,7 +10,7 @@ import {
     uploadTechnicalFiles,
     deleteTechnicalFile,
 } from "../services/materialService";
-import { getBrands, getInventoryManagers, getMaterialStates } from "../services/selectService";
+import { getBrands, getInventoryManagers, getMaterialStates, getInventoryNames, getCategories, conOpcionActual } from "../services/selectService";
 import { consumableEditSchema } from "../schemas/consumableEditSchema";
 
 export default function ConsumableEditForm() {
@@ -23,6 +23,8 @@ export default function ConsumableEditForm() {
     const [isDirty, setIsDirty] = useState(false);
     const [brands, setBrands] = useState([]);
     const [managers, setManagers] = useState([]);
+    const [inventoryNames, setInventoryNames] = useState([]);
+    const [categories, setCategories] = useState([]);
     const materialStateOptions = getMaterialStates();
 
     /* Fichas técnicas — mismo manejo que en el editar de devolutivo:
@@ -34,6 +36,8 @@ export default function ConsumableEditForm() {
 
     const [formData, setFormData] = useState({
         brand: "",
+        inventoryName: "",
+        category: "",
         materialModel: "",
         inventoryManagers: [],
         materialBarcodeSena: "",
@@ -77,16 +81,27 @@ export default function ConsumableEditForm() {
     }, [blocker]);
 
     useEffect(() => {
-        Promise.all([getMaterial(id), getBrands(), getInventoryManagers()])
-            .then(([mat, brandsData, managersData]) => {
+        Promise.all([
+            getMaterial(id),
+            getBrands(),
+            getInventoryManagers(),
+            getInventoryNames(),
+            getCategories(),
+        ])
+            .then(([mat, brandsData, managersData, inventoryNamesData, categoriesData]) => {
                 setMaterial(mat);
                 setBrands(brandsData);
                 setManagers(managersData);
+                setInventoryNames(inventoryNamesData);
+                setCategories(categoriesData);
                 setIsActive(mat.is_active ?? true);
                 setImagen(mat.material_image ?? null);
                 setExistingFiles(mat.technical_files ?? []);
                 setFormData({
                     brand: String(mat.brand ?? ""),
+                    // Vienen como id numérico; el Select compara contra texto
+                    inventoryName: String(mat.inventory_name ?? ""),
+                    category: String(mat.category ?? ""),
                     materialModel: mat.material_model ?? "",
                     inventoryManagers: (mat.inventory_managers ?? []).map(String),
                     materialBarcodeSena: mat.material_barcode_sena ?? "",
@@ -292,8 +307,34 @@ export default function ConsumableEditForm() {
                                 name="brand"
                                 value={formData.brand}
                                 onChange={handleChange}
-                                options={brands.map(b => ({ value: String(b.value), label: b.label }))}
+                                options={conOpcionActual(brands, formData.brand, material?.brand_name)}
                                 error={errors.brand}
+                                variant="isEdit"
+                            />
+                        </div>
+
+                        {/* Inventario y categoría: obligatorios, se administran
+                            desde Configuración. Los ids se comparan como texto */}
+                        <div>
+                            <p className="parrafo-edit-style">Nombre de inventario:</p>
+                            <Select
+                                name="inventoryName"
+                                value={formData.inventoryName}
+                                onChange={handleChange}
+                                options={conOpcionActual(inventoryNames, formData.inventoryName, material?.inventory_name_display)}
+                                error={errors.inventoryName}
+                                variant="isEdit"
+                            />
+                        </div>
+
+                        <div>
+                            <p className="parrafo-edit-style">Categoría:</p>
+                            <Select
+                                name="category"
+                                value={formData.category}
+                                onChange={handleChange}
+                                options={conOpcionActual(categories, formData.category, material?.category_display)}
+                                error={errors.category}
                                 variant="isEdit"
                             />
                         </div>

@@ -1,5 +1,8 @@
 // Hook para manejo de estado local en componentes funcionales
-import { useState } from "react";
+import { useState, useEffect } from "react";
+
+// Los inventarios se traen del backend para armar el select del filtro
+import { getInventoryNames } from "../../services/selectService";
 
 // Configuración de campos disponibles para el reporte
 import { consumableReportFields } from "../config/consumableReportFields";
@@ -22,6 +25,16 @@ export function ReportConfigModal({ isOpen, onClose }) {
     const [materialBarcodeSena, setmaterialBarcodeSena] = useState("");
     // Estado para filtro por nombre del material
     const [materialName, setmaterialName] = useState("");
+    // Filtro por nombre de inventario: guarda el id del inventario elegido
+    const [inventoryName, setInventoryName] = useState("");
+    const [inventoryNames, setInventoryNames] = useState([]);
+
+    // Se cargan al abrir el modal; solo se piden una vez
+    useEffect(() => {
+        if (isOpen && inventoryNames.length === 0) {
+            getInventoryNames().then(setInventoryNames).catch(() => {})
+        }
+    }, [isOpen, inventoryNames.length]);
 
     // Estado de campos seleccionados (inicialización lazy)
     const [selectedFields, setSelectedFields] = useState(
@@ -55,6 +68,7 @@ export function ReportConfigModal({ isOpen, onClose }) {
                 scope,
                 materialBarcodeSena,
                 materialName,
+                inventoryName,
             });
             Alert.close();
             await Alert.success("Reporte generado", "El archivo fue descargado exitosamente");
@@ -126,6 +140,7 @@ export function ReportConfigModal({ isOpen, onClose }) {
                             { label: "Todos los materiales de consumo", value: "all" },
                             { label: "Filtrar por placa sena", value: "barcodeSena" },
                             { label: "Filtrar nombre del material", value: "name" },
+                            { label: "Filtrar por nombre de inventario", value: "inventoryName" },
                         ]}
                     />
                 </div>
@@ -149,6 +164,20 @@ export function ReportConfigModal({ isOpen, onClose }) {
                             value={materialName}
                             onChange={(e) => setmaterialName(e.target.value)}
                             placeholder="Ingrese el nombre del elemento"
+                        />
+                    </div>
+                )}
+
+                {/* Campo condicional para filtro por nombre de inventario.
+                    El alcance por defecto sigue siendo "todos"; este select
+                    solo aparece cuando se elige filtrar. */}
+                {scope === "inventoryName" && (
+                    <div className="mb-4">
+                        <Select
+                            label="Nombre de inventario"
+                            value={inventoryName}
+                            onChange={(e) => setInventoryName(e.target.value)}
+                            options={inventoryNames}
                         />
                     </div>
                 )}

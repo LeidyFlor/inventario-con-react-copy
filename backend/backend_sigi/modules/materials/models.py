@@ -51,6 +51,38 @@ class Material(models.Model):
         blank=True,
     )
 
+    # Inventario al que pertenece el material.
+    #
+    # Es obligatorio en el formulario (los serializers lo exigen), pero
+    # nullable en la base para no romper los materiales que ya existían.
+    # El comando 'asignar_inventario' les pone uno genérico.
+    #
+    # Se referencia por texto ('app.Modelo') en vez de importar la clase:
+    # evita un import circular si algún día inventory_name necesitara algo
+    # de materials.
+    inventory_name = models.ForeignKey(
+        'inventory_name.InventoryName',
+        on_delete=models.PROTECT,  # no se borra un inventario con materiales
+        related_name='%(class)s_set',
+        null=True,
+        blank=True,
+    )
+
+    # Categoría del material. Clasificación libre que el usuario administra
+    # desde Configuración. No confundir con MATERIAL_TYPES de
+    # ReturnableMaterial, que es la lista fija (antes llamada "categoría") de
+    # la que dependen las reglas de placa, cantidad y dimensiones.
+    #
+    # Obligatoria en el formulario, nullable en la base para no romper los
+    # materiales que ya existían. El comando 'asignar_categoria' les pone una.
+    category = models.ForeignKey(
+        'category.Category',
+        on_delete=models.PROTECT,  # no se borra una categoría con materiales
+        related_name='%(class)s_set',
+        null=True,
+        blank=True,
+    )
+
     # Un material puede estar a cargo de varios cuentadantes.
     # Solo usuarios cuentadantes pueden serlo: limit_choices_to filtra
     # automáticamente en el admin y en los serializers.
@@ -146,7 +178,16 @@ class ReturnableMaterial(Material):
     de materiales devolutivos (se espera que sean retornados).
     """
 
-    CATEGORIES = [
+    # Tipo de material. Antes se llamaba "categoría", pero ese nombre pasó a
+    # usarse para otra clasificación con su propio CRUD. Esta lista sigue
+    # siendo FIJA porque de ella dependen tres reglas de negocio:
+    #
+    #   herramienta         → placa SENA opcional, cantidad puede ser > 1
+    #   maquinaria_equipos  → placa obligatoria, cantidad forzada a 1
+    #   muebles_enseres     → placa obligatoria, cantidad 1, dimensiones obligatorias
+    #
+    # Agregar valores aquí exige revisar esas validaciones en serializers.py.
+    MATERIAL_TYPES = [
         ('herramienta', 'Herramienta'),
         ('maquinaria_equipos', 'Maquinaria y equipos'),
         ('muebles_enseres', 'Muebles y enseres'),
@@ -154,9 +195,9 @@ class ReturnableMaterial(Material):
 
     # material_model y material_serial se heredan de Material (los comparte
     # con los consumibles)
-    material_category = models.CharField(max_length=20, choices=CATEGORIES)
+    material_type = models.CharField(max_length=20, choices=MATERIAL_TYPES)
 
-    # Solo si categoría es 'muebles_enseres' — formato: "120x75x20cm"
+    # Solo si el tipo es 'muebles_enseres' — formato: "120x75x20cm"
     material_dimensions = models.CharField(max_length=50, null=True, blank=True)
 
     class Meta:

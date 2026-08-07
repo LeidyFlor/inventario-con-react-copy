@@ -1,6 +1,6 @@
 import { Input, Button, IconButton, Select, MultiSelect, FileInput, Textarea, Alert } from "@/shared"
 import React, {useState, useEffect} from "react";
-import { getInventoryManagers, getBrands } from "@/features/consumable-material/services/selectService.js";
+import { getInventoryManagers, getBrands, getInventoryNames, getCategories } from "@/features/consumable-material/services/selectService.js";
 import { createMaterial } from "@/features/consumable-material/services/materialService.js";
 import { consumableMaterialShema } from "../schemas/consumableMaterialShema";
 // Para el icon
@@ -12,6 +12,8 @@ export default function ConsumableRegisterForm() {
     const [formData, setFormData] = useState({
         materialBarcodeSena: "",
         brandName: "",
+        inventoryName: "",
+        category: "",
         materialModel: "",
         materialName: "",
         inventoryManagers: [],
@@ -28,10 +30,14 @@ export default function ConsumableRegisterForm() {
     const [errors, setErrors] = useState({});
     const [userName, setUserName] = useState([]); //use state para cuentadante
     const [brandName, setBrandName] = useState([]);
+    const [inventoryNames, setInventoryNames] = useState([]);
+    const [categories, setCategories] = useState([]);
 
     useEffect(() => {
         getInventoryManagers().then(setUserName);
         getBrands().then(setBrandName);
+        getInventoryNames().then(setInventoryNames);
+        getCategories().then(setCategories);
     }, []); //los [] es para que al menos se ejecute una vez, no tiene dependencia
     const handleChange = (e) => {
             // Se obtiene el nombre del campo y su valor
@@ -165,6 +171,26 @@ export default function ConsumableRegisterForm() {
                                 value={formData.materialBarcodeSena}
                                 onChange={handleChange}
                                 error={errors.materialBarcodeSena}
+                            />
+                            {/* Inventario y categoría: obligatorios, se
+                                administran desde Configuración */}
+                            <Select
+                                label="Nombre de inventario"
+                                options={inventoryNames}
+                                name="inventoryName"
+                                value={formData.inventoryName}
+                                onChange={handleChange}
+                                error={errors.inventoryName}
+                                required
+                            />
+                            <Select
+                                label="Categoría"
+                                options={categories}
+                                name="category"
+                                value={formData.category}
+                                onChange={handleChange}
+                                error={errors.category}
+                                required
                             />
                             {/* Marca y modelo son opcionales: hay insumos
                                 genéricos sin marca ni referencia */}

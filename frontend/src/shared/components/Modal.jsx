@@ -1,4 +1,4 @@
-import { ArrowLeft, X } from "lucide-react";
+import { X } from "lucide-react";
 import Button from "./Button";
 import { IconButtonReal } from "./IconButtonReal";
 

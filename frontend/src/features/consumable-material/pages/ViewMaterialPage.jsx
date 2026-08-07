@@ -80,6 +80,9 @@ export default function ViewMaterialPage() {
         >
             <ViewDetailCard fields={[
                 { label: "Placa sena",          value: material.material_barcode_sena ?? "—" },
+                // Inventario y categoría se administran desde Configuración
+                { label: "Nombre de inventario", value: material.inventory_name_display || "—" },
+                { label: "Categoría",           value: material.category_display || "—" },
                 // Marca y modelo son opcionales, por eso el guion cuando faltan
                 { label: "Marca",               value: material.brand_name || "—" },
                 { label: "Modelo",              value: material.material_model || "—" },

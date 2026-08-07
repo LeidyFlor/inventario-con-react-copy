@@ -13,6 +13,56 @@ export async function getBrands() {
         .map(b => ({ value: b.id, label: b.name }))
 }
 
+/**
+ * Garantiza que el valor que ya tiene el material siga apareciendo en el select.
+ *
+ * Los selects solo traen opciones activas. Si a un material se le desactiva
+ * después el inventario o la categoría, su valor no estaría en la lista: el
+ * select se vería vacío y al guardar le cambiaría el dato sin avisar.
+ *
+ * Por eso, cuando el valor actual no está entre las opciones, se agrega al
+ * final marcado como inactivo. El usuario lo ve, decide si lo cambia, y nada
+ * se modifica solo.
+ *
+ * @param {Array}  options  Opciones activas: [{ value, label }]
+ * @param {string} valor    Id que tiene el material, como texto
+ * @param {string} etiqueta Nombre legible del valor (viene del *_display)
+ */
+export function conOpcionActual(options, valor, etiqueta) {
+    const normalizadas = options.map(o => ({ value: String(o.value), label: o.label }))
+    if (!valor) return normalizadas
+    if (normalizadas.some(o => o.value === String(valor))) return normalizadas
+    return [...normalizadas, { value: String(valor), label: `${etiqueta || "Sin nombre"} (inactivo)` }]
+}
+
+// Nombres de inventario activos para el select del formulario.
+// Los desactivados se ocultan igual que las marcas: siguen existiendo en los
+// materiales que ya los tenían, pero no se pueden elegir en uno nuevo.
+export async function getInventoryNames() {
+    const token = sessionStorage.getItem("token")
+    const response = await fetch(`${API_URL}/inventory-names/`, {
+        headers: { "Authorization": `Bearer ${token}` }
+    })
+    const inventoryNames = await response.json()
+    return inventoryNames
+        .filter(i => i.is_active)
+        .map(i => ({ value: i.id, label: i.name }))
+}
+
+// Categorías activas para el select del formulario.
+// Es la categoría administrable desde Configuración, una clasificación libre
+// sin reglas de negocio asociadas.
+export async function getCategories() {
+    const token = sessionStorage.getItem("token")
+    const response = await fetch(`${API_URL}/categories/`, {
+        headers: { "Authorization": `Bearer ${token}` }
+    })
+    const categories = await response.json()
+    return categories
+        .filter(c => c.is_active)
+        .map(c => ({ value: c.id, label: c.name }))
+}
+
 // Cuentadantes para el select del formulario
 export async function getInventoryManagers() {
     const token = sessionStorage.getItem("token")

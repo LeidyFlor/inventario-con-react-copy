@@ -10,13 +10,13 @@ const available = "Disponible";
 const returnable_type = "Devolutivo";
 const consumable_type = "Consumo";
 
-// Etiquetas legibles para las categorías de devolutivos
-const CATEGORY_LABELS = {
+// Etiquetas legibles para los tipos de material devolutivo
+const MATERIAL_TYPE_LABELS = {
     herramienta:       "Herramienta",
     maquinaria_equipos: "Maquinaria y equipos",
     muebles_enseres:   "Muebles y enseres",
 };
-const formatCategory = (value) => CATEGORY_LABELS[value] ?? value;
+const formatMaterialType = (value) => MATERIAL_TYPE_LABELS[value] ?? value;
 
 // Busca el valor de un campo en un objeto probando varios posibles nombres de clave,
 // útil porque los datos locales y los del backend pueden usar nombres distintos para el mismo campo
@@ -274,11 +274,11 @@ export default function MaterialsLoan({ selectedMaterials, setSelectedMaterials 
             ),
         },
         {
-            accessorKey: "material_category",
-            header: "Categoría",
+            accessorKey: "material_type",
+            header: "Tipo de material",
             cell: ({ row }) => (
                 <DisabledCell active={selectedReturnableIds.has(row.original.id)} className="min-w-36">
-                    {formatCategory(getField(row.original, "material_category", "returnableMaterialCategory"))}
+                    {formatMaterialType(getField(row.original, "material_type", "returnableMaterialType"))}
                 </DisabledCell>
             ),
         },
@@ -288,11 +288,11 @@ export default function MaterialsLoan({ selectedMaterials, setSelectedMaterials 
             cell: ({ row }) => {
                 const item       = row.original;
                 const isSelected = selectedReturnableIds.has(item.id);
-                const category   = getField(item, "material_category", "returnableMaterialCategory");
+                const tipo       = getField(item, "material_type", "returnableMaterialType");
                 const placa      = getField(item, "material_barcode_sena", "materialBarcodeSena");
                 const maxQty     = item.material_quantity_available ?? 1;
                 // Solo herramienta sin placa puede tener cantidad > 1
-                const isEditable = isSelected && category === "herramienta" && !placa;
+                const isEditable = isSelected && tipo === "herramienta" && !placa;
 
                 if (!isSelected) {
                     return <span className="block min-w-16 text-center text-text-muted opacity-40">—</span>;

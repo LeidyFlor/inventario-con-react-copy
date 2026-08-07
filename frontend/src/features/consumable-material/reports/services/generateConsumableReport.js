@@ -10,6 +10,7 @@ export async function generateConsumableReport({
     scope,
     materialBarcodeSena,
     materialName,
+    inventoryName,
 }) {
     const consumableMaterial = await getMaterials();
 
@@ -19,6 +20,7 @@ export async function generateConsumableReport({
         scope,
         materialBarcodeSena,
         materialName,
+        inventoryName,
     });
 
     if (!rows.length) {

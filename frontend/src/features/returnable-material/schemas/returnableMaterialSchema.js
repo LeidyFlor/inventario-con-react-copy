@@ -12,6 +12,11 @@ export const returnableMaterialSchema = z
     // Marca opcional: hay materiales genéricos sin marca identificable
     brandName: z.string().optional().or(z.literal("")),
 
+    // Inventario y categoría son obligatorios. El Select entrega el id como
+    // texto, así que basta con exigir que no venga vacío.
+    inventoryName: z.string().min(1, "Debe seleccionar un nombre de inventario"),
+    category: z.string().min(1, "Debe seleccionar una categoría"),
+
     // Un material puede tener varios cuentadantes, mínimo uno.
     // El MultiSelect entrega un arreglo de ids como texto.
     inventoryManagers: z
@@ -63,11 +68,11 @@ export const returnableMaterialSchema = z
       .optional()
       .or(z.literal("")),
 
-    returnableMaterialCategory: z
+    returnableMaterialType: z
       .string()
-      .min(1, "Debe seleccionar una categoría"),
+      .min(1, "Debe seleccionar un tipo de material"),
 
-    // Opcional salvo cuando la categoría es muebles_enseres (se valida con superRefine)
+    // Opcional salvo cuando el tipo es muebles_enseres (se valida con superRefine)
     returnableMaterialDimensions: z.string().optional().or(z.literal("")),
 
     // Fechas de adquisición: obligatorias. Son campos date, así que llegan
@@ -84,15 +89,15 @@ export const returnableMaterialSchema = z
       .min(1, "Debes adjuntar al menos una ficha técnica"),
   })
   .superRefine((data, ctx) => {
-    const category = data.returnableMaterialCategory;
+    const tipo = data.returnableMaterialType;
     const barcode = data.materialBarcodeSena?.trim() ?? "";
-    const esHerramienta = category === "herramienta";
+    const esHerramienta = tipo === "herramienta";
 
     // Placa SENA obligatoria para maquinaria y muebles
     if (!esHerramienta && !barcode) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: "La placa SENA es obligatoria para esta categoría",
+        message: "La placa SENA es obligatoria para este tipo de material",
         path: ["materialBarcodeSena"],
       });
     }
@@ -110,7 +115,7 @@ export const returnableMaterialSchema = z
     }
 
     // Dimensiones obligatorias y con formato solo para muebles_enseres
-    if (category === "muebles_enseres") {
+    if (tipo === "muebles_enseres") {
       if (
         !data.returnableMaterialDimensions ||
         data.returnableMaterialDimensions.trim() === ""

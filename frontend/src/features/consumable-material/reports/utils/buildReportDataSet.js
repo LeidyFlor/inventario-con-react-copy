@@ -5,6 +5,7 @@ export default function buildReportDataset({
     scope,
     materialBarcodeSena,
     materialName,
+    inventoryName,
 }) {
     const normalize = (str) =>
         str?.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "") ?? "";
@@ -19,6 +20,14 @@ export default function buildReportDataset({
     if (scope === "barcodeSena" && materialBarcodeSena) {
         filtered = filtered.filter(m =>
             m.material_barcode_sena === materialBarcodeSena
+        );
+    }
+
+    // Filtro por inventario: se compara contra el id, no contra el nombre, para
+    // que dos inventarios con nombres parecidos no se mezclen
+    if (scope === "inventoryName" && inventoryName) {
+        filtered = filtered.filter(m =>
+            String(m.inventory_name) === String(inventoryName)
         );
     }
 

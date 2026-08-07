@@ -1,4 +1,4 @@
-const CATEGORY_LABELS = {
+const MATERIAL_TYPE_LABELS = {
     herramienta:        "Herramienta",
     maquinaria_equipos: "Maquinaria y equipos",
     muebles_enseres:    "Muebles y enseres",
@@ -18,8 +18,8 @@ const getValue = (m, field) => {
         return STATE_LABELS[m.material_state] ?? m.material_state ?? "—";
     }
     if (field.key === "is_active") return m.is_active ? "Activo" : "Inactivo";
-    if (field.key === "material_category") {
-        return CATEGORY_LABELS[m.material_category] ?? m.material_category ?? "—";
+    if (field.key === "material_type") {
+        return MATERIAL_TYPE_LABELS[m.material_type] ?? m.material_type ?? "—";
     }
     return m[field.key] ?? "";
 };
@@ -33,6 +33,7 @@ export default function buildReportDataset({
     scope,
     materialBarcodeSena,
     materialName,
+    inventoryName,
 }) {
     let filtered = [...materials];
 
@@ -45,6 +46,14 @@ export default function buildReportDataset({
     if (scope === "barcodeSena" && materialBarcodeSena) {
         filtered = filtered.filter(
             (m) => m.material_barcode_sena === materialBarcodeSena
+        );
+    }
+
+    // Filtro por inventario: se compara contra el id, no contra el nombre, para
+    // que dos inventarios con nombres parecidos no se mezclen
+    if (scope === "inventoryName" && inventoryName) {
+        filtered = filtered.filter(
+            (m) => String(m.inventory_name) === String(inventoryName)
         );
     }
 

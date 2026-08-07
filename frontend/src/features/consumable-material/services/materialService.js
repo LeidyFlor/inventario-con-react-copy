@@ -30,6 +30,9 @@ export async function createMaterial(formData) {
     // como el envío es multipart, DRF convierte "" en null en los campos con
     // allow_null, así que el material queda sin marca en vez de fallar.
     data.append("brand", formData.brandName ?? "")
+    // Inventario y categoría son obligatorios (validados por Zod y por el serializer)
+    data.append("inventory_name", formData.inventoryName)
+    data.append("category", formData.category)
     data.append("material_model", formData.materialModel ?? "")
     data.append("material_serial", formData.materialSerial ?? "")
     // Fechas de adquisición — obligatorias. Son campos date: solo "YYYY-MM-DD"
@@ -93,6 +96,9 @@ export async function updateMaterial(id, formData, isActive, materialImage) {
     // Igual que al crear. Enviarla aunque venga vacía permite además QUITARLE
     // la marca a un material que ya la tenía
     data.append("brand", formData.brand ?? "")
+    // Inventario y categoría son obligatorios (validados por Zod y por el serializer)
+    data.append("inventory_name", formData.inventoryName)
+    data.append("category", formData.category)
     data.append("material_model", formData.materialModel ?? "")
     data.append("material_serial", formData.materialSerial ?? "")
     // Fechas de adquisición — obligatorias. Son campos date: solo "YYYY-MM-DD"

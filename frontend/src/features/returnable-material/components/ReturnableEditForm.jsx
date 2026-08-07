@@ -23,8 +23,11 @@ import { TechnicalFilesModal } from "@/shared";
 import {
     getBrands,
     getInventoryManagers,
-    getMaterialCategories,
-    getMaterialStates
+    getMaterialTypes,
+    getMaterialStates,
+    getInventoryNames,
+    getCategories,
+    conOpcionActual
 } from "../services/selectService";
 
 import {
@@ -46,6 +49,9 @@ async function updateReturnable(id, formData, isActive, newImageFile) {
     // convierte "" en null en los campos con allow_null, así que también
     // sirve para QUITARLE la marca a un material que ya la tenía.
     data.append("brand", formData.brandName ?? "");
+    // Inventario y categoría son obligatorios (validados por Zod y por el serializer)
+    data.append("inventory_name", formData.inventoryName);
+    data.append("category", formData.category);
     // Varios cuentadantes: se envía una entrada por cada uno bajo la misma
     // clave, que es como DRF espera un ManyToMany en multipart
     ;(formData.inventoryManagers ?? []).forEach(managerId => {
@@ -61,7 +67,7 @@ async function updateReturnable(id, formData, isActive, newImageFile) {
     // Fechas de adquisición — obligatorias. Son campos date: solo "YYYY-MM-DD"
     data.append("material_purchase_date", formData.materialPurchaseDate);
     data.append("material_entry_date", formData.materialEntryDate);
-    data.append("material_category", formData.returnableMaterialCategory);
+    data.append("material_type", formData.returnableMaterialType);
     data.append("material_quantity", formData.materialQuantity || "1");
     data.append("is_active", isActive);
 
@@ -100,6 +106,8 @@ export default function ReturnableEditForm() {
     const [formData, setFormData] = useState({
         materialBarcodeSena: "",
         brandName: "",
+        inventoryName: "",
+        category: "",
         returnableMaterialModel: "",
         materialName: "",
         inventoryManagers: [],
@@ -108,7 +116,7 @@ export default function ReturnableEditForm() {
         materialLocation: "",
         materialQuantity: "1",
         returnableMaterialSerial: "",
-        returnableMaterialCategory: "",
+        returnableMaterialType: "",
         returnableMaterialDimensions: "",
         materialPurchaseDate: "",
         materialEntryDate: "",
@@ -133,7 +141,12 @@ export default function ReturnableEditForm() {
     /* Selects */
     const [brands, setBrands] = useState([]);
     const [managers, setManagers] = useState([]);
-    const categories = getMaterialCategories();
+    const [inventoryNames, setInventoryNames] = useState([]);
+    const [categories, setCategories] = useState([]);
+    /* Nombres legibles del inventario y la categoría que ya tiene el material.
+       Sirven para volver a mostrarlos en el select si quedaron desactivados */
+    const [etiquetasActuales, setEtiquetasActuales] = useState({ inventoryName: "", category: "", brand: "" });
+    const materialTypes = getMaterialTypes();
     const materialStateOptions = getMaterialStates();
 
     /* Modales */
@@ -166,11 +179,14 @@ export default function ReturnableEditForm() {
     useEffect(() => {
         async function load() {
             try {
-                const [all, brandsData, managersData] = await Promise.all([
-                    getReturnables(),
-                    getBrands(),
-                    getInventoryManagers()
-                ]);
+                const [all, brandsData, managersData, inventoryNamesData, categoriesData] =
+                    await Promise.all([
+                        getReturnables(),
+                        getBrands(),
+                        getInventoryManagers(),
+                        getInventoryNames(),
+                        getCategories()
+                    ]);
 
                 const material = all.find(m => String(m.id) === String(id));
                 if (!material) {
@@ -183,6 +199,9 @@ export default function ReturnableEditForm() {
                     materialBarcodeSena: material.material_barcode_sena ?? "",
                     // ?? "" porque la marca ahora puede venir en null
                     brandName: String(material.brand ?? ""),
+                    // Vienen como id numérico; el Select compara contra texto
+                    inventoryName: String(material.inventory_name ?? ""),
+                    category: String(material.category ?? ""),
                     returnableMaterialModel: material.material_model ?? "",
                     materialName: material.material_name ?? "",
                     inventoryManagers: (material.inventory_managers ?? []).map(String),
@@ -191,7 +210,7 @@ export default function ReturnableEditForm() {
                     materialLocation: material.material_location ?? "",
                     materialQuantity: String(material.material_quantity ?? 1),
                     returnableMaterialSerial: material.material_serial ?? "",
-                    returnableMaterialCategory: material.material_category ?? "",
+                    returnableMaterialType: material.material_type ?? "",
                     returnableMaterialDimensions: material.material_dimensions ?? "",
                     // Vienen como "YYYY-MM-DD", que es justo lo que espera el input date
                     materialPurchaseDate: material.material_purchase_date ?? "",
@@ -203,6 +222,13 @@ export default function ReturnableEditForm() {
                 setExistingFiles(material.technical_files ?? []);
                 setBrands(brandsData);
                 setManagers(managersData);
+                setInventoryNames(inventoryNamesData);
+                setCategories(categoriesData);
+                setEtiquetasActuales({
+                    inventoryName: material.inventory_name_display ?? "",
+                    category: material.category_display ?? "",
+                    brand: material.brand_name ?? "",
+                });
             } catch {
                 Alert.error("Error", "No se pudo cargar el material");
             } finally {
@@ -322,13 +348,13 @@ export default function ReturnableEditForm() {
                         </div>
 
                         <div>
-                            <p className="parrafo-edit-style">Categoría:</p>
+                            <p className="parrafo-edit-style">Tipo de material:</p>
                             <Select
-                                options={categories}
-                                name="returnableMaterialCategory"
-                                value={formData.returnableMaterialCategory}
+                                options={materialTypes}
+                                name="returnableMaterialType"
+                                value={formData.returnableMaterialType}
                                 onChange={handleChange}
-                                error={errors.returnableMaterialCategory}
+                                error={errors.returnableMaterialType}
                                 variant="isEdit"
                             />
                         </div>
@@ -427,7 +453,7 @@ export default function ReturnableEditForm() {
 
                         <div>
                             <p className="parrafo-edit-style">Cantidad:</p>
-                            {formData.returnableMaterialCategory === "herramienta" && !formData.materialBarcodeSena?.trim() ? (
+                            {formData.returnableMaterialType === "herramienta" && !formData.materialBarcodeSena?.trim() ? (
                                 <Input
                                     type="number"
                                     name="materialQuantity"
@@ -460,7 +486,7 @@ export default function ReturnableEditForm() {
                             </div>
                         )}
                         {/* Dimensiones solo si es muebles_enseres */}
-                        {formData.returnableMaterialCategory === "muebles_enseres" && (
+                        {formData.returnableMaterialType === "muebles_enseres" && (
                             <div>
                                 <p className="parrafo-edit-style">Dimensiones:</p>
                                 <Input
@@ -481,11 +507,37 @@ export default function ReturnableEditForm() {
                         <div>
                             <p className="parrafo-edit-style">Marca:</p>
                             <Select
-                                options={brands}
+                                options={conOpcionActual(brands, formData.brandName, etiquetasActuales.brand)}
                                 name="brandName"
                                 value={formData.brandName}
                                 onChange={handleChange}
                                 error={errors.brandName}
+                                variant="isEdit"
+                            />
+                        </div>
+
+                        {/* Inventario y categoría: obligatorios, se administran
+                            desde Configuración. Los ids se comparan como texto */}
+                        <div>
+                            <p className="parrafo-edit-style">Nombre de inventario:</p>
+                            <Select
+                                options={conOpcionActual(inventoryNames, formData.inventoryName, etiquetasActuales.inventoryName)}
+                                name="inventoryName"
+                                value={formData.inventoryName}
+                                onChange={handleChange}
+                                error={errors.inventoryName}
+                                variant="isEdit"
+                            />
+                        </div>
+
+                        <div>
+                            <p className="parrafo-edit-style">Categoría:</p>
+                            <Select
+                                options={conOpcionActual(categories, formData.category, etiquetasActuales.category)}
+                                name="category"
+                                value={formData.category}
+                                onChange={handleChange}
+                                error={errors.category}
                                 variant="isEdit"
                             />
                         </div>

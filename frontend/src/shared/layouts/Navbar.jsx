@@ -209,6 +209,20 @@ export default function Navbar( { isOpen, onClose }){
                                         </Link>
                                     </DropdownItem>
                                     )}
+                                    {hasPerm(PERM.INVENTORY_NAME_LIST) && (
+                                    <DropdownItem>
+                                        <Link to="inventory-name-list" className="block w-full">
+                                            Gestión de nombres de inventarios
+                                        </Link>
+                                    </DropdownItem>
+                                    )}
+                                    {hasPerm(PERM.CATEGORY_LIST) && (
+                                    <DropdownItem>
+                                        <Link to="category-list" className="block w-full">
+                                            Gestión de categorías
+                                        </Link>
+                                    </DropdownItem>
+                                    )}
                                     {/* La gestión de permisos es exclusiva del super administrador */}
                                     {isSuperuser && (
                                     <DropdownItem>

@@ -6,6 +6,7 @@ from django.conf import settings
 from backend_sigi.utils.audit import log_action
 from backend_sigi.utils.perm_check import deny_if_no_perm
 from django.utils import timezone
+from django.db.models import Count
 import requests as http_requests
 
 from .models import Brand, ConsumableMaterial, ReturnableMaterial, TechnicalSheetFile
@@ -114,7 +115,14 @@ class BrandViewSet(viewsets.ViewSet):
     def list(self, request):
         deny = deny_if_no_perm(request, 'materials.listar_brand')
         if deny: return deny
-        brands = Brand.objects.all()
+        # El conteo va anotado para que el serializer no haga dos consultas
+        # por cada fila
+        brands = Brand.objects.annotate(
+            materials_count_annotated=(
+                Count('returnablematerial_set', distinct=True) +
+                Count('consumablematerial_set', distinct=True)
+            )
+        )
         serializer = BrandSerializer(brands, many=True)
         return Response(serializer.data)
 
@@ -176,7 +184,7 @@ class ConsumableMaterialViewSet(viewsets.ViewSet):
         deny = deny_if_no_perm(request, 'materials.listar_consumablematerial')
         if deny: return deny
         materials = ConsumableMaterial.objects.select_related(
-            'brand'
+            'brand', 'inventory_name', 'category'
         ).prefetch_related('technical_files', 'inventory_managers').all()
         serializer = ConsumableMaterialSerializer(materials, many=True)
         return Response(serializer.data)
@@ -186,7 +194,7 @@ class ConsumableMaterialViewSet(viewsets.ViewSet):
         if deny: return deny
         try:
             material = ConsumableMaterial.objects.select_related(
-                'brand'
+                'brand', 'inventory_name', 'category'
             ).prefetch_related('technical_files', 'inventory_managers').get(pk=pk)
         except ConsumableMaterial.DoesNotExist:
             return Response({'error': 'Material no encontrado'}, status=status.HTTP_404_NOT_FOUND)
@@ -405,7 +413,7 @@ class ReturnableMaterialViewSet(viewsets.ViewSet):
         deny = deny_if_no_perm(request, 'materials.listar_returnablematerial')
         if deny: return deny
         materials = ReturnableMaterial.objects.select_related(
-            'brand'
+            'brand', 'inventory_name', 'category'
         ).prefetch_related('technical_files', 'inventory_managers').all()
         serializer = ReturnableMaterialSerializer(materials, many=True)
         return Response(serializer.data)
@@ -415,7 +423,7 @@ class ReturnableMaterialViewSet(viewsets.ViewSet):
         if deny: return deny
         try:
             material = ReturnableMaterial.objects.select_related(
-                'brand'
+                'brand', 'inventory_name', 'category'
             ).prefetch_related('technical_files', 'inventory_managers').get(pk=pk)
         except ReturnableMaterial.DoesNotExist:
             return Response({'error': 'Material no encontrado'}, status=status.HTTP_404_NOT_FOUND)

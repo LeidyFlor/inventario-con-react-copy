@@ -8,7 +8,11 @@ export const returnableReportFields = [
   { key: "inventory_manager_name",  label: "Cuentadante",      default: true  },
   { key: "material_purchase_date",  label: "Fecha de compra",  default: false },
   { key: "material_entry_date",     label: "Fecha de ingreso", default: false },
-  { key: "material_category",       label: "Categoría",        default: true  },
+  { key: "material_type",       label: "Tipo de material",        default: true  },
+  // Vienen del serializer como *_display: el id lo usa el Select del
+  // formulario, el nombre legible es el que sirve en el reporte
+  { key: "inventory_name_display", label: "Nombre de inventario", default: true  },
+  { key: "category_display",       label: "Categoría",            default: true  },
   { key: "material_description",    label: "Descripción",      default: false },
   { key: "material_quantity",       label: "Cantidad",         default: false },
   { key: "material_unit_price",     label: "Valor unitario",   default: false },

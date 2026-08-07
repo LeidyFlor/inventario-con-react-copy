@@ -17,6 +17,12 @@ CAMPOS_OPCIONALES_MATERIAL = {
     # que ya existían antes de agregar estos campos.
     'material_purchase_date': {'required': True, 'allow_null': False},
     'material_entry_date':    {'required': True, 'allow_null': False},
+    # El inventario es obligatorio al crear y editar. En el modelo es nullable
+    # solo para no romper los materiales anteriores a esta funcionalidad.
+    'inventory_name':         {'required': True, 'allow_null': False},
+    # La categoría también. Mismo criterio: nullable en el modelo solo por
+    # los materiales anteriores a esta funcionalidad.
+    'category':               {'required': True, 'allow_null': False},
 }
 
 
@@ -27,12 +33,36 @@ CAMPOS_COMUNES_NUEVOS = [
     'material_serial',
     'material_purchase_date',
     'material_entry_date',
+    # Inventario al que pertenece. Obligatorio: se declara así en
+    # CAMPOS_OPCIONALES_MATERIAL, que pese al nombre configura tanto los
+    # opcionales como los que sí se exigen.
+    'inventory_name',
+    'category',
 ]
 
 
 def nombre_legible(user):
     """Nombre completo del usuario, o su correo si no tiene nombre cargado."""
     return f"{user.first_name} {user.last_name}".strip() or user.email
+
+
+class NombresLegiblesMixin(metaclass=serializers.SerializerMetaclass):
+    """
+    Expone el nombre del inventario y de la categoría además de sus ids.
+
+    El id lo necesita el Select de los formularios; el nombre, las tablas, las
+    pantallas de visualizar y el reporte. Se llama inventory_name_display para
+    no chocar con el campo real, que es la clave foránea.
+
+    Igual que en CuentadantesMixin, la metaclase es obligatoria: sin ella DRF
+    no recoge los campos declarados en una clase base.
+    """
+    inventory_name_display = serializers.CharField(
+        source='inventory_name.name', read_only=True
+    )
+    category_display = serializers.CharField(
+        source='category.name', read_only=True
+    )
 
 
 class CuentadantesMixin(metaclass=serializers.SerializerMetaclass):
@@ -61,9 +91,26 @@ class CuentadantesMixin(metaclass=serializers.SerializerMetaclass):
 
 #para el crud de marcas
 class BrandSerializer(serializers.ModelSerializer):
+
+    # Cuántos materiales la tienen asignada, sumando los dos tipos.
+    #
+    # No impide desactivarla: sirve para avisar en pantalla a cuántos
+    # materiales afecta antes de confirmar. Desactivar solo significa que deja
+    # de ofrecerse al registrar materiales nuevos; los que ya la tienen la
+    # conservan. Mismo criterio que inventario y categoría.
+    materials_count = serializers.SerializerMethodField()
+
+    def get_materials_count(self, obj):
+        # Al listar, la vista trae el conteo ya anotado para no disparar dos
+        # consultas por fila (N+1). En el detalle se calcula al vuelo.
+        anotado = getattr(obj, 'materials_count_annotated', None)
+        if anotado is not None:
+            return anotado
+        return obj.returnablematerial_set.count() + obj.consumablematerial_set.count()
+
     class Meta:
         model = Brand
-        fields = ['id', 'name', 'is_active']
+        fields = ['id', 'name', 'is_active', 'materials_count']
 
 
 # Serializer de fichas técnicas — se usa anidado en los DOS tipos de material.
@@ -75,7 +122,7 @@ class TechnicalSheetFileSerializer(serializers.ModelSerializer):
         read_only_fields = ['id', 'uploaded_at']
 
 #Para listar — incluye campos calculados y nombres legibles en vez de solo ids"
-class ConsumableMaterialSerializer(CuentadantesMixin, serializers.ModelSerializer):
+class ConsumableMaterialSerializer(NombresLegiblesMixin, CuentadantesMixin, serializers.ModelSerializer):
 
     # Campos calculados (@property del modelo) — read_only porque no se guardan en BD
     material_total_price = serializers.SerializerMethodField()
@@ -100,6 +147,8 @@ class ConsumableMaterialSerializer(CuentadantesMixin, serializers.ModelSerialize
             'id',
             'brand',           # ID de la marca (para edición)
             'brand_name',      # Nombre legible (para mostrar)
+            'inventory_name_display',
+            'category_display',
             'inventory_managers',
             'inventory_manager_name',
             'material_name',
@@ -199,7 +248,7 @@ class ConsumableMaterialUpdateSerializer(CuentadantesMixin, serializers.ModelSer
 # ──────────────────────────────────────────────────────────────────────────────
 
 # Para listar/ver detalle — expone fichas técnicas y nombres legibles
-class ReturnableMaterialSerializer(CuentadantesMixin, serializers.ModelSerializer):
+class ReturnableMaterialSerializer(NombresLegiblesMixin, CuentadantesMixin, serializers.ModelSerializer):
 
     # Campos calculados heredados del modelo abstracto
     material_total_price = serializers.SerializerMethodField()
@@ -224,6 +273,8 @@ class ReturnableMaterialSerializer(CuentadantesMixin, serializers.ModelSerialize
             'id',
             'brand',
             'brand_name',
+            'inventory_name_display',
+            'category_display',
             'inventory_managers',
             'inventory_manager_name',
             'material_name',
@@ -237,7 +288,7 @@ class ReturnableMaterialSerializer(CuentadantesMixin, serializers.ModelSerialize
             'material_location',
             'material_image',
             *CAMPOS_COMUNES_NUEVOS,
-            'material_category',
+            'material_type',
             'material_dimensions',
             'is_active',
             'material_state',
@@ -253,17 +304,17 @@ class ReturnableMaterialCreateSerializer(CuentadantesMixin, serializers.ModelSer
     material_quantity = serializers.IntegerField(required=False, default=1)
 
     def validate(self, data):
-        category = data.get('material_category', '')
+        tipo = data.get('material_type', '')
         barcode  = data.get('material_barcode_sena', '').strip()
 
         # Placa SENA obligatoria para maquinaria y muebles; opcional para herramienta
-        if category != 'herramienta' and not barcode:
+        if tipo != 'herramienta' and not barcode:
             raise serializers.ValidationError({
-                'material_barcode_sena': 'La placa SENA es obligatoria para esta categoría.'
+                'material_barcode_sena': 'La placa SENA es obligatoria para este tipo de material.'
             })
 
-        # Si tiene placa o categoría NO es herramienta → cantidad forzada a 1
-        if barcode or category != 'herramienta':
+        # Si tiene placa o el tipo NO es herramienta → cantidad forzada a 1
+        if barcode or tipo != 'herramienta':
             data['material_quantity'] = 1
         else:
             # herramienta sin placa: cantidad debe ser >= 1
@@ -274,7 +325,7 @@ class ReturnableMaterialCreateSerializer(CuentadantesMixin, serializers.ModelSer
                 })
 
         # Solo muebles_enseres puede tener dimensiones
-        if data.get('material_dimensions') and category != 'muebles_enseres':
+        if data.get('material_dimensions') and tipo != 'muebles_enseres':
             data['material_dimensions'] = None
 
         return data
@@ -291,14 +342,14 @@ class ReturnableMaterialCreateSerializer(CuentadantesMixin, serializers.ModelSer
             'material_unit_price',
             'material_location',
             *CAMPOS_COMUNES_NUEVOS,
-            'material_category',
+            'material_type',
             'material_dimensions',
             # material_image no va aquí — la view lo maneja vía request.FILES
         ]
         extra_kwargs = CAMPOS_OPCIONALES_MATERIAL
 
 
-# Para editar — validaciones de estado + reglas de categoría
+# Para editar — validaciones de estado + reglas por tipo de material
 class ReturnableMaterialUpdateSerializer(CuentadantesMixin, serializers.ModelSerializer):
 
     # Cantidad opcional — solo editable para herramienta sin placa
@@ -307,7 +358,7 @@ class ReturnableMaterialUpdateSerializer(CuentadantesMixin, serializers.ModelSer
     def validate(self, data):
         is_active     = data.get('is_active', self.instance.is_active)
         material_state = data.get('material_state', self.instance.material_state)
-        category      = data.get('material_category', self.instance.material_category)
+        tipo          = data.get('material_type', self.instance.material_type)
         barcode       = (data.get('material_barcode_sena') or self.instance.material_barcode_sena or '').strip()
 
         # Desactivar requiere motivo
@@ -321,13 +372,13 @@ class ReturnableMaterialUpdateSerializer(CuentadantesMixin, serializers.ModelSer
             data['material_state'] = None
 
         # Placa SENA obligatoria para maquinaria y muebles; opcional para herramienta
-        if category != 'herramienta' and not barcode:
+        if tipo != 'herramienta' and not barcode:
             raise serializers.ValidationError({
-                'material_barcode_sena': 'La placa SENA es obligatoria para esta categoría.'
+                'material_barcode_sena': 'La placa SENA es obligatoria para este tipo de material.'
             })
 
         # Regla de cantidad
-        if barcode or category != 'herramienta':
+        if barcode or tipo != 'herramienta':
             # Tiene placa o no es herramienta → siempre 1
             data['material_quantity'] = 1
         else:
@@ -340,7 +391,7 @@ class ReturnableMaterialUpdateSerializer(CuentadantesMixin, serializers.ModelSer
             data['material_quantity'] = qty
 
         # Dimensiones solo aplican a muebles_enseres
-        if data.get('material_dimensions') and category != 'muebles_enseres':
+        if data.get('material_dimensions') and tipo != 'muebles_enseres':
             data['material_dimensions'] = None
 
         return data
@@ -357,7 +408,7 @@ class ReturnableMaterialUpdateSerializer(CuentadantesMixin, serializers.ModelSer
             'material_unit_price',
             'material_location',
             *CAMPOS_COMUNES_NUEVOS,
-            'material_category',
+            'material_type',
             'material_dimensions',
             'is_active',
             'material_state',

@@ -31,6 +31,24 @@ export const PERM = {
     BRAND_LIST:   "materials.listar_brand",
     BRAND_REPORT: "materials.generar_reporte_brand",
 
+    // ── Nombres de inventario (app_label: inventory_name) ──────────
+    // No tiene reporte propio: aparece como columna y filtro dentro del
+    // reporte de materiales, que ya tiene su permiso.
+    INVENTORY_NAME_ADD:    "inventory_name.add_inventoryname",
+    INVENTORY_NAME_VIEW:   "inventory_name.view_inventoryname",
+    INVENTORY_NAME_CHANGE: "inventory_name.change_inventoryname",
+    INVENTORY_NAME_DELETE: "inventory_name.delete_inventoryname",
+    INVENTORY_NAME_LIST:   "inventory_name.listar_inventoryname",
+
+    // ── Categorías (app_label: category) ───────────────────────────
+    // Es la categoría administrable desde Configuración, NO la lista fija
+    // de herramienta/maquinaria/muebles, que ahora se llama tipo de material.
+    CATEGORY_ADD:    "category.add_category",
+    CATEGORY_VIEW:   "category.view_category",
+    CATEGORY_CHANGE: "category.change_category",
+    CATEGORY_DELETE: "category.delete_category",
+    CATEGORY_LIST:   "category.listar_category",
+
     // ── Material de consumo (app_label: materials) ─────────────────
     CONSUMABLE_ADD:    "materials.add_consumablematerial",
     CONSUMABLE_VIEW:   "materials.view_consumablematerial",
@@ -87,12 +105,16 @@ export const MODULE_PERMS = {
         PERM.CONSUMABLE_VIEW,
         PERM.CONSUMABLE_REPORT,
     ],
-    // Configuración agrupa marcas, grupos y tareas.
+    // Configuración agrupa marcas, inventarios, categorías, grupos y tareas.
     // Los ítems de "Permisos" e "Historial" se controlan aparte:
     // permisos → solo superadmin, historial → solo staff.
     CONFIG: [
         PERM.BRAND_LIST,
         PERM.BRAND_ADD,
+        PERM.INVENTORY_NAME_LIST,
+        PERM.INVENTORY_NAME_ADD,
+        PERM.CATEGORY_LIST,
+        PERM.CATEGORY_ADD,
         PERM.GROUP_VIEW,
         PERM.GROUP_ADD,
         PERM.TASK_ADD,

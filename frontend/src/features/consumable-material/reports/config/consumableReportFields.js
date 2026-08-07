@@ -34,11 +34,23 @@ export const consumableReportFields = [
         "material_name",
         label: "Nombre material",
         default: true},
-    { 
-        key: 
+    {
+        key:
         "inventory_manager_name",
          label: "Cuentadante",
         default: true  },
+    // Vienen del serializer como *_display: el id lo usa el Select del
+    // formulario, el nombre legible es el que sirve en el reporte
+    {
+        key:
+        "inventory_name_display",
+        label: "Nombre de inventario",
+        default: true },
+    {
+        key:
+        "category_display",
+        label: "Categoría",
+        default: true },
     { 
         key: 
         "material_description",
