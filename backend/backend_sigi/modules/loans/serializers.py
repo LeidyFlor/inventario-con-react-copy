@@ -2,6 +2,7 @@ from rest_framework import serializers
 from django.db import transaction, models
 
 from backend_sigi.modules.users.models import Users
+from backend_sigi.utils.perm_check import usuarios_con_permiso
 from backend_sigi.modules.materials.models import ConsumableMaterial, ReturnableMaterial
 from .models import IdentityToken, Loan, LoanItem
 
@@ -93,6 +94,9 @@ class LoanListSerializer(serializers.ModelSerializer):
     """
     loan_user_requester    = serializers.SerializerMethodField()
     loan_user_requester_id = serializers.SerializerMethodField()
+    # Documento del solicitante, o su correo cuando no está registrado
+    requester_document     = serializers.SerializerMethodField()
+    requester_is_registered = serializers.SerializerMethodField()
     loan_user_lender       = serializers.SerializerMethodField()
     returned_by_name       = serializers.SerializerMethodField()
     accepted_by_name       = serializers.SerializerMethodField()
@@ -104,6 +108,9 @@ class LoanListSerializer(serializers.ModelSerializer):
             'loan_code',
             'loan_user_requester',
             'loan_user_requester_id',
+            'requester_email',
+            'requester_document',
+            'requester_is_registered',
             'loan_user_lender',
             'loan_students_group',
             'loan_justification',
@@ -128,10 +135,27 @@ class LoanListSerializer(serializers.ModelSerializer):
 
     def get_loan_user_requester(self, obj):
         u = obj.loan_user_requester
+        # Sin usuario registrado se muestra el correo escrito al crear
+        if not u:
+            return obj.requester_email
         return f"{u.first_name} {u.last_name}".strip() or u.email
 
     def get_loan_user_requester_id(self, obj):
         return obj.loan_user_requester_id
+
+    def get_requester_document(self, obj):
+        """
+        Con qué se identifica al solicitante en la tabla: su número de
+        documento si está registrado, o el correo si no lo está.
+        """
+        return obj.requester_display
+
+    def get_requester_is_registered(self, obj):
+        """
+        Permite al frontend distinguir qué está mostrando, sin adivinar por el
+        formato del texto.
+        """
+        return obj.loan_user_requester_id is not None
 
     def get_loan_user_lender(self, obj):
         u = obj.loan_user_lender
@@ -228,9 +252,19 @@ class LoanCreateSerializer(serializers.Serializer):
     También descuenta el stock de consumibles y aumenta material_quantity_loaned
     en devolutivos.
     """
-    loan_user_requester  = serializers.PrimaryKeyRelatedField(queryset=Users.objects.filter(is_active=True))
-    loan_user_lender     = serializers.PrimaryKeyRelatedField(queryset=Users.objects.filter(is_accountant=True, is_active=True))
-    loan_students_group  = serializers.CharField(max_length=7)
+    # El solicitante puede no estar registrado: en ese caso llega
+    # requester_email en vez de loan_user_requester. validate() exige uno u otro.
+    loan_user_requester  = serializers.PrimaryKeyRelatedField(
+        queryset=Users.objects.filter(is_active=True),
+        required=False, allow_null=True,
+    )
+    requester_email      = serializers.EmailField(required=False, allow_blank=True)
+    # Prestador: cualquiera con permiso de crear préstamos, no solo cuentadantes
+    loan_user_lender     = serializers.PrimaryKeyRelatedField(
+        queryset=usuarios_con_permiso('loans.add_loan')
+    )
+    # Ficha de aprendices — opcional
+    loan_students_group  = serializers.CharField(max_length=7, required=False, allow_blank=True)
     loan_justification   = serializers.CharField(max_length=500)
     loan_type            = serializers.ChoiceField(choices=['interno', 'externo'])
     loan_date_out        = serializers.DateField()
@@ -249,6 +283,34 @@ class LoanCreateSerializer(serializers.Serializer):
             raise serializers.ValidationError(
                 {'loan_date_in': 'La fecha de entrega no puede ser anterior a la de salida.'}
             )
+
+        solicitante = data.get('loan_user_requester')
+        correo      = (data.get('requester_email') or '').strip()
+
+        # Exactamente uno de los dos, igual que exige el CheckConstraint del
+        # modelo. Validarlo aquí da un mensaje entendible en vez de un error
+        # de base de datos.
+        if solicitante and correo:
+            raise serializers.ValidationError({
+                'requester_email': 'No envíes correo si el solicitante es un usuario registrado.'
+            })
+        if not solicitante and not correo:
+            raise serializers.ValidationError({
+                'loan_user_requester': 'Indica el solicitante: un usuario registrado o su correo.'
+            })
+
+        # El correo se normaliza para que el mismo solicitante no quede escrito
+        # de dos formas distintas
+        data['requester_email'] = correo.lower()
+
+        # Prestador y solicitante no pueden ser la misma persona: la
+        # confirmación de identidad perdería sentido si una sola persona
+        # confirma los dos lados
+        if solicitante and data['loan_user_lender'].pk == solicitante.pk:
+            raise serializers.ValidationError({
+                'loan_user_lender': 'El prestador y el solicitante no pueden ser la misma persona.'
+            })
+
         return data
 
     @transaction.atomic
@@ -374,13 +436,20 @@ class ReturnItemSerializer(serializers.Serializer):
 class LoanReturnSerializer(serializers.Serializer):
     """
     Registra la devolución de materiales de un préstamo.
-    - returned_by: ID del usuario que devuelve (default: solicitante del préstamo)
+
+    returned_by NO se recibe del cliente: lo pone la vista con el usuario en
+    sesión. El campo significa "quién registró la devolución en el sistema", no
+    "quién trajo los materiales".
+
+    El cambio vino de que el solicitante puede no estar registrado: no habría
+    un id que mandar. Y forzar cualquier otro usuario dejaría el registro
+    diciendo algo falso. Quién pidió el préstamo ya está guardado en el
+    préstamo mismo (loan_user_requester o requester_email), así que no hace
+    falta repetirlo aquí.
+
     - items: lista de ítems con cantidad devuelta y estado
     - return_observations: nota opcional
     """
-    returned_by         = serializers.PrimaryKeyRelatedField(
-        queryset=Users.objects.filter(is_active=True)
-    )
     items               = ReturnItemSerializer(many=True)
     return_observations = serializers.CharField(required=False, allow_blank=True, max_length=500)
 
@@ -418,11 +487,15 @@ class LoanReturnSerializer(serializers.Serializer):
         return data
 
     @transaction.atomic
-    def save(self, loan):
+    def save(self, loan, registrado_por):
+        """
+        @param registrado_por  Usuario en sesión. Queda en returned_by: es
+                               quien registra la devolución en el sistema.
+        """
         from django.utils import timezone
 
         items_data          = self.validated_data['items']
-        returned_by         = self.validated_data['returned_by']
+        returned_by         = registrado_por
         return_observations = self.validated_data.get('return_observations', '')
 
         for item_data in items_data:
@@ -553,32 +626,63 @@ class AcceptReturnSerializer(serializers.Serializer):
 class IdentityTokenCreateSerializer(serializers.Serializer):
     """
     Genera un token de confirmación y lo envía por correo a AMBAS partes:
-    el prestador (cuentadante) y el solicitante (quien recibe los materiales).
+    el prestador y el solicitante (quien recibe los materiales).
     El frontend llama a este endpoint cuando el usuario presiona 'Confirmar identidad'.
+
+    El solicitante puede no estar registrado: en ese caso llega requester_email
+    en vez de requester_id, y el enlace se manda a ese correo.
     """
+    # Prestador: cualquiera con permiso de crear préstamos, no solo cuentadantes
     lender_id = serializers.PrimaryKeyRelatedField(
-        queryset=Users.objects.filter(is_accountant=True, is_active=True)
+        queryset=usuarios_con_permiso('loans.add_loan')
     )
     requester_id = serializers.PrimaryKeyRelatedField(
-        queryset=Users.objects.filter(is_active=True)
+        queryset=Users.objects.filter(is_active=True),
+        required=False, allow_null=True,
     )
+    requester_email = serializers.EmailField(required=False, allow_blank=True)
 
     def validate(self, data):
-        if data['lender_id'] == data['requester_id']:
+        solicitante = data.get('requester_id')
+        correo      = (data.get('requester_email') or '').strip().lower()
+
+        if solicitante and correo:
+            raise serializers.ValidationError(
+                'No envíes correo si el solicitante es un usuario registrado.'
+            )
+        if not solicitante and not correo:
+            raise serializers.ValidationError(
+                'Indica el solicitante: un usuario registrado o su correo.'
+            )
+
+        if solicitante and data['lender_id'] == solicitante:
             raise serializers.ValidationError(
                 'El prestador y el solicitante no pueden ser la misma persona.'
             )
+        # Tampoco vale escribir el correo del propio prestador para saltarse
+        # la regla de arriba
+        if correo and data['lender_id'].email.lower() == correo:
+            raise serializers.ValidationError(
+                'El prestador y el solicitante no pueden ser la misma persona.'
+            )
+
+        data['requester_email'] = correo
         return data
 
     def create(self, validated_data):
         lender    = validated_data['lender_id']
-        requester = validated_data['requester_id']
+        requester = validated_data.get('requester_id')
+        correo    = validated_data.get('requester_email', '')
         # Invalida tokens anteriores del mismo prestador que aún no estén
         # completamente confirmados (le falta al menos una de las dos partes)
         IdentityToken.objects.filter(lender=lender).filter(
             models.Q(lender_confirmed=False) | models.Q(requester_confirmed=False)
         ).delete()
-        token = IdentityToken.objects.create(lender=lender, requester=requester)
+        token = IdentityToken.objects.create(
+            lender=lender,
+            requester=requester,
+            requester_email=correo,
+        )
         return token
 
 

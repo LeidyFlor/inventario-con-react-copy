@@ -34,6 +34,10 @@ function mapLoan(loan) {
         idLoan:               loan.loan_code,
         loanUserRequester:    loan.loan_user_requester,
         requesterId:          loan.loan_user_requester_id ?? null,
+        // Documento del solicitante, o su correo cuando no está registrado
+        requesterDocument:    loan.requester_document ?? "",
+        requesterEmail:       loan.requester_email ?? "",
+        requesterIsRegistered: loan.requester_is_registered ?? true,
         loanUserLender:       loan.loan_user_lender,
         loanStudentsGroup:    loan.loan_students_group,
         loanJustification:    loan.loan_justification,
@@ -100,9 +104,14 @@ export async function createLoan(formData, items, identityToken = null) {
             "Content-Type": "application/json",
         },
         body: JSON.stringify({
-            loan_user_requester: formData.loanUserRequester,
+            // Solicitante: registrado O correo suelto, nunca ambos. El
+            // backend lo exige igual, con un CheckConstraint en la tabla.
+            ...(formData.requesterIsRegistered
+                ? { loan_user_requester: formData.loanUserRequester }
+                : { requester_email: formData.requesterEmail }),
             loan_user_lender:    formData.loanUserLender,
-            loan_students_group: formData.loanStudentsGroup,
+            // Ficha de aprendices — opcional
+            loan_students_group: formData.loanStudentsGroup || "",
             loan_justification:  formData.loanJustification,
             loan_type:           formData.loanType,
             loan_date_out:       formData.loanDateOut,
@@ -144,11 +153,11 @@ export async function updateLoan(id, formData) {
 }
 
 //  POST /api/loans/{id}/return/
-// returnedBy: ID del usuario que devuelve
 // items: [{ loan_item_id, quantity_returned, item_state }]
 // returnObservations: observación opcional
 
-export async function returnLoan(id, { returnedBy, items, returnObservations = "" }) {
+// returned_by ya no se envía: el backend lo toma del usuario en sesión
+export async function returnLoan(id, { items, returnObservations = "" }) {
     const response = await fetch(`${API_URL}/loans/${id}/return/`, {
         method: "POST",
         headers: {
@@ -156,7 +165,6 @@ export async function returnLoan(id, { returnedBy, items, returnObservations = "
             "Content-Type": "application/json",
         },
         body: JSON.stringify({
-            returned_by:         returnedBy,
             items,
             return_observations: returnObservations,
         }),
@@ -225,14 +233,20 @@ export async function verifyToken(tokenUUID) {
 // Genera el token y envía un correo a cada parte (prestador y solicitante).
 // Ambos deben abrir su enlace para que el préstamo pueda crearse.
 
-export async function createIdentityToken(lenderId, requesterId) {
+export async function createIdentityToken(lenderId, requesterId, requesterEmail = "") {
     const response = await fetch(`${API_URL}/loans/identity-token/`, {
         method: "POST",
         headers: {
             Authorization:  `Bearer ${getToken()}`,
             "Content-Type": "application/json",
         },
-        body: JSON.stringify({ lender_id: lenderId, requester_id: requesterId }),
+        // Sin usuario registrado se manda el correo, y el enlace de
+        // confirmación llega ahí en vez de a una cuenta del sistema
+        body: JSON.stringify(
+            requesterId
+                ? { lender_id: lenderId, requester_id: requesterId }
+                : { lender_id: lenderId, requester_email: requesterEmail }
+        ),
     })
     if (!response.ok) {
         const error = await response.json()

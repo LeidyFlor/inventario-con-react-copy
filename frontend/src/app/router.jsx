@@ -96,8 +96,11 @@ const router = createBrowserRouter([
             { path: "loan-list",                element: <RequirePerm perm={PERM.LOAN_LIST}><ListLoanPage /></RequirePerm> },
             { path: "loans/:id/edit",           element: <RequirePerm perm={PERM.LOAN_CHANGE}><LoanEditPage /></RequirePerm> },
             { path: "loans/:id/view",           element: <RequirePerm perm={PERM.LOAN_VIEW}><ViewLoanPage /></RequirePerm> },
-            { path: "loans/:id/return",         element: <RequirePerm perm={PERM.LOAN_CHANGE}><ReturnLoan /></RequirePerm> },
-            { path: "loans/:id/accept-return",  element: <RequirePerm perm={PERM.LOAN_CHANGE}><ApproveReturnLoan /></RequirePerm> },
+            // Las dos cargan el préstamo con getLoan(), que exige view_loan.
+            // Sin él la pantalla se monta y recibe un 403 al cargar.
+            { path: "loans/:id/return",         element: <RequirePerm allOf={[PERM.LOAN_CHANGE, PERM.LOAN_VIEW]}><ReturnLoan /></RequirePerm> },
+            // Aceptar el retorno lo autoriza add_loan en el backend
+            { path: "loans/:id/accept-return",  element: <RequirePerm allOf={[PERM.LOAN_ADD, PERM.LOAN_VIEW]}><ApproveReturnLoan /></RequirePerm> },
 
             // ── Configuración ─────────────────────────────────────────
             // La gestión de permisos es exclusiva del super administrador

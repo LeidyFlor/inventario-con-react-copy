@@ -4,7 +4,6 @@ import { RefreshCcw } from "lucide-react";
 import { Button, IconButton, Input, Select, Textarea, Alert, Modal } from "@/shared";
 import DataTable from "@/shared/components/DataTable";
 import { getLoan, returnLoan } from "../services/loanService";
-import { getUserName } from "../services/selectService";
 import { Ping } from "ldrs/react";
 import "ldrs/react/Ping.css";
 
@@ -45,8 +44,6 @@ export default function ReturnLoan() {
 
     const [loan, setLoan]               = useState(null);
     const [loading, setLoading]         = useState(true);
-    const [userOptions, setUserOptions] = useState([]);
-    const [returnedBy, setReturnedBy]   = useState("");
     /**
      * itemStates shape:
      *   modo simple   → { qty: number|"", state: "bueno"|"dañado"|"perdido" }
@@ -57,11 +54,11 @@ export default function ReturnLoan() {
     const [activeModal, setActiveModal] = useState(null);
 
     useEffect(() => {
-        Promise.all([getLoan(id), getUserName()])
-            .then(([data, users]) => {
+        // Ya no hace falta la lista de usuarios: el campo "devuelto por" lo
+        // resuelve el backend con el usuario en sesión
+        getLoan(id)
+            .then((data) => {
                 setLoan(data);
-                setUserOptions(users);
-                if (data.requesterId) setReturnedBy(String(data.requesterId));
 
                 const init = {};
                 (data.loanMaterials ?? []).forEach(item => {
@@ -143,11 +140,6 @@ export default function ReturnLoan() {
     // ── Submit ─────────────────────────────────────────────────────────────────
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (!returnedBy) {
-            Alert.error("Campo requerido", "Selecciona quién devuelve el préstamo.");
-            return;
-        }
-
         const items = loan.loanMaterials.map(item => {
             const s = itemStates[item.id];
             if (isMultiState(item)) {
@@ -170,7 +162,6 @@ export default function ReturnLoan() {
         try {
             Alert.loading("Registrando devolución...");
             await returnLoan(id, {
-                returnedBy:         Number(returnedBy),
                 items,
                 returnObservations: observations,
             });
@@ -375,13 +366,17 @@ export default function ReturnLoan() {
 
                             {/* Columna izquierda */}
                             <div className="flex flex-col gap-6 place-items-center justify-center">
-                                <Select
-                                    label="Devuelto por"
-                                    name="returnedBy"
-                                    options={userOptions}
-                                    value={returnedBy}
-                                    onChange={e => setReturnedBy(e.target.value)}
-                                />
+                                {/* Ya no se elige: el backend guarda al usuario
+                                    en sesión. El campo significa quién REGISTRA
+                                    la devolución, no quién trajo los materiales,
+                                    que ya está en el préstamo. Se hizo así
+                                    porque el solicitante puede no tener usuario
+                                    y no habría a quién seleccionar. */}
+                                <p className="text-text-muted text-small text-center">
+                                    La devolución quedará registrada a tu nombre.
+                                    Usa las observaciones si necesitas anotar
+                                    quién entregó los materiales.
+                                </p>
                                 <h2 className="font-bold text-body">Selecciona los materiales a devolver</h2>
                                 <div className="flex gap-3 justify-center">
                                     {returnableItems.length > 0 && (

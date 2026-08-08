@@ -27,10 +27,13 @@ export async function getLoanTypes() {
     ]
 }
 
-// Trae solo los cuentadantes (is_accountant=true) para el campo "usuario prestador"
-// Reutiliza el endpoint que ya existe en el módulo de materiales
+// Trae los usuarios que pueden figurar como prestador.
+//
+// Antes se reutilizaba /api/inventory-managers/, que devuelve solo
+// cuentadantes. Prestar dejó de depender de esa bandera: ahora es cualquiera
+// con permiso de crear préstamos, y ese filtro lo hace el backend.
 export async function getLenders() {
-    const response = await fetch(`${API_URL}/inventory-managers/`, {
+    const response = await fetch(`${API_URL}/loans/lenders/`, {
         headers: { Authorization: `Bearer ${getToken()}` },
     })
     if (!response.ok) throw new Error("Error al obtener prestadores")

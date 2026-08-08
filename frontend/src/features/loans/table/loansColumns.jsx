@@ -18,6 +18,25 @@ function LoanCodeCell({ loan }) {
     );
 }
 
+/**
+ * Recorta con puntos suspensivos y deja el texto completo en el tooltip.
+ *
+ * Distinto de TruncatedCell: ese cambia el texto por un enlace "Ver info." con
+ * modal, que va bien para la justificación pero es incómodo para un nombre o
+ * un correo, donde casi siempre alcanza con leer el principio.
+ *
+ * El ancho va en el <span> y no en el <td> porque la tabla usa min-w-max para
+ * poder desbordar; un max-w en la celda lo pelearía.
+ */
+function EllipsisCell({ value, className = "max-w-40" }) {
+    if (!value) return <span>—</span>;
+    return (
+        <span className={`block truncate ${className}`} title={value}>
+            {value}
+        </span>
+    );
+}
+
 function TruncatedCell({ value, maxChars = 30 }) {
     const [open, setOpen] = useState(false);
 
@@ -64,19 +83,19 @@ export const loansColumns = [
     },
 
     // Columna fecha entrada — convierte ISO → DD/MM/YYYY
-    {
-        accessorKey: "loanDateIn",
-        header: "Fecha entrada",
-        cell: ({ getValue }) => {
-            const value = getValue();
-            if (!value) return "";
-            return new Date(value).toLocaleDateString("es-CO", {
-                day:   "2-digit",
-                month: "2-digit",
-                year:  "numeric",
-            });
-        },
-    },
+    // {
+    //     accessorKey: "loanDateIn",
+    //     header: "Fecha entrada",
+    //     cell: ({ getValue }) => {
+    //         const value = getValue();
+    //         if (!value) return "";
+    //         return new Date(value).toLocaleDateString("es-CO", {
+    //             day:   "2-digit",
+    //             month: "2-digit",
+    //             year:  "numeric",
+    //         });
+    //     },
+    // },
 
     // Columna fecha salida — convierte ISO → DD/MM/YYYY
     {
@@ -93,10 +112,21 @@ export const loansColumns = [
         },
     },
 
-    // Columna usuario solicitante
+    // Columna usuario solicitante — puede traer un nombre o un correo largo
+    // cuando la persona no está registrada, así que se recorta
     {
         accessorKey: "loanUserRequester",
         header: "Usuario solicitante",
+        cell: ({ getValue }) => <EllipsisCell value={getValue()} />,
+    },
+
+    // Con qué se identifica al solicitante: su documento si está registrado,
+    // o el correo que se escribió al crear el préstamo si no lo está. El
+    // backend ya resuelve cuál de los dos mandar en requesterDocument.
+    {
+        accessorKey: "requesterDocument",
+        header: "Documento / Correo",
+        cell: ({ getValue }) => <EllipsisCell value={getValue()} />,
     },
 
     // Columna justificación — usa TruncatedCell para no romper el layout
@@ -107,10 +137,10 @@ export const loansColumns = [
     },
 
     // Columna usuario prestador
-    {
-        accessorKey: "loanUserLender",
-        header: "Usuario prestador",
-    },
+    // {
+    //     accessorKey: "loanUserLender",
+    //     header: "Usuario prestador",
+    // },
 
     // Columna estado del préstamo
     {

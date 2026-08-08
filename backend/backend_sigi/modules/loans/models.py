@@ -15,20 +15,26 @@ class IdentityToken(models.Model):
     Se genera al hacer clic en 'Confirmar identidad' y se invalida al crear el préstamo.
     """
     token      = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
+    # Sin limit_choices_to: prestar ya no es exclusivo de los cuentadantes.
+    # Puede prestar cualquier usuario con permiso de crear préstamos, y eso se
+    # valida en el serializer, no en el modelo.
     lender     = models.ForeignKey(
         Users,
         on_delete=models.CASCADE,
-        limit_choices_to={'is_accountant': True},
         related_name='identity_tokens',
     )
-    # Persona que recibe los materiales. Nullable para no romper los tokens
-    # que ya existían antes de agregar la doble confirmación.
+    # Persona que recibe los materiales. Nullable por dos razones: los tokens
+    # anteriores a la doble confirmación, y los solicitantes que no están
+    # registrados en el sistema, que se identifican con requester_email.
     requester  = models.ForeignKey(
         Users,
         on_delete=models.CASCADE,
         null=True, blank=True,
         related_name='identity_tokens_as_requester',
     )
+    # Correo del solicitante cuando NO es un usuario del sistema. Es a donde
+    # se manda el enlace de confirmación en ese caso.
+    requester_email = models.EmailField(blank=True, default='')
 
     # Confirmación individual de cada parte
     lender_confirmed    = models.BooleanField(default=False)
@@ -37,12 +43,24 @@ class IdentityToken(models.Model):
     created_at   = models.DateTimeField(auto_now_add=True)
 
     @property
+    def correo_solicitante(self):
+        """
+        A dónde mandarle el enlace al solicitante.
+
+        Si está registrado se usa su correo de usuario; si no, el que se
+        escribió en el formulario.
+        """
+        return self.requester.email if self.requester_id else self.requester_email
+
+    @property
     def is_confirmed(self):
         """
         El token se considera confirmado solo cuando ambas partes aceptaron.
-        Si no hay solicitante (tokens antiguos), basta con el prestador.
+
+        Si no hay ni solicitante registrado ni correo escrito (tokens antiguos,
+        anteriores a la doble confirmación), basta con el prestador.
         """
-        if self.requester_id is None:
+        if self.requester_id is None and not self.requester_email:
             return self.lender_confirmed
         return self.lender_confirmed and self.requester_confirmed
 
@@ -71,19 +89,30 @@ class Loan(models.Model):
     # Código visible (AAA000000001 …) — se genera automáticamente en save()
     loan_code = models.CharField(max_length=12, unique=True, editable=False)
 
+    # Solicitante registrado en el sistema. Nullable porque también se le puede
+    # prestar a alguien que no tiene usuario: en ese caso va requester_email.
+    # Exactamente uno de los dos debe estar lleno (ver CheckConstraint abajo).
     loan_user_requester = models.ForeignKey(
         Users,
         on_delete=models.PROTECT,
+        null=True, blank=True,
         related_name='loans_as_requester',
     )
+    # Correo del solicitante cuando NO está registrado. Es lo único que se le
+    # pide, y es a donde llega el enlace de confirmación de identidad.
+    requester_email = models.EmailField(blank=True, default='')
+
+    # Sin limit_choices_to: prestar dejó de ser exclusivo de los cuentadantes.
+    # Ahora puede hacerlo cualquier usuario con permiso de crear préstamos, y
+    # eso se valida en el serializer porque depende de permisos, no de un campo.
     loan_user_lender = models.ForeignKey(
         Users,
         on_delete=models.PROTECT,
         related_name='loans_as_lender',
-        limit_choices_to={'is_accountant': True},
     )
 
-    loan_students_group = models.CharField(max_length=7)
+    # Ficha de aprendices — opcional: hay préstamos que no son para un grupo
+    loan_students_group = models.CharField(max_length=7, blank=True, default='')
     loan_justification  = models.TextField()
     loan_type           = models.CharField(max_length=10, choices=LOAN_TYPES)
     loan_date_out       = models.DateField()
@@ -163,6 +192,18 @@ class Loan(models.Model):
             chars[i] = 'A'
         return ''.join(chars)
 
+    @property
+    def requester_display(self):
+        """
+        Cómo identificar al solicitante en las tablas y reportes.
+
+        Si está registrado, su número de documento; si no, el correo que se
+        escribió al crear el préstamo.
+        """
+        if self.loan_user_requester_id:
+            return self.loan_user_requester.user_document
+        return self.requester_email
+
     class Meta:
         db_table = 'loan'
         verbose_name = 'préstamo'
@@ -170,6 +211,18 @@ class Loan(models.Model):
         permissions = [
             ('listar_loan',          'Listar préstamos'),
             ('generar_reporte_loan', 'Generar reporte préstamos'),
+        ]
+        constraints = [
+            # El solicitante es un usuario registrado O un correo suelto, nunca
+            # ambos ni ninguno. Mismo patrón de "exactamente uno" que usan
+            # LoanItem y TechnicalSheetFile.
+            models.CheckConstraint(
+                name='loan_requester_registrado_o_correo',
+                condition=(
+                    models.Q(loan_user_requester__isnull=False, requester_email='') |
+                    models.Q(loan_user_requester__isnull=True) & ~models.Q(requester_email='')
+                ),
+            ),
         ]
 
     def __str__(self):

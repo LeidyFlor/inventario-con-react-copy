@@ -3,7 +3,8 @@ from django.shortcuts import redirect
 from django.core.mail import send_mail
 from django.utils.html import strip_tags
 from backend_sigi.utils.audit import log_action
-from backend_sigi.utils.perm_check import deny_if_no_perm
+from backend_sigi.utils.perm_check import deny_if_no_perm, usuarios_con_permiso
+from backend_sigi.modules.users.serializers import UserSerializer
 from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.decorators import action
@@ -159,22 +160,22 @@ class LoanViewSet(viewsets.ViewSet):
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-        loan = serializer.save(loan=loan)
+        loan = serializer.save(loan=loan, registrado_por=request.user)
         log_action(request.user, "DEVOLVER", "Préstamo", loan.loan_code)
         return Response(LoanDetailSerializer(loan).data)
 
     # ──────────────────────────────────────────────────────────────
     # ACCEPT RETURN  POST /api/loans/{id}/accept-return/
-    # Solo cuentadantes activos pueden aceptar la devolución
+    # Puede aceptarla cualquiera que pueda crear préstamos
     # ──────────────────────────────────────────────────────────────
     @action(detail=True, methods=['post'], url_path='accept-return')
     def accept_return(self, request, pk=None):
-        # Verificar que el usuario logueado sea cuentadante activo
-        if not (request.user.is_accountant and request.user.is_active):
-            return Response(
-                {'error': 'Solo un cuentadante activo puede aceptar la devolución.'},
-                status=status.HTTP_403_FORBIDDEN,
-            )
+        # Antes se exigía is_accountant. Se cambió al permiso de crear
+        # préstamos: prestar dejó de ser exclusivo de los cuentadantes, y si un
+        # prestador que no lo es no pudiera aceptar la devolución de su propio
+        # préstamo, el flujo quedaría bloqueado a la mitad.
+        deny = deny_if_no_perm(request, 'loans.add_loan')
+        if deny: return deny
 
         try:
             loan = Loan.objects.select_related(
@@ -261,6 +262,26 @@ class LoanViewSet(viewsets.ViewSet):
     # SEARCH BY CODE  GET /api/loans/search/?code=AAA000000008
     # Devuelve el id del préstamo dado su loan_code
     # ──────────────────────────────────────────────────────────────
+    @action(detail=False, methods=['get'], url_path='lenders')
+    def lenders(self, request):
+        """
+        GET /api/loans/lenders/ — usuarios que pueden figurar como prestador.
+
+        Antes el select se llenaba con /api/inventory-managers/, que devuelve
+        solo cuentadantes. Ahora prestar depende del permiso de crear
+        préstamos, no de esa bandera, así que la lista sale de ahí.
+
+        Se pide view_loan y no add_loan: quien edita o consulta un préstamo
+        también necesita resolver el nombre del prestador.
+        """
+        deny = deny_if_no_perm(request, 'loans.view_loan')
+        if deny: return deny
+
+        # prefetch_related por lo mismo que en la lista de usuarios:
+        # UserSerializer.get_groups consulta los grupos de cada uno
+        prestadores = usuarios_con_permiso('loans.add_loan').prefetch_related('groups')
+        return Response(UserSerializer(prestadores, many=True).data)
+
     @action(detail=False, methods=['get'], url_path='search')
     def search_by_code(self, request):
         deny = deny_if_no_perm(request, 'loans.view_loan')
@@ -322,23 +343,40 @@ class LoanViewSet(viewsets.ViewSet):
         lender_url    = f"{base_url}/lender/"
         requester_url = f"{base_url}/requester/"
 
+        # El solicitante puede no estar registrado: en ese caso no hay objeto
+        # Users y el enlace va al correo que se escribió en el formulario. Por
+        # eso se arma una lista de (nombre, correo, url, texto) en vez de
+        # recorrer usuarios: token_obj.requester sería None y reventaría al
+        # leerle .email.
+        lender = token_obj.lender
+        destinatarios = [
+            (lender.first_name, lender.email, lender_url, "entregarás"),
+        ]
+        if token_obj.requester_id:
+            solicitante = token_obj.requester
+            destinatarios.append(
+                (solicitante.first_name, solicitante.email, requester_url, "recibirás")
+            )
+        else:
+            # Sin usuario no se conoce el nombre; el saludo queda genérico
+            destinatarios.append(
+                ("", token_obj.requester_email, requester_url, "recibirás")
+            )
+
         errores = []
-        for persona, url, rol_texto in (
-            (token_obj.lender,    lender_url,    "entregarás"),
-            (token_obj.requester, requester_url, "recibirás"),
-        ):
-            html_body = self._identity_email_html(persona, url, rol_texto)
+        for nombre, correo, url, rol_texto in destinatarios:
+            html_body = self._identity_email_html(nombre, url, rol_texto)
             try:
                 send_mail(
                     subject="SIGI - Confirmación de identidad para préstamo",
                     message=strip_tags(html_body),
                     from_email=settings.DEFAULT_FROM_EMAIL,
-                    recipient_list=[persona.email],
+                    recipient_list=[correo],
                     html_message=html_body,
                     fail_silently=False,
                 )
             except Exception as e:
-                errores.append(f"{persona.email}: {e}")
+                errores.append(f"{correo}: {e}")
                 print(f"Error enviando correo de confirmación de identidad: {e}")
 
         return Response(
@@ -354,8 +392,14 @@ class LoanViewSet(viewsets.ViewSet):
         )
 
     @staticmethod
-    def _identity_email_html(persona, confirm_url, rol_texto):
-        """Arma el correo de confirmación de identidad para una de las dos partes."""
+    def _identity_email_html(nombre, confirm_url, rol_texto):
+        """
+        Arma el correo de confirmación de identidad para una de las dos partes.
+
+        Recibe el nombre suelto y no el usuario, porque el solicitante puede no
+        estar registrado y en ese caso no hay objeto Users del cual sacarlo.
+        """
+        saludo = f"Hola {nombre}" if nombre else "Hola"
         return f"""
         <!DOCTYPE html>
         <html lang="es">
@@ -377,7 +421,7 @@ class LoanViewSet(viewsets.ViewSet):
                 <div class="header"><h1>SIGI</h1></div>
                 <div class="content">
                     <h2 style="margin-top:0; color:#007A33;">Confirmación de identidad</h2>
-                    <p>Hola {persona.first_name}, se está registrando un préstamo en el que {rol_texto} los materiales.</p>
+                    <p>{saludo}, se está registrando un préstamo en el que {rol_texto} los materiales.</p>
                     <p>Haz clic en el botón para confirmar que eres tú:</p>
                     <a href="{confirm_url}" class="btn">Confirmar identidad</a>
                     <p style="font-size:0.875rem; color:#878787;">Si no puedes hacer clic en el botón, copia y pega este enlace en tu navegador:<br>{confirm_url}</p>

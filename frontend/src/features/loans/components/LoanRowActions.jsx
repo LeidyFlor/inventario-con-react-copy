@@ -18,6 +18,16 @@ export default function LoanRowActions({ loan, onRemove }) {
   const canView   = hasPerm(PERM.LOAN_VIEW);
   const canChange = hasPerm(PERM.LOAN_CHANGE);
 
+  // Las dos pantallas cargan el préstamo con getLoan(), que en el backend
+  // exige view_loan. Sin él entrarían y se quedarían en blanco con un 403,
+  // así que el permiso de ver se suma al de la acción.
+  //
+  // Devolver modifica el préstamo y el stock → change_loan.
+  // Aceptar el retorno lo autoriza add_loan: prestar dejó de ser exclusivo de
+  // los cuentadantes y quien presta debe poder cerrar su propio préstamo.
+  const canReturn = canChange && canView;
+  const canAccept = hasPerm(PERM.LOAN_ADD) && canView;
+
   // Un préstamo finalizado ya no se puede devolver: el formulario de devolución
   // no aporta nada nuevo (las cantidades y estados devueltos se consultan en
   // "Ver préstamo") y el backend rechaza la petición de todas formas.
@@ -95,14 +105,14 @@ export default function LoanRowActions({ loan, onRemove }) {
                           </Link>
                       </DropdownItem>
                       )}
-                      {canChange && !finalizado && (
+                      {canReturn && !finalizado && (
                       <DropdownItem>
                           <Link to={`/dashboard/loans/${loan.id}/return`} className="block w-full">
                               Devolver préstamo
                           </Link>
                       </DropdownItem>
                       )}
-                      {canChange && (
+                      {canAccept && (
                       <DropdownItem>
                           <Link to={`/dashboard/loans/${loan.id}/accept-return`} className="block w-full">
                               Aceptar retorno de préstamo

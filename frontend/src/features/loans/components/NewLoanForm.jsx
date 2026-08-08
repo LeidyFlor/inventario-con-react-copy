@@ -1,4 +1,4 @@
-import { Input, Button, IconButton, Select, Textarea } from "@/shared"
+import { Input, Button, IconButton, Select, Textarea, Checkbox } from "@/shared"
 import React, { useState, useEffect } from "react";
 import { getUserName, getLoanTypes, getLenders } from "@/features/loans/services/selectService.js";
 import { loanSchema } from "../schemas/loanSchema";
@@ -25,7 +25,11 @@ export default function NewLoanForm() {
     const navigate = useNavigate();
 
     const [formData, setFormData] = useState({
+        // Marcado por defecto: el caso normal es que el solicitante ya
+        // tenga usuario en el sistema
+        requesterIsRegistered: true,
         loanUserRequester: "",
+        requesterEmail:    "",
         loanUserLender:    "",
         loanStudentsGroup: "",
         loanDateOut:       "",
@@ -70,18 +74,43 @@ export default function NewLoanForm() {
         const { name, value } = e.target;
         setFormData((prev) => ({ ...prev, [name]: value }));
         // Si cambia el prestador o el solicitante, se reinicia la confirmación
-        if (name === "loanUserLender" || name === "loanUserRequester") {
+        if (["loanUserLender", "loanUserRequester", "requesterEmail"].includes(name)) {
             resetIdentity();
         }
     };
 
+    // Cambiar entre "registrado" y "no registrado" limpia el campo que se
+    // deja de usar, para no enviar los dos y que el backend lo rechace
+    const handleRegisteredToggle = () => {
+        setFormData((prev) => ({
+            ...prev,
+            requesterIsRegistered: !prev.requesterIsRegistered,
+            loanUserRequester: "",
+            requesterEmail: "",
+        }));
+        setErrors((prev) => ({
+            ...prev,
+            loanUserRequester: undefined,
+            requesterEmail: undefined,
+        }));
+        resetIdentity();
+    };
+
     // Genera el token y envía un correo a cada parte con su propio enlace
     const handleConfirmIdentity = async () => {
-        if (!formData.loanUserLender || !formData.loanUserRequester) {
-            setIdentityError("Selecciona primero el usuario solicitante y el prestador.");
+        // El solicitante puede venir de la lista o escrito como correo
+        const solicitanteListo = formData.requesterIsRegistered
+            ? Boolean(formData.loanUserRequester)
+            : Boolean(formData.requesterEmail.trim());
+
+        if (!formData.loanUserLender || !solicitanteListo) {
+            setIdentityError("Indica primero el solicitante y el prestador.");
             return;
         }
-        if (formData.loanUserLender === formData.loanUserRequester) {
+        if (
+            formData.requesterIsRegistered &&
+            formData.loanUserLender === formData.loanUserRequester
+        ) {
             setIdentityError("El prestador y el solicitante no pueden ser la misma persona.");
             return;
         }
@@ -90,7 +119,8 @@ export default function NewLoanForm() {
         try {
             const res = await createIdentityToken(
                 formData.loanUserLender,
-                formData.loanUserRequester,
+                formData.requesterIsRegistered ? formData.loanUserRequester : null,
+                formData.requesterEmail.trim(),
             );
             setIdentityToken(res.token);
             setIdentityConfirmed(false);
@@ -201,14 +231,39 @@ export default function NewLoanForm() {
 
                         {/*  Usuario solicitante */}
                         <div className="flex flex-col gap-4">
-                            <h2 className="font-bold text-body">2. Selecciona usuario solicitante <span className="text-error">*</span></h2>
-                            <Select
-                                name="loanUserRequester"
-                                options={userName}
-                                value={formData.loanUserRequester}
-                                onChange={handleChange}
-                                error={errors.loanUserRequester}
+                            <h2 className="font-bold text-body">2. Usuario solicitante <span className="text-error">*</span></h2>
+
+                            {/* Marcada por defecto. Al desmarcarla, el
+                                solicitante deja de elegirse de la lista y se
+                                escribe su correo, que es a donde llegará el
+                                enlace de confirmación de identidad. */}
+                            <Checkbox
+                                id="requesterIsRegistered"
+                                name="requesterIsRegistered"
+                                label="El solicitante está registrado en el sistema"
+                                checked={formData.requesterIsRegistered}
+                                onChange={handleRegisteredToggle}
                             />
+
+                            {formData.requesterIsRegistered ? (
+                                <Select
+                                    name="loanUserRequester"
+                                    options={userName}
+                                    value={formData.loanUserRequester}
+                                    onChange={handleChange}
+                                    error={errors.loanUserRequester}
+                                />
+                            ) : (
+                                <Input
+                                    name="requesterEmail"
+                                    type="email"
+                                    label="Correo del solicitante"
+                                    placeholder="correo@ejemplo.com"
+                                    value={formData.requesterEmail}
+                                    onChange={handleChange}
+                                    error={errors.requesterEmail}
+                                />
+                            )}
                         </div>
 
                         {/*  Usuario prestador + confirmación de identidad */}
@@ -233,7 +288,9 @@ export default function NewLoanForm() {
                                         disabled={
                                             identityLoading ||
                                             !formData.loanUserLender ||
-                                            !formData.loanUserRequester
+                                            (formData.requesterIsRegistered
+                                                ? !formData.loanUserRequester
+                                                : !formData.requesterEmail.trim())
                                         }
                                     >
                                         {identityLoading ? "Enviando..." : "Confirmar identidad"}
@@ -301,7 +358,6 @@ export default function NewLoanForm() {
                                 value={formData.loanStudentsGroup}
                                 onChange={handleChange}
                                 error={errors.loanStudentsGroup}
-                                required
                             />
                             <Textarea
                                 placeholder="Justificación de uso"

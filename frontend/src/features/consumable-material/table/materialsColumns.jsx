@@ -9,6 +9,27 @@ import Swal from "sweetalert2"
 import { usePermissions } from "@/features/permissions/context/PermissionsContext"
 import { PERM } from "@/features/permissions/config/perms"
 
+/**
+ * Muestra solo el primer cuentadante y, si hay más, unos puntos suspensivos
+ * tras la coma. El listado completo queda en el tooltip.
+ *
+ * El backend manda inventory_manager_name como los nombres unidos por ", "
+ * (ver CuentadantesMixin). Con tres o cuatro cuentadantes ese texto rompía el
+ * ancho de la tabla.
+ */
+function CuentadantesCell({ value }) {
+    if (!value) return <span>—</span>;
+
+    const nombres = String(value).split(", ").filter(Boolean);
+    if (nombres.length <= 1) return <span>{value}</span>;
+
+    return (
+        <span title={value} className="whitespace-nowrap">
+            {nombres[0]}, ...
+        </span>
+    );
+}
+
 // Componente separado para poder usar el hook useNavigate
 // (los hooks no se pueden llamar dentro de la función cell directamente)
 function MaterialNameCell({ material }) {
@@ -51,10 +72,11 @@ export const getMaterialsColumns = (setMaterials) => [
         header: "Marca",
     },
 
-    // Cuentadante
+    // Cuentadante — solo el primero, con "..." si hay más de uno
     {
         accessorKey: "inventory_manager_name",
         header: "Cuentadante",
+        cell: ({ getValue }) => <CuentadantesCell value={getValue()} />,
     },
 
     // Cantidad disponible (calculada en el backend)

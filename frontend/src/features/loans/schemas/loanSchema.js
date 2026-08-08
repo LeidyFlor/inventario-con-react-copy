@@ -25,21 +25,32 @@ const datePreprocess = (mensajeError) =>
 
 export const loanSchema = z
   .object({
-    loanUserRequester: z
-      .string()
-      .min(1, "Debe seleccionar usuario solicitante"),
+    // Marcado por defecto. Al desmarcarlo, el solicitante deja de elegirse de
+    // la lista y se escribe su correo.
+    requesterIsRegistered: z.boolean(),
 
+    // Solo aplica cuando el solicitante SÍ está registrado
+    loanUserRequester: z.string().optional().or(z.literal("")),
 
+    // Solo aplica cuando NO está registrado
+    requesterEmail: z.string().optional().or(z.literal("")),
+
+    // Prestador: ya no se limita a cuentadantes, es cualquiera con permiso
+    // de crear préstamos
     loanUserLender: z
       .string()
-      .min(1, "Debe de seleccionar un cuentadante"),
+      .min(1, "Debe de seleccionar un prestador"),
 
+    // Ficha de aprendices — opcional. Si se escribe, tiene que ser válida.
     loanStudentsGroup: z
       .string()
       .trim()
-      .min(7, "Un número de grupo válido debe de tener 7 números")
-      .max(7, "Un número de grupo válido debe de tener 7 números")
-      .regex(/^[0-9]+$/, "Debe contener solo números"),
+      .refine(
+        (val) => val === "" || (val.length === 7 && /^[0-9]+$/.test(val)),
+        "Un número de grupo válido debe de tener 7 números",
+      )
+      .optional()
+      .or(z.literal("")),
 
     loanJustification: z
         .string()
@@ -71,4 +82,36 @@ export const loanSchema = z
       message: "La fecha de entrega no puede ser anterior a la fecha de salida",
       path: ["loanDateIn"],
     },
-  );
+  )
+  // El solicitante se exige en uno u otro campo según la casilla. No se puede
+  // hacer con .min() en cada uno porque solo uno de los dos está en pantalla.
+  .superRefine((data, ctx) => {
+    if (data.requesterIsRegistered) {
+      if (!data.loanUserRequester) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Debe seleccionar usuario solicitante",
+          path: ["loanUserRequester"],
+        });
+      }
+      return;
+    }
+
+    const correo = (data.requesterEmail ?? "").trim();
+    if (!correo) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Ingrese el correo del solicitante",
+        path: ["requesterEmail"],
+      });
+      return;
+    }
+    // Mismo criterio que EmailField de Django, que es quien valida al final
+    if (!z.string().email().safeParse(correo).success) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Ingrese un correo electrónico válido",
+        path: ["requesterEmail"],
+      });
+    }
+  });

@@ -120,8 +120,16 @@ export default function DataTable({ data, columns, compact = false }) {
 
 
             {/* ================== TABLA ================== */}
-            <div className="overflow-x-auto md:overflow-x-hidden border border-background-dropdown rounded-2xl">
-                <table className="w-full">
+            {/* overflow-x-auto SIN el md:overflow-x-hidden que tenía antes.
+                Ese hidden recortaba la tabla en tablet y escritorio: si las
+                columnas no cabían, las últimas (entre ellas la de acciones)
+                quedaban cortadas y sin forma de llegar a ellas.
+
+                min-w-max en la tabla es lo que hace que el scroll exista: sin
+                él, w-full la obliga a caber en el contenedor y el navegador
+                aprieta las columnas en vez de desbordar. */}
+            <div className="overflow-x-auto border border-background-dropdown rounded-2xl">
+                <table className="w-full min-w-max">
 
 
                     {/* ================== CABECERA ================== */}
