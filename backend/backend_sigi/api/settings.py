@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     'backend_sigi.modules.inventory_name',
     'backend_sigi.modules.category',
     'backend_sigi.modules.quotation',
+    'backend_sigi.modules.audit',
     'corsheaders',
 ]
 AUTH_USER_MODEL = 'users.Users' #Para usar el models de users propio
@@ -231,39 +232,12 @@ EMAIL_HOST_PASSWORD = os.getenv('BREVO_SMTP_KEY', '')
 DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'sigi.sena@gmail.com')
 
 # ──────────────────────────────────────────────────────────────
-# Auditoría — logs de acciones de usuarios
-# Archivo diario en backend/logs/audit.log
-# Rotación automática a medianoche; se conservan 31 días
+# Auditoría — registro de acciones de usuarios
+#
+# Vive en la tabla audit_log (ver modules/audit/models.py). Antes era un
+# archivo rotado a diario en backend_sigi/logs/, pero se perdía en los
+# despliegues y la rotación chocaba entre los dos procesos que levanta el
+# autoreloader en Windows.
+#
+# La purga de registros viejos la hace el comando purgar_auditoria.
 # ──────────────────────────────────────────────────────────────
-LOGS_DIR = BASE_DIR / 'logs'
-LOGS_DIR.mkdir(exist_ok=True)
-
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'formatters': {
-        'audit': {
-            'format': '{asctime} | {levelname} | {message}',
-            'style': '{',
-            'datefmt': '%Y-%m-%d %H:%M:%S',
-        },
-    },
-    'handlers': {
-        'audit_file': {
-            'class': 'logging.handlers.TimedRotatingFileHandler',
-            'filename': str(LOGS_DIR / 'audit.log'),
-            'when': 'midnight',
-            'interval': 1,
-            'backupCount': 31,
-            'formatter': 'audit',
-            'encoding': 'utf-8',
-        },
-    },
-    'loggers': {
-        'audit': {
-            'handlers': ['audit_file'],
-            'level': 'INFO',
-            'propagate': False,
-        },
-    },
-}

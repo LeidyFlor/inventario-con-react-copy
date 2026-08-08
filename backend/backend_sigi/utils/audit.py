@@ -1,19 +1,21 @@
 """
-Helper de auditoría — registra acciones de usuarios en el archivo de log diario.
+Helper de auditoría — registra acciones de usuarios en la tabla audit_log.
+
 Uso:
     from backend_sigi.utils.audit import log_action
     log_action(request.user, "CREAR", "Préstamo", "AAA000000015")
 
+Antes escribía en un archivo de texto rotado a diario. Se movió a la base de
+datos (ver modules/audit/models.py); la firma se mantuvo igual a propósito,
+para no tocar las decenas de llamadas repartidas por las views.
+
 El superusuario creado por consola nunca genera registros.
 """
-import logging
-
-_logger = logging.getLogger('audit')
 
 
 def log_action(user, action: str, module: str, objeto: str):
     """
-    Escribe una línea de auditoría.
+    Guarda una fila de auditoría.
 
     Args:
         user:    instancia del usuario que realiza la acción (request.user)
@@ -26,6 +28,21 @@ def log_action(user, action: str, module: str, objeto: str):
     if user.is_superuser:
         return  # El superadmin no deja registros
 
-    _logger.info(
-        f"usuario={user.email} | accion={action} | modulo={module} | objeto={objeto}"
-    )
+    # Import diferido: este módulo lo importan las views, y a su vez los
+    # modelos importan users. Traerlo arriba crearía un ciclo al arrancar.
+    from backend_sigi.modules.audit.models import AuditLog
+
+    try:
+        AuditLog.objects.create(
+            user=user,
+            user_email=user.email,
+            action=action,
+            module=module,
+            objeto=str(objeto)[:255],
+        )
+    except Exception as e:
+        # La auditoría NUNCA debe tumbar la operación real. Si falla el insert,
+        # se deja constancia en la consola y la petición sigue su curso: es
+        # preferible perder una línea de log a que no se pueda crear un
+        # préstamo.
+        print(f"Error registrando auditoría ({action} {module}): {e}")
