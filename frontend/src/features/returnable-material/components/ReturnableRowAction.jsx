@@ -12,14 +12,14 @@ import {
     DropdownItem
 } from "@/shared"
 import { usePermissions } from "@/features/permissions/context/PermissionsContext";
-import { PERM } from "@/features/permissions/config/perms";
+import { PERM, SCREEN_PERMS } from "@/features/permissions/config/perms";
 
 
 // Componente que renderiza las acciones de cada fila de usuario
 // Recibe como prop el objeto user
 export default function ReturnableRowActions({ returnable }) {
 
-    const { hasPerm } = usePermissions();
+    const { hasPerm, hasAllPerms } = usePermissions();
 
     // Hook que permite redirigir a otra ruta desde código
     const navigate = useNavigate();
@@ -48,7 +48,7 @@ export default function ReturnableRowActions({ returnable }) {
             <div className="flex gap-2">
 
                 {/* Botón editar — requiere permiso de actualizar material devolutivo */}
-                {hasPerm(PERM.RETURNABLE_CHANGE) && (
+                {hasAllPerms(SCREEN_PERMS.RETURNABLE_EDIT) && (
                 <IconButtonReal
                     onClick={handleEdit} // Ejecuta la navegación a la página de edición
                     variant="outline"
@@ -58,7 +58,7 @@ export default function ReturnableRowActions({ returnable }) {
                 )}
 
                 {/* Botón Visualizar — requiere permiso de ver material devolutivo */}
-                {hasPerm(PERM.RETURNABLE_VIEW) && (
+                {hasAllPerms(SCREEN_PERMS.RETURNABLE_VIEW) && (
                 <IconButtonReal
                     onClick={handleView} // Ejecuta la navegación a la página de visualizar
                     variant="outline"

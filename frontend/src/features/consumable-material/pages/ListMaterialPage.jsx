@@ -9,12 +9,12 @@ import { useMaterials } from "../hooks/useMaterials"
 import { Ping } from 'ldrs/react'
 import 'ldrs/react/Ping.css'
 import { usePermissions } from "@/features/permissions/context/PermissionsContext"
-import { PERM } from "@/features/permissions/config/perms"
+import { PERM, SCREEN_PERMS } from "@/features/permissions/config/perms"
 
 export default function ListMaterialPage() {
     const [isReportModalOpen, setIsReportModalOpen] = useState(false)
     const { materials, setMaterials, loading } = useMaterials()
-    const { hasPerm } = usePermissions()
+    const { hasPerm, hasAllPerms } = usePermissions()
 
   return (      
     
@@ -44,7 +44,7 @@ export default function ListMaterialPage() {
                     )}
 
                 {/* Crear — requiere permiso de crear material de consumo */}
-                {hasPerm(PERM.CONSUMABLE_ADD) && (
+                {hasAllPerms(SCREEN_PERMS.CONSUMABLE_CREATE) && (
                 <Link to="/dashboard/consumable-material-create">
                     <Button
                         variant="primary"

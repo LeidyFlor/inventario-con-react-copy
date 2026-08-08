@@ -91,6 +91,85 @@ export const PERM = {
 }
 
 /**
+ * Permisos que necesita CADA PANTALLA para funcionar completa.
+ *
+ * No es lo mismo que el permiso de la acción. Una pantalla suele consultar
+ * varios recursos al montarse, y si le falta el permiso de alguno el backend
+ * responde 403, el interceptor global muestra "Acceso denegado" y devuelve al
+ * inicio. Desde fuera parece un error del sistema.
+ *
+ * Por eso se listan aquí, en un solo lugar, y se usan en DOS sitios:
+ *
+ *   - el guard de la ruta (RequirePerm allOf), para quien escribe la URL
+ *   - el botón o el ítem de menú que lleva a la pantalla, para que ni siquiera
+ *     aparezca si no se va a poder usar
+ *
+ * Tenerlos juntos evita que se desincronicen, que es justo lo que hacía que un
+ * botón visible terminara en "Acceso denegado".
+ *
+ * Al agregar una petición nueva a una pantalla, hay que sumar su permiso aquí.
+ */
+export const SCREEN_PERMS = {
+    // Carga usuarios (select de solicitante), prestadores y los dos catálogos
+    // de material para poder elegir qué se presta
+    LOAN_CREATE: [
+        PERM.LOAN_ADD,
+        PERM.LOAN_VIEW,      // /api/loans/lenders/
+        PERM.USER_LIST,      // select de solicitante
+        PERM.RETURNABLE_LIST,
+        PERM.CONSUMABLE_LIST,
+    ],
+    // Carga el préstamo y el select de usuarios
+    LOAN_EDIT: [PERM.LOAN_CHANGE, PERM.LOAN_VIEW, PERM.USER_LIST],
+    // Las dos pantallas cargan el préstamo con getLoan()
+    LOAN_RETURN: [PERM.LOAN_CHANGE, PERM.LOAN_VIEW],
+    LOAN_ACCEPT: [PERM.LOAN_ADD, PERM.LOAN_VIEW],
+
+    // Los formularios de material cargan marca, inventario, categoría y
+    // cotizaciones para sus selects
+    CONSUMABLE_CREATE: [
+        PERM.CONSUMABLE_ADD,
+        PERM.BRAND_LIST,
+        PERM.INVENTORY_NAME_LIST,
+        PERM.CATEGORY_LIST,
+        PERM.QUOTATION_LIST,
+    ],
+    CONSUMABLE_EDIT: [
+        PERM.CONSUMABLE_CHANGE,
+        PERM.CONSUMABLE_VIEW,
+        PERM.BRAND_LIST,
+        PERM.INVENTORY_NAME_LIST,
+        PERM.CATEGORY_LIST,
+        PERM.QUOTATION_LIST,
+    ],
+    RETURNABLE_CREATE: [
+        PERM.RETURNABLE_ADD,
+        PERM.BRAND_LIST,
+        PERM.INVENTORY_NAME_LIST,
+        PERM.CATEGORY_LIST,
+        PERM.QUOTATION_LIST,
+    ],
+    // Busca el material dentro del listado completo, por eso pide LIST
+    RETURNABLE_EDIT: [
+        PERM.RETURNABLE_CHANGE,
+        PERM.RETURNABLE_LIST,
+        PERM.BRAND_LIST,
+        PERM.INVENTORY_NAME_LIST,
+        PERM.CATEGORY_LIST,
+        PERM.QUOTATION_LIST,
+    ],
+    // Visualizar devolutivo también resuelve el material desde el listado
+    RETURNABLE_VIEW: [PERM.RETURNABLE_VIEW, PERM.RETURNABLE_LIST],
+
+    // Crear y editar usuario cargan el select de grupos
+    USER_CREATE: [PERM.USER_ADD, PERM.GROUP_VIEW],
+    USER_EDIT: [PERM.USER_CHANGE, PERM.GROUP_VIEW],
+
+    // El formulario de tareas carga los selects de usuarios y de grupos
+    TASK_MANAGE: [PERM.TASK_ADD, PERM.USER_LIST, PERM.GROUP_VIEW],
+}
+
+/**
  * Agrupaciones por módulo.
  * Se usan con hasAnyPerm() para decidir si se muestra el botón completo
  * de un módulo en el Navbar: si el usuario no tiene NINGUNO de estos

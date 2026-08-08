@@ -9,13 +9,13 @@ import { getUser, resetUserPassword } from "../services/userService";
 import { Alert } from "@/shared/components/utils/alert.js";
 import { createTaskForUser, getTasksByUser, getTasksByGroup } from "@/features/tasks/services/taskService";
 import { usePermissions } from "@/features/permissions/context/PermissionsContext";
-import { PERM } from "@/features/permissions/config/perms";
+import { PERM, SCREEN_PERMS } from "@/features/permissions/config/perms";
 import { formatearFechaFin } from "../config/indefiniteEndDate";
 
 export default function ViewUserPage() {
     const navigate = useNavigate();
     const { id } = useParams();
-    const { hasPerm } = usePermissions();
+    const { hasPerm, hasAllPerms } = usePermissions();
     const [user, setUser]         = useState(null);
     const [loading, setLoading]   = useState(true);
     const [tasks, setTasks]       = useState([]);
@@ -103,7 +103,7 @@ export default function ViewUserPage() {
                 image={user.user_image}
                 name={`${user.first_name} ${user.last_name}`}
                 estado={user.is_active}
-                onEdit={hasPerm(PERM.USER_CHANGE) ? handleEdit : undefined}
+                onEdit={hasAllPerms(SCREEN_PERMS.USER_EDIT) ? handleEdit : undefined}
                 topActions={
                     <div className="flex gap-4 mb-3">
                         {/* Agregar tarea usa el permiso propio de tareas */}
@@ -116,7 +116,7 @@ export default function ViewUserPage() {
                             <ListTodo size={16} />
                             <p className="hidden md:block">Tareas</p>
                         </Button>
-                        {hasPerm(PERM.USER_CHANGE) && (
+                        {hasAllPerms(SCREEN_PERMS.USER_EDIT) && (
                         <Button variant="outline" size="sm" onClick={handleResetPassword}>
                             <KeyRound size={20} />
                             <p className="hidden md:block">Restablecer contraseña</p>

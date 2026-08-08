@@ -171,6 +171,19 @@ export function PermissionsProvider({ children }) {
      * Sirve para decidir si se muestra el botón completo de un módulo:
      * si no tiene ninguno de sus permisos, el módulo entero se oculta.
      */
+    /**
+     * True solo si tiene TODOS los permisos de la lista.
+     *
+     * Es el compañero de hasAnyPerm y se usa con los conjuntos de SCREEN_PERMS:
+     * una pantalla suele consultar varios recursos al montarse, y si le falta
+     * uno el backend responde 403. Con esto el botón que lleva a esa pantalla
+     * se oculta en vez de terminar en "Acceso denegado".
+     */
+    const hasAllPerms = useCallback(
+        (perms = []) => perms.every(p => hasPerm(p)),
+        [hasPerm],
+    )
+
     const hasAnyPerm = useCallback(
         (perms) => isSuperuser || perms.some((p) => permissions.includes(p)),
         [permissions, isSuperuser]
@@ -178,7 +191,7 @@ export function PermissionsProvider({ children }) {
 
     return (
         <PermissionsContext.Provider
-            value={{ permissions, hasPerm, hasAnyPerm, isSuperuser, isStaff, loading, refresh }}
+            value={{ permissions, hasPerm, hasAnyPerm, hasAllPerms, isSuperuser, isStaff, loading, refresh }}
         >
             {children}
         </PermissionsContext.Provider>

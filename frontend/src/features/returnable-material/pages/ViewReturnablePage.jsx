@@ -7,7 +7,7 @@ import { getReturnables } from "../services/returnableService";
 import { Ping } from "ldrs/react";
 import "ldrs/react/Ping.css";
 import { usePermissions } from "@/features/permissions/context/PermissionsContext";
-import { PERM } from "@/features/permissions/config/perms";
+import { PERM, SCREEN_PERMS } from "@/features/permissions/config/perms";
 
 const MATERIAL_TYPE_LABELS = {
     herramienta:       "Herramienta",
@@ -36,7 +36,7 @@ const formatDate = (value) => {
 export default function ViewReturnablePage() {
     const navigate = useNavigate();
     const { id } = useParams();
-    const { hasPerm } = usePermissions();
+    const { hasPerm, hasAllPerms } = usePermissions();
 
     const [material, setMaterial] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -74,7 +74,7 @@ export default function ViewReturnablePage() {
             name={material.material_name}
             description={material.material_description}
             estado={material.is_active}
-            onEdit={hasPerm(PERM.RETURNABLE_CHANGE)
+            onEdit={hasAllPerms(SCREEN_PERMS.RETURNABLE_EDIT)
                 ? () => navigate(`/dashboard/returnable-materials/${material.id}/edit`)
                 : undefined}
             topActions={<div className="flex gap-2">

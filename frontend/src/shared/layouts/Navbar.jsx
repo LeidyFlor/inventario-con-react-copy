@@ -9,11 +9,11 @@ import { ReportConfigModal as ReportConsumableModal } from "@/features/consumabl
 import { ReportConfigModal as ReportReturnableModal } from "@/features/returnable-material/reports/components/ReportConfigModal";
 import LogsModal from "@/features/audit/components/LogsModal";
 import { usePermissions } from "@/features/permissions/context/PermissionsContext";
-import { PERM, MODULE_PERMS } from "@/features/permissions/config/perms";
+import { PERM, MODULE_PERMS, SCREEN_PERMS } from "@/features/permissions/config/perms";
 
 export default function Navbar( { isOpen, onClose }){
     const navigate = useNavigate()
-    const { hasPerm, hasAnyPerm, isSuperuser, isStaff } = usePermissions()
+    const { hasPerm, hasAnyPerm, isSuperuser, isStaff, hasAllPerms } = usePermissions()
     const [loanReportOpen, setLoanReportOpen] = useState(false)
     const [consumableReportOpen, setConsumableReportOpen] = useState(false)
     const [returnableReportOpen, setReturnableReportOpen] = useState(false)
@@ -76,7 +76,7 @@ export default function Navbar( { isOpen, onClose }){
                                 </DropdownTrigger>
 
                                 <DropdownContent className="right-0 w-48">
-                                    {hasPerm(PERM.LOAN_ADD) && (
+                                    {hasAllPerms(SCREEN_PERMS.LOAN_CREATE) && (
                                     <DropdownItem>
                                         <Link to="loan-create" className="block w-full">
                                             Crear préstamo
@@ -118,7 +118,7 @@ export default function Navbar( { isOpen, onClose }){
                                 </DropdownTrigger>
 
                                 <DropdownContent className="right-0 w-48">
-                                    {hasPerm(PERM.RETURNABLE_ADD) && (
+                                    {hasAllPerms(SCREEN_PERMS.RETURNABLE_CREATE) && (
                                     <DropdownItem>
                                         <Link to="returnable-material-create" className="block w-full">
                                             Crear material devolutivo
@@ -160,7 +160,7 @@ export default function Navbar( { isOpen, onClose }){
                                 </DropdownTrigger>
 
                                 <DropdownContent className="right-0 w-48">
-                                    {hasPerm(PERM.CONSUMABLE_ADD) && (
+                                    {hasAllPerms(SCREEN_PERMS.CONSUMABLE_CREATE) && (
                                     <DropdownItem>
                                         <Link to="consumable-material-create" className="block w-full">
                                             Crear material de consumo

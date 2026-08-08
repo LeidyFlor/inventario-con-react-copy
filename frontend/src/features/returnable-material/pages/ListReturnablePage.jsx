@@ -10,12 +10,12 @@ import { useReturnableMaterials } from "../hooks/useReturnableMaterials"
 import { Ping } from 'ldrs/react'
 import 'ldrs/react/Ping.css'
 import { usePermissions } from "@/features/permissions/context/PermissionsContext"
-import { PERM } from "@/features/permissions/config/perms"
+import { PERM, SCREEN_PERMS } from "@/features/permissions/config/perms"
 
 export default function ListReturnablePage() {
     const [isReportModalOpen, setIsReportModalOpen] = useState(false)
     const { returnables, setReturnables, loading } = useReturnableMaterials()
-    const { hasPerm } = usePermissions()
+    const { hasPerm, hasAllPerms } = usePermissions()
 
     return (
         <div className="p-6">
@@ -41,7 +41,7 @@ export default function ListReturnablePage() {
                     </Button>
                     )}
                     {/* Crear — requiere permiso de crear material devolutivo */}
-                    {hasPerm(PERM.RETURNABLE_ADD) && (
+                    {hasAllPerms(SCREEN_PERMS.RETURNABLE_CREATE) && (
                     <Link to="/dashboard/returnable-material-create">
                         <Button variant="primary" size="sm">
                             Crear Material devolutivo

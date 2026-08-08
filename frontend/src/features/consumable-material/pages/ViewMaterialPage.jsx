@@ -8,7 +8,7 @@ import { Ping } from "ldrs/react";
 import "ldrs/react/Ping.css";
 import { Alert } from "@/shared";
 import { usePermissions } from "@/features/permissions/context/PermissionsContext";
-import { PERM } from "@/features/permissions/config/perms";
+import { PERM, SCREEN_PERMS } from "@/features/permissions/config/perms";
 
 const STATE_LABELS = {
     no_disponible: "No disponible",
@@ -33,7 +33,7 @@ const formatDate = (value) => {
 export default function ViewMaterialPage() {
     const navigate = useNavigate();
     const { id } = useParams();
-    const { hasPerm } = usePermissions();
+    const { hasPerm, hasAllPerms } = usePermissions();
 
     const [material, setMaterial] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -67,7 +67,7 @@ export default function ViewMaterialPage() {
             name={material.material_name}
             description={material.material_description}
             estado={material.is_active}
-            onEdit={hasPerm(PERM.CONSUMABLE_CHANGE)
+            onEdit={hasAllPerms(SCREEN_PERMS.CONSUMABLE_EDIT)
                 ? () => navigate(`/dashboard/consumable-materials/${material.id}/edit`)
                 : undefined}
             topActions={<div className="flex gap-2">

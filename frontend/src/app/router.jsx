@@ -15,17 +15,12 @@ import { ListPermissionsPage } from "@/features/permissions";
 // ListPermissionsPage → "@/shared" → DashboardLayout dentro del mismo ciclo
 // de importaciones donde vive PermissionsContext.
 import RequirePerm from "@/features/permissions/components/RequirePerm";
-import { PERM } from "@/features/permissions/config/perms";
+import { PERM, SCREEN_PERMS } from "@/features/permissions/config/perms";
 import { LoginForm, LoginRestorePassword, LoginRestorePasswordCode, LoginRestoreNewPassword } from "@/features/auth";
 import ForcePasswordChange from "@/features/auth/components/ForcePasswordChange";
 import { AuthLayout, DashboardLayout, ProtectedRoute } from "@/shared/";
 import { HomePage } from "@/features/home";
 
-
-// Permisos que necesita la pantalla de gestión de tareas.
-// Además de crear tareas, el formulario carga los selects de usuarios y de
-// grupos al montarse, así que sin esos permisos daría 403 nada más entrar.
-const TASK_PERMS = [PERM.TASK_ADD, PERM.USER_LIST, PERM.GROUP_VIEW]
 
 const router = createBrowserRouter([
     {
@@ -69,38 +64,38 @@ const router = createBrowserRouter([
 
             // ── Usuarios ──────────────────────────────────────────────
             // El formulario de creación carga el select de grupos al montarse
-            { path: "user-create",     element: <RequirePerm allOf={[PERM.USER_ADD, PERM.GROUP_VIEW]}><CreateUserPage /></RequirePerm> },
+            { path: "user-create",     element: <RequirePerm allOf={SCREEN_PERMS.USER_CREATE}><CreateUserPage /></RequirePerm> },
             { path: "user-list",       element: <RequirePerm perm={PERM.USER_LIST}><ListUserPage /></RequirePerm> },
             // Igual que user-create: el formulario carga el select de grupos al
             // montarse, así que sin auth.view_group la pantalla entra y luego
             // recibe un 403 de /api/groups/
-            { path: "users/:id/edit",  element: <RequirePerm allOf={[PERM.USER_CHANGE, PERM.GROUP_VIEW]}><EditUserPage /></RequirePerm> },
+            { path: "users/:id/edit",  element: <RequirePerm allOf={SCREEN_PERMS.USER_EDIT}><EditUserPage /></RequirePerm> },
             { path: "users/:id/view",  element: <RequirePerm perm={PERM.USER_VIEW}><ViewUserPage /></RequirePerm> },
             // Mi perfil — accesible para cualquier usuario autenticado, sin permisos
             { path: "my-profile",      element: <MyProfilePage /> },
 
             // ── Material de consumo ───────────────────────────────────
-            { path: "consumable-material-create",   element: <RequirePerm perm={PERM.CONSUMABLE_ADD}><CreateConsumablePage /></RequirePerm> },
+            { path: "consumable-material-create",   element: <RequirePerm allOf={SCREEN_PERMS.CONSUMABLE_CREATE}><CreateConsumablePage /></RequirePerm> },
             { path: "consumable-material-list",     element: <RequirePerm perm={PERM.CONSUMABLE_LIST}><ListMaterialPage /></RequirePerm> },
-            { path: "consumable-materials/:id/edit",element: <RequirePerm perm={PERM.CONSUMABLE_CHANGE}><EditConsumablePage /></RequirePerm> },
+            { path: "consumable-materials/:id/edit",element: <RequirePerm allOf={SCREEN_PERMS.CONSUMABLE_EDIT}><EditConsumablePage /></RequirePerm> },
             { path: "materials/:id/view",           element: <RequirePerm perm={PERM.CONSUMABLE_VIEW}><ViewMaterialPage /></RequirePerm> },
 
             // ── Material devolutivo ───────────────────────────────────
-            { path: "returnable-material-create",    element: <RequirePerm perm={PERM.RETURNABLE_ADD}><CreateReturnablePage /></RequirePerm> },
+            { path: "returnable-material-create",    element: <RequirePerm allOf={SCREEN_PERMS.RETURNABLE_CREATE}><CreateReturnablePage /></RequirePerm> },
             { path: "returnable-material-list",      element: <RequirePerm perm={PERM.RETURNABLE_LIST}><ListReturnablePage /></RequirePerm> },
-            { path: "returnable-materials/:id/view", element: <RequirePerm perm={PERM.RETURNABLE_VIEW}><ViewReturnablePage /></RequirePerm> },
-            { path: "returnable-materials/:id/edit", element: <RequirePerm perm={PERM.RETURNABLE_CHANGE}><EditReturnablePage /></RequirePerm> },
+            { path: "returnable-materials/:id/view", element: <RequirePerm allOf={SCREEN_PERMS.RETURNABLE_VIEW}><ViewReturnablePage /></RequirePerm> },
+            { path: "returnable-materials/:id/edit", element: <RequirePerm allOf={SCREEN_PERMS.RETURNABLE_EDIT}><EditReturnablePage /></RequirePerm> },
 
             // ── Préstamos ─────────────────────────────────────────────
-            { path: "loan-create",              element: <RequirePerm perm={PERM.LOAN_ADD}><CreateLoanPage /></RequirePerm> },
+            { path: "loan-create",              element: <RequirePerm allOf={SCREEN_PERMS.LOAN_CREATE}><CreateLoanPage /></RequirePerm> },
             { path: "loan-list",                element: <RequirePerm perm={PERM.LOAN_LIST}><ListLoanPage /></RequirePerm> },
-            { path: "loans/:id/edit",           element: <RequirePerm perm={PERM.LOAN_CHANGE}><LoanEditPage /></RequirePerm> },
+            { path: "loans/:id/edit",           element: <RequirePerm allOf={SCREEN_PERMS.LOAN_EDIT}><LoanEditPage /></RequirePerm> },
             { path: "loans/:id/view",           element: <RequirePerm perm={PERM.LOAN_VIEW}><ViewLoanPage /></RequirePerm> },
             // Las dos cargan el préstamo con getLoan(), que exige view_loan.
             // Sin él la pantalla se monta y recibe un 403 al cargar.
-            { path: "loans/:id/return",         element: <RequirePerm allOf={[PERM.LOAN_CHANGE, PERM.LOAN_VIEW]}><ReturnLoan /></RequirePerm> },
+            { path: "loans/:id/return",         element: <RequirePerm allOf={SCREEN_PERMS.LOAN_RETURN}><ReturnLoan /></RequirePerm> },
             // Aceptar el retorno lo autoriza add_loan en el backend
-            { path: "loans/:id/accept-return",  element: <RequirePerm allOf={[PERM.LOAN_ADD, PERM.LOAN_VIEW]}><ApproveReturnLoan /></RequirePerm> },
+            { path: "loans/:id/accept-return",  element: <RequirePerm allOf={SCREEN_PERMS.LOAN_ACCEPT}><ApproveReturnLoan /></RequirePerm> },
 
             // ── Configuración ─────────────────────────────────────────
             // La gestión de permisos es exclusiva del super administrador
@@ -121,10 +116,10 @@ const router = createBrowserRouter([
             // carga la lista de usuarios y de grupos para sus selects.
             // Por eso se exigen los tres permisos: sin alguno la pantalla
             // fallaría con 403 al montarse.
-            { path: "task-create", element: <RequirePerm allOf={TASK_PERMS}><CreateTaskPage /></RequirePerm> },
-            { path: "task-list",   element: <RequirePerm allOf={TASK_PERMS}><h1>Listar tareas</h1></RequirePerm> },
-            { path: "task-edit",   element: <RequirePerm allOf={TASK_PERMS}><h1>Editar tarea</h1></RequirePerm> },
-            { path: "task-view",   element: <RequirePerm allOf={TASK_PERMS}><h1>Modal ver tarea</h1></RequirePerm> },
+            { path: "task-create", element: <RequirePerm allOf={SCREEN_PERMS.TASK_MANAGE}><CreateTaskPage /></RequirePerm> },
+            { path: "task-list",   element: <RequirePerm allOf={SCREEN_PERMS.TASK_MANAGE}><h1>Listar tareas</h1></RequirePerm> },
+            { path: "task-edit",   element: <RequirePerm allOf={SCREEN_PERMS.TASK_MANAGE}><h1>Editar tarea</h1></RequirePerm> },
+            { path: "task-view",   element: <RequirePerm allOf={SCREEN_PERMS.TASK_MANAGE}><h1>Modal ver tarea</h1></RequirePerm> },
 
         ],
     }

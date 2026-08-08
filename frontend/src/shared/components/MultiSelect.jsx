@@ -1,6 +1,9 @@
 import { useState, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
 import Checkbox from './Checkbox';
-import { ChevronDown, ChevronUp } from "lucide-react";
+import { ChevronDown, ChevronUp, Search } from "lucide-react";
+import { filtrarOpciones } from "./utils/filtrarOpciones";
+import { useDesplegableFlotante, useCerrarAlClicarFuera } from "./utils/useDesplegableFlotante";
 
 export default function MultiSelect({
     label,
@@ -34,18 +37,28 @@ export default function MultiSelect({
         nameEdit: "border-b-2 border-border rounded-t-xl text-body font-semibold text-text-secundary text-center placeholder-text-muted hover:rounded-2xl hover:border-2 hover:border-focus-border transition-all-duration-10 focus:outline-none focus:ring-1 focus:ring-focus-ring",
     }
     const [open, setOpen] = useState(false)
+    const [busqueda, setBusqueda] = useState("")
     const containerRef = useRef(null)
+    const inputRef = useRef(null)
 
-    //Cierra dropdown al hacer click afuera
+    // El menú se dibuja en un portal para que los contenedores con
+    // overflow-hidden de los formularios no lo recorten, y se voltea hacia
+    // arriba cuando abajo no cabe
+    const { anclaRef, flotanteRef, estilo } = useDesplegableFlotante(open)
+
+    // Se pasan los dos refs: al estar el menú en un portal, un clic dentro de
+    // él NO cuenta como clic fuera del campo
+    useCerrarAlClicarFuera([containerRef, flotanteRef], () => setOpen(false))
+
+    // Al abrir, el cursor queda en el buscador para poder escribir de una vez.
+    // Al cerrar se limpia, para que la próxima vez la lista salga completa.
     useEffect(() => {
-        function handleClickOutside(e){
-            if (containerRef.current && !containerRef.current.contains(e.target)){
-                setOpen(false)
-            }
-        }
-        document.addEventListener("mousedown", handleClickOutside)
-        return () => document.removeEventListener("mousedown", handleClickOutside)
-    }, [])
+        if (open) inputRef.current?.focus()
+        else setBusqueda("")
+    }, [open])
+
+    // El mismo filtro que usa Select, para que los dos busquen igual
+    const { visibles, total, recortado } = filtrarOpciones(options, busqueda)
 
     return (
         // min-w-0 permite encoger el input si el espacio no da
@@ -68,7 +81,7 @@ export default function MultiSelect({
             {/*  trigger */}
             {/* overflow-hidden refuerza el truncate del texto: sin él, un
                 nombre muy largo podría desbordar el borde del campo */}
-            <div onClick={() => setOpen(prev => !prev)}
+            <div ref={anclaRef} onClick={() => setOpen(prev => !prev)}
                 className={`w-full
                 h-10
                 px-4
@@ -100,25 +113,62 @@ export default function MultiSelect({
                 
             </div>
             {/* Dropdown con checkboxes */}
-            {open &&(
-                <div className="absolute z-50 w-full mt-1 bg-input-fill border-2 border-input-border rounded-2xl shadow-lg max-h-48 overflow-y-auto p-2 flex flex-col gap-1 ">
-                    {/* campos de checkboxes */}
-                    {options.map(opt => (
-                        <Checkbox
-                            key={opt.value}
-                            id={`${name}-${opt.value}`}
-                            label={opt.label}
-                            checked={value.includes(String(opt.value))}
-                            onChange={() =>{
-                                const strVal =String(opt.value)
-                                const newValue = value.includes(strVal)
-                                    ? value.filter(v => v !== strVal)//si el valor estaba lo quita
-                                    : [...value, strVal] //si no estaba lo agrega
-                                onChange(name, newValue)
-                            }}
+            {open && createPortal(
+                <div
+                    ref={flotanteRef}
+                    style={estilo}
+                    // z-[60] para quedar por encima de los modales, que usan z-50
+                    className="z-[60] bg-input-fill border-2 border-input-border rounded-2xl shadow-lg overflow-hidden flex flex-col"
+                >
+                    {/* Buscador. Filtrar NO desmarca nada: lo ya elegido sigue
+                        en value aunque quede fuera de la lista visible. */}
+                    <div className="flex items-center gap-2 px-3 py-2 border-b border-input-border">
+                        <Search size={16} className="text-text-muted shrink-0" />
+                        <input
+                            ref={inputRef}
+                            type="text"
+                            value={busqueda}
+                            onChange={(e) => setBusqueda(e.target.value)}
+                            onKeyDown={(e) => e.key === "Escape" && setOpen(false)}
+                            placeholder="Buscar..."
+                            className="w-full bg-transparent text-medium text-text-primary placeholder-text-muted focus:outline-none"
                         />
-                    ))}
-                </div>
+                    </div>
+
+                    <div className="overflow-y-auto p-2 flex flex-col gap-1">
+                        {/* campos de checkboxes */}
+                        {visibles.length === 0 ? (
+                            <p className="px-1 py-3 text-small text-text-muted text-center">
+                                Sin resultados para "{busqueda}"
+                            </p>
+                        ) : (
+                            visibles.map(opt => (
+                                <Checkbox
+                                    key={opt.value}
+                                    id={`${name}-${opt.value}`}
+                                    label={opt.label}
+                                    checked={value.includes(String(opt.value))}
+                                    onChange={() =>{
+                                        const strVal =String(opt.value)
+                                        const newValue = value.includes(strVal)
+                                            ? value.filter(v => v !== strVal)//si el valor estaba lo quita
+                                            : [...value, strVal] //si no estaba lo agrega
+                                        onChange(name, newValue)
+                                    }}
+                                />
+                            ))
+                        )}
+
+                        {/* Avisa cuando se dejaron de pintar opciones, para que
+                            nadie crea que las demás no existen */}
+                        {recortado && (
+                            <p className="px-1 pt-2 text-small text-text-muted text-center border-t border-input-border">
+                                Mostrando {visibles.length} de {total}. Escribe para filtrar.
+                            </p>
+                        )}
+                    </div>
+                </div>,
+                document.body
             )}
 
             {error && <p className="text-caption text-error">{error}</p>}
