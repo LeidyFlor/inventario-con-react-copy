@@ -216,15 +216,27 @@ class GroupSerializer(serializers.ModelSerializer):
     # is_active viene del GroupProfile relacionado (profile es el related_name)
     is_active = serializers.SerializerMethodField()
 
+    # Cuántos usuarios pertenecen al grupo. Se usa para avisar antes de
+    # sacarlos a todos, y porque un grupo con usuarios no se puede desactivar.
+    users_count = serializers.SerializerMethodField()
+
     def get_is_active(self, obj):
         # Si aún no tiene profile (grupo creado antes de esta feature), se asume activo
         if hasattr(obj, 'profile'):
             return obj.profile.is_active
         return True
 
+    def get_users_count(self, obj):
+        # Al listar, la vista trae el conteo ya anotado para no consultar una
+        # vez por fila (N+1). En el detalle se calcula al vuelo.
+        anotado = getattr(obj, 'users_count_annotated', None)
+        if anotado is not None:
+            return anotado
+        return obj.user_set.count()
+
     class Meta:
         model = Group
-        fields = ['id', 'name', 'is_active', 'permissions']
+        fields = ['id', 'name', 'is_active', 'permissions', 'users_count']
 
 
 class ChangePasswordSerializer(serializers.Serializer):

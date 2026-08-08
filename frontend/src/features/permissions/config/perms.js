@@ -49,6 +49,16 @@ export const PERM = {
     CATEGORY_DELETE: "category.delete_category",
     CATEGORY_LIST:   "category.listar_category",
 
+    // ── Cotizaciones (app_label: quotation) ────────────────────────
+    // El archivo PDF no se edita, pero CHANGE sí se usa: gobierna el
+    // desenlazar de todos los materiales, que modifica los materiales sin
+    // tocar la cotización. DELETE aquí borra de verdad, no desactiva.
+    QUOTATION_ADD:    "quotation.add_quotation",
+    QUOTATION_VIEW:   "quotation.view_quotation",
+    QUOTATION_CHANGE: "quotation.change_quotation",
+    QUOTATION_DELETE: "quotation.delete_quotation",
+    QUOTATION_LIST:   "quotation.listar_quotation",
+
     // ── Material de consumo (app_label: materials) ─────────────────
     CONSUMABLE_ADD:    "materials.add_consumablematerial",
     CONSUMABLE_VIEW:   "materials.view_consumablematerial",
@@ -115,6 +125,8 @@ export const MODULE_PERMS = {
         PERM.INVENTORY_NAME_ADD,
         PERM.CATEGORY_LIST,
         PERM.CATEGORY_ADD,
+        PERM.QUOTATION_LIST,
+        PERM.QUOTATION_ADD,
         PERM.GROUP_VIEW,
         PERM.GROUP_ADD,
         PERM.TASK_ADD,

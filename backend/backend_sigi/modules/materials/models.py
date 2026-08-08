@@ -262,3 +262,85 @@ class TechnicalSheetFile(models.Model):
     def __str__(self):
         dueno = self.owner
         return f"{dueno.material_name if dueno else 'sin material'} - {self.file_name}"
+
+
+class MaterialQuotation(models.Model):
+    """
+    Tabla intermedia entre un material y las cotizaciones que lo respaldan.
+
+    Cada material debe quedar enlazado de 1 a 3 cotizaciones. Esos límites se
+    validan en los serializers de material, no aquí: la base de datos no puede
+    exigir un mínimo de filas relacionadas.
+
+    Igual que TechnicalSheetFile, usa DOS claves foráneas nulables (una por
+    tipo de material) porque Material es abstracto y no se le puede apuntar con
+    una sola. El CheckConstraint garantiza que siempre haya exactamente una
+    llena. Es el mismo patrón de LoanItem.
+
+    Una misma cotización puede estar enlazada a varios materiales, y por eso
+    borrarla es un CASCADE: si se elimina la cotización desaparecen sus
+    enlaces. Aun así la vista bloquea el borrado mientras haya materiales
+    usándola, para que ninguno se quede por debajo del mínimo de 1.
+    """
+    quotation = models.ForeignKey(
+        'quotation.Quotation',
+        on_delete=models.CASCADE,
+        related_name='material_links',
+    )
+    material = models.ForeignKey(
+        ReturnableMaterial,
+        on_delete=models.CASCADE,
+        null=True, blank=True,
+        related_name='quotation_links',
+    )
+    consumable_material = models.ForeignKey(
+        ConsumableMaterial,
+        on_delete=models.CASCADE,
+        null=True, blank=True,
+        related_name='quotation_links',
+    )
+
+    @property
+    def owner(self):
+        """El material dueño del enlace, sea del tipo que sea."""
+        return self.material or self.consumable_material
+
+    class Meta:
+        db_table = 'material_quotation'
+
+        # SIN verbose_name y SIN permisos propios, a propósito.
+        #
+        # available_permissions() lista todo modelo que declare un verbose_name
+        # explícito, así que ponerle uno hacía aparecer "Cotizaciones de
+        # material" en la pantalla de gestión de permisos. Son permisos que
+        # nadie consulta: enlazar una cotización a un material se controla con
+        # el permiso de editar el material, porque el enlace viaja dentro del
+        # mismo formulario.
+        #
+        # default_permissions = () evita además que Django los cree en la base.
+        # Es el mismo criterio que TechnicalSheetFile, que tampoco los tiene.
+        default_permissions = ()
+
+        constraints = [
+            # Garantiza que nunca queden ambas FK llenas o ambas vacías
+            models.CheckConstraint(
+                name='material_quotation_one_material_type',
+                condition=(
+                    models.Q(material__isnull=False, consumable_material__isnull=True) |
+                    models.Q(material__isnull=True,  consumable_material__isnull=False)
+                ),
+            ),
+            # Evita enlazar dos veces la misma cotización al mismo material
+            models.UniqueConstraint(
+                fields=['quotation', 'material'],
+                name='material_quotation_unica_devolutivo',
+            ),
+            models.UniqueConstraint(
+                fields=['quotation', 'consumable_material'],
+                name='material_quotation_unica_consumo',
+            ),
+        ]
+
+    def __str__(self):
+        dueno = self.owner
+        return f"{dueno.material_name if dueno else 'sin material'} - {self.quotation.file_name}"

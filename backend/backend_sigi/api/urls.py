@@ -11,6 +11,7 @@ urlpatterns = [
     path('api/', include('backend_sigi.modules.tasks.urls')),
     path('api/', include('backend_sigi.modules.inventory_name.urls')),
     path('api/', include('backend_sigi.modules.category.urls')),
+    path('api/', include('backend_sigi.modules.quotation.urls')),
     path('api/auth/login', LoginView.as_view(), name='login'),
     path('api/auth/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('api/audit/download/', download_audit_log, name='audit_download'),

@@ -6,6 +6,7 @@ import { Input, Button, Select, MultiSelect, FileInput, Textarea, Alert, IconBut
 import { getBrands, getInventoryManagers, getMaterialTypes, getInventoryNames, getCategories } from "../services/selectService"
 import { createReturnable } from "../services/returnableService"
 import { returnableMaterialSchema } from "../schemas/returnableMaterialSchema"
+import { QuotationPickerModal } from "@/features/quotations"
 
 export default function ReturnableRegisterForm() {
     const navigate = useNavigate()
@@ -30,9 +31,12 @@ export default function ReturnableRegisterForm() {
         materialEntryDate: "",
         materialImage: [],
         materialTechnicalSheet: [],
+        // Ids de las cotizaciones elegidas, como texto. De 1 a 3.
+        quotations: [],
     })
     const [errors, setErrors]   = useState({})
     const [loading, setLoading] = useState(false)
+    const [showQuotations, setShowQuotations] = useState(false)
 
     //  Opciones de selects 
     const [brands,     setBrands]     = useState([])
@@ -141,6 +145,28 @@ export default function ReturnableRegisterForm() {
                             />
                             {errors.materialTechnicalSheet && (
                                 <span className="text-red-800 text-sm">{errors.materialTechnicalSheet}</span>
+                            )}
+                        </div>
+
+                        {/* Cotizaciones — se eligen de las ya cargadas en
+                            Configuración, aquí no se suben archivos */}
+                        <div className="flex flex-col gap-3 items-center text-center">
+                            <h2 className="font-bold text-body">Cotizaciones</h2>
+                            <p className="text-text-muted text-small text-center">
+                                Elige de 1 a 3 cotizaciones ya cargadas.
+                            </p>
+                            <Button
+                                variant="secondary"
+                                size="sm"
+                                type="button"
+                                onClick={() => setShowQuotations(true)}
+                            >
+                                {formData.quotations.length > 0
+                                    ? `${formData.quotations.length} elegida(s)`
+                                    : "Elegir cotizaciones"}
+                            </Button>
+                            {errors.quotations && (
+                                <span className="text-red-800 text-sm">{errors.quotations}</span>
                             )}
                         </div>
                     </div>
@@ -330,6 +356,18 @@ export default function ReturnableRegisterForm() {
                     </div>
                 </form>
             </div>
+
+            {/* El overlay lo pone el propio Modal compartido */}
+            {showQuotations && (
+                <QuotationPickerModal
+                    value={formData.quotations}
+                    onConfirm={(ids) => {
+                        setFormData(prev => ({ ...prev, quotations: ids }))
+                        setErrors(prev => ({ ...prev, quotations: undefined }))
+                    }}
+                    onClose={() => setShowQuotations(false)}
+                />
+            )}
         </div>
     )
 }

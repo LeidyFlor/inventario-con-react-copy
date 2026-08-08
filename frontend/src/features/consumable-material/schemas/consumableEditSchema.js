@@ -12,6 +12,12 @@ export const consumableEditSchema = z
         // Inventario y categoría son obligatorios. El Select entrega el id
         // como texto, así que basta con exigir que no venga vacío.
         inventoryName: z.string().min(1, "Debe seleccionar un nombre de inventario"),
+    // Cotizaciones: de 1 a 3. El tope espeja MAX_COTIZACIONES en
+    // backend/backend_sigi/modules/materials/serializers.py
+    quotations: z
+      .array(z.string())
+      .min(1, "Debe elegir al menos una cotización")
+      .max(3, "Solo se pueden elegir hasta 3 cotizaciones"),
         category: z.string().min(1, "Debe seleccionar una categoría"),
         // Un material puede tener varios cuentadantes, mínimo uno.
         // El MultiSelect entrega un arreglo de ids como texto.

@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'backend_sigi.modules.tasks',
     'backend_sigi.modules.inventory_name',
     'backend_sigi.modules.category',
+    'backend_sigi.modules.quotation',
     'corsheaders',
 ]
 AUTH_USER_MODEL = 'users.Users' #Para usar el models de users propio

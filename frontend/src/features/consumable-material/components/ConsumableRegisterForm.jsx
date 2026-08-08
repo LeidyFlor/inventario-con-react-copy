@@ -3,6 +3,7 @@ import React, {useState, useEffect} from "react";
 import { getInventoryManagers, getBrands, getInventoryNames, getCategories } from "@/features/consumable-material/services/selectService.js";
 import { createMaterial } from "@/features/consumable-material/services/materialService.js";
 import { consumableMaterialShema } from "../schemas/consumableMaterialShema";
+import { QuotationPickerModal } from "@/features/quotations";
 // Para el icon
 import { Cable } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -26,8 +27,11 @@ export default function ConsumableRegisterForm() {
         materialEntryDate: "",
         materialImage: [],
         materialTechnicalSheet: [],
+        // Ids de las cotizaciones elegidas, como texto. De 1 a 3.
+        quotations: [],
     });
     const [errors, setErrors] = useState({});
+    const [showQuotations, setShowQuotations] = useState(false);
     const [userName, setUserName] = useState([]); //use state para cuentadante
     const [brandName, setBrandName] = useState([]);
     const [inventoryNames, setInventoryNames] = useState([]);
@@ -156,6 +160,30 @@ export default function ConsumableRegisterForm() {
                                 />
                                 {errors.materialTechnicalSheet && (
                                     <span className="text-red-800 text-sm">{errors.materialTechnicalSheet}</span>
+                                )}
+                            </div>
+
+                            {/* Cotizaciones — se eligen de las ya cargadas en
+                                Configuración, aquí no se suben archivos */}
+                            <h2 className="mt-6 mb-4 font-bold text-body">
+                                Cotizaciones
+                            </h2>
+                            <div className="flex flex-col gap-3 place-items-center">
+                                <p className="text-text-muted text-small text-center">
+                                    Elige de 1 a 3 cotizaciones ya cargadas.
+                                </p>
+                                <Button
+                                    variant="secondary"
+                                    size="sm"
+                                    type="button"
+                                    onClick={() => setShowQuotations(true)}
+                                >
+                                    {formData.quotations.length > 0
+                                        ? `${formData.quotations.length} elegida(s)`
+                                        : "Elegir cotizaciones"}
+                                </Button>
+                                {errors.quotations && (
+                                    <span className="text-red-800 text-sm">{errors.quotations}</span>
                                 )}
                             </div>
 
@@ -327,6 +355,18 @@ export default function ConsumableRegisterForm() {
                 </form>
                 
             </div>
+
+            {/* El overlay lo pone el propio Modal compartido */}
+            {showQuotations && (
+                <QuotationPickerModal
+                    value={formData.quotations}
+                    onConfirm={(ids) => {
+                        setFormData((prev) => ({ ...prev, quotations: ids }));
+                        setErrors((prev) => ({ ...prev, quotations: undefined }));
+                    }}
+                    onClose={() => setShowQuotations(false)}
+                />
+            )}
 
         </div>
     )

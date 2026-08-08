@@ -4,6 +4,7 @@ import { CreateUserPage, EditUserPage, ListUserPage, ViewUserPage, MyProfilePage
 import { CreateBrandPage, ListBrandPage, EditBrandPage } from "@/features/brands";
 import { ListInventoryNamePage } from "@/features/inventory-names";
 import { ListCategoryPage } from "@/features/categories";
+import { ListQuotationPage } from "@/features/quotations";
 import { CreateLoanPage, ReturnLoan, ApproveReturnLoan, ListLoanPage, ViewLoanPage, LoanEditPage, ConfirmIdentityPage } from "@/features/loans";
 import { CreateTaskPage } from "@/features/tasks";
 import { ListGroupPage } from "@/features/groups";
@@ -109,6 +110,7 @@ const router = createBrowserRouter([
             // en marcas, así que solo hace falta la ruta del listado.
             { path: "inventory-name-list", element: <RequirePerm perm={PERM.INVENTORY_NAME_LIST}><ListInventoryNamePage /></RequirePerm> },
             { path: "category-list",       element: <RequirePerm perm={PERM.CATEGORY_LIST}><ListCategoryPage /></RequirePerm> },
+            { path: "quotation-list",      element: <RequirePerm perm={PERM.QUOTATION_LIST}><ListQuotationPage /></RequirePerm> },
 
             // ── Tareas ────────────────────────────────────────────────
             // La gestión de tareas escribe usando el permiso de edición de

@@ -223,6 +223,13 @@ export default function Navbar( { isOpen, onClose }){
                                         </Link>
                                     </DropdownItem>
                                     )}
+                                    {hasPerm(PERM.QUOTATION_LIST) && (
+                                    <DropdownItem>
+                                        <Link to="quotation-list" className="block w-full">
+                                            Gestión de cotizaciones
+                                        </Link>
+                                    </DropdownItem>
+                                    )}
                                     {/* La gestión de permisos es exclusiva del super administrador */}
                                     {isSuperuser && (
                                     <DropdownItem>

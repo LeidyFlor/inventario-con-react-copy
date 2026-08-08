@@ -16,7 +16,18 @@ const ACTION_LABELS = [
     ['delete_',          'Activar/Desactivar'],
 ]
 
+// Excepciones al mapeo de arriba: modelos donde delete_ borra de verdad en vez
+// de desactivar. Se listan por codename completo para no adivinar por el modelo.
+//
+// Las cotizaciones son archivos PDF: no tienen is_active y al eliminarlas se
+// borra el registro y el archivo del storage. Decir "Activar/Desactivar" ahí
+// engañaría sobre lo que realmente hace el permiso.
+const ETIQUETAS_ESPECIALES = {
+    delete_quotation: 'Eliminar',
+}
+
 function getActionLabel(codename) {
+    if (ETIQUETAS_ESPECIALES[codename]) return ETIQUETAS_ESPECIALES[codename]
     for (const [prefix, label] of ACTION_LABELS) {
         if (codename.startsWith(prefix)) return label
     }

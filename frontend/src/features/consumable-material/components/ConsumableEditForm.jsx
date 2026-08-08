@@ -1,7 +1,7 @@
 import { Input, Button, Select, MultiSelect, StatusSwitch, FileInput, Alert, Textarea, IconButton, TechnicalFilesModal } from "@/shared";
 import { useState, useEffect } from "react";
 import { useParams, useNavigate, useBlocker } from "react-router-dom";
-import { FilePenLine, FileText } from "lucide-react";
+import { FilePenLine, FileText, FileStack } from "lucide-react";
 import { Ping } from "ldrs/react";
 import "ldrs/react/Ping.css";
 import {
@@ -10,8 +10,9 @@ import {
     uploadTechnicalFiles,
     deleteTechnicalFile,
 } from "../services/materialService";
-import { getBrands, getInventoryManagers, getMaterialStates, getInventoryNames, getCategories, conOpcionActual } from "../services/selectService";
+import { getBrands, getInventoryManagers, getMaterialStates, getInventoryNames, getCategories, conOpcionActual, conCuentadantesActuales, cuentadantesSinMarca } from "../services/selectService";
 import { consumableEditSchema } from "../schemas/consumableEditSchema";
+import { QuotationPickerModal } from "@/features/quotations";
 
 export default function ConsumableEditForm() {
 
@@ -26,6 +27,8 @@ export default function ConsumableEditForm() {
     const [inventoryNames, setInventoryNames] = useState([]);
     const [categories, setCategories] = useState([]);
     const materialStateOptions = getMaterialStates();
+    // Cuentadantes asignados que ya perdieron la marca. Vacío = todo en orden.
+    const sinMarca = cuentadantesSinMarca(material?.inventory_managers_display ?? []);
 
     /* Fichas técnicas — mismo manejo que en el editar de devolutivo:
        lo existente se marca para borrar y lo nuevo se sube al guardar */
@@ -33,6 +36,7 @@ export default function ConsumableEditForm() {
     const [newTechFiles, setNewTechFiles]     = useState([]);
     const [removedFileIds, setRemovedFileIds] = useState([]);
     const [showFilesModal, setShowFilesModal] = useState(false);
+    const [showQuotations, setShowQuotations] = useState(false);
 
     const [formData, setFormData] = useState({
         brand: "",
@@ -50,6 +54,8 @@ export default function ConsumableEditForm() {
         materialPurchaseDate: "",
         materialEntryDate: "",
         materialState: "",
+        // Ids de las cotizaciones enlazadas, como texto. De 1 a 3.
+        quotations: [],
     });
 
     const blocker = useBlocker(
@@ -115,6 +121,9 @@ export default function ConsumableEditForm() {
                     materialPurchaseDate: mat.material_purchase_date ?? "",
                     materialEntryDate: mat.material_entry_date ?? "",
                     materialState: mat.material_state ?? "",
+                    // El backend devuelve las cotizaciones completas; aquí
+                    // solo interesan los ids para el modal de selección
+                    quotations: (mat.quotations ?? []).map(q => String(q.id)),
                 });
             })
             .catch(() => Alert.error("Error", "No se pudo cargar el material"))
@@ -199,10 +208,24 @@ export default function ConsumableEditForm() {
                     </div>
 
                     {/* Mismo botón que en el editar de devolutivo */}
-                    <Button type="button" size="sm" variant="ghost" onClick={() => setShowFilesModal(true)}>
-                        <FileText size={18} />
-                        Fichas
-                    </Button>
+                    <div className="flex gap-2">
+                        <Button type="button" size="sm" variant="ghost" onClick={() => setShowFilesModal(true)}>
+                            <FileText size={18} />
+                            Fichas
+                        </Button>
+                        <div className="flex flex-col">
+                            <Button type="button" size="sm" variant="ghost" onClick={() => setShowQuotations(true)}>
+                                <FileStack size={18} />
+                                Cotizaciones ({formData.quotations.length})
+                            </Button>
+                            {/* El botón por sí solo no dice que sean obligatorias.
+                                Sin este aviso, quien nunca abre el modal no
+                                entiende por qué no puede guardar. */}
+                            {errors.quotations && (
+                                <span className="text-red-800 text-sm">{errors.quotations}</span>
+                            )}
+                        </div>
+                    </div>
                 </div>
 
                 <form
@@ -365,6 +388,17 @@ export default function ConsumableEditForm() {
                                 error={errors.inventoryManagers}
                                 variant="isEdit"
                             />
+                            {/* Advertencia, no bloqueo: el material se puede
+                                guardar tal cual y es la persona quien decide si
+                                le cambia el cuentadante. */}
+                            {sinMarca.length > 0 && (
+                                <p className="text-amber-700 text-sm mt-1">
+                                    {sinMarca.length === 1
+                                        ? `${sinMarca[0]} ya no es cuentadante.`
+                                        : `Estos usuarios ya no son cuentadantes: ${sinMarca.join(", ")}.`}
+                                    {" "}Puedes dejarlo así o asignar otro.
+                                </p>
+                            )}
                         </div>
 
                         <div>
@@ -374,17 +408,6 @@ export default function ConsumableEditForm() {
                                 value={formData.materialSerial}
                                 onChange={handleChange}
                                 error={errors.materialSerial}
-                                variant="isEdit"
-                            />
-                        </div>
-
-                        <div>
-                            <p className="parrafo-edit-style">Ubicación:</p>
-                            <Input
-                                name="materialLocation"
-                                value={formData.materialLocation}
-                                onChange={handleChange}
-                                error={errors.materialLocation}
                                 variant="isEdit"
                             />
                         </div>
@@ -449,6 +472,17 @@ export default function ConsumableEditForm() {
                                 ${totalPrice.toLocaleString("es-CO")}
                             </p>
                         </div>
+                        <div>
+                            <p className="parrafo-edit-style">Ubicación:</p>
+                            <Input
+                                name="materialLocation"
+                                value={formData.materialLocation}
+                                onChange={handleChange}
+                                error={errors.materialLocation}
+                                variant="isEdit"
+                            />
+                        </div>
+
 
                         <div>
                             <p className="parrafo-edit-style">Descripción:</p>
@@ -492,6 +526,20 @@ export default function ConsumableEditForm() {
                 setNewTechFiles={setNewTechFiles}
                 setRemovedFileIds={setRemovedFileIds}
             />
+
+            {/* Cotizaciones — se eligen de las ya cargadas en Configuración.
+                El overlay lo pone el propio Modal compartido */}
+            {showQuotations && (
+                <QuotationPickerModal
+                    value={formData.quotations}
+                    onConfirm={(ids) => {
+                        setFormData((prev) => ({ ...prev, quotations: ids }));
+                        setErrors((prev) => ({ ...prev, quotations: undefined }));
+                        setIsDirty(true);
+                    }}
+                    onClose={() => setShowQuotations(false)}
+                />
+            )}
 
         </div>
     );

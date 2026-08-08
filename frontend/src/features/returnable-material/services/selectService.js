@@ -38,6 +38,49 @@ export function conOpcionActual(options, valor, etiqueta) {
     return [...normalizadas, { value: String(valor), label: `${etiqueta || "Sin nombre"} (inactivo)` }]
 }
 
+/**
+ * Igual que conOpcionActual, pero para el MultiSelect de cuentadantes.
+ *
+ * /api/inventory-managers/ solo devuelve usuarios con is_accountant=True y
+ * activos. Si a alguien le quitan esa marca, los materiales que ya tenía
+ * asignados dejaban de mostrarlo: el campo se veía vacío y al guardar el
+ * backend respondía 'Invalid pk - object does not exist'.
+ *
+ * Aquí se vuelven a agregar los que el material ya tiene y no están en la
+ * lista. El backend los acepta porque ya estaban asignados; solo exige la
+ * marca de cuentadante a los que se agreguen nuevos.
+ *
+ * La etiqueta queda limpia a propósito: quién perdió la marca se avisa aparte,
+ * con cuentadantesSinMarca(), en un mensaje que sí se alcanza a leer. En el
+ * MultiSelect el texto se recorta y el aviso pasaría desapercibido.
+ *
+ * @param {Array} options   Cuentadantes activos: [{ value, label }]
+ * @param {Array} actuales  inventory_managers_display del material
+ */
+export function conCuentadantesActuales(options, actuales = []) {
+    const normalizadas = options.map(o => ({ value: String(o.value), label: o.label }))
+    const presentes = new Set(normalizadas.map(o => o.value))
+
+    const faltantes = actuales
+        .filter(u => !presentes.has(String(u.id)))
+        .map(u => ({ value: String(u.id), label: u.label }))
+
+    return [...normalizadas, ...faltantes]
+}
+
+/**
+ * Nombres de los cuentadantes asignados que ya perdieron esa marca.
+ *
+ * Devuelve un arreglo vacío cuando está todo en orden, así que sirve directo
+ * como condición para mostrar la advertencia. No bloquea nada: el material se
+ * puede guardar tal cual, y es la persona quien decide si lo cambia.
+ *
+ * @param {Array} actuales  inventory_managers_display del material
+ */
+export function cuentadantesSinMarca(actuales = []) {
+    return actuales.filter(u => !u.is_accountant).map(u => u.label)
+}
+
 // Nombres de inventario activos para el select del formulario.
 // Los desactivados se ocultan igual que las marcas: siguen existiendo en los
 // materiales que ya los tenían, pero no se pueden elegir en uno nuevo.

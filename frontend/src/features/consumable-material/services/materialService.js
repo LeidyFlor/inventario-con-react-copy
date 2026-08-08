@@ -33,6 +33,11 @@ export async function createMaterial(formData) {
     // Inventario y categoría son obligatorios (validados por Zod y por el serializer)
     data.append("inventory_name", formData.inventoryName)
     data.append("category", formData.category)
+    // Cotizaciones: una entrada por cada una, igual que los cuentadantes.
+    // El backend exige de 1 a 3.
+    ;(formData.quotations ?? []).forEach(id => {
+        data.append("quotation_ids", Number(id))
+    })
     data.append("material_model", formData.materialModel ?? "")
     data.append("material_serial", formData.materialSerial ?? "")
     // Fechas de adquisición — obligatorias. Son campos date: solo "YYYY-MM-DD"
@@ -99,6 +104,11 @@ export async function updateMaterial(id, formData, isActive, materialImage) {
     // Inventario y categoría son obligatorios (validados por Zod y por el serializer)
     data.append("inventory_name", formData.inventoryName)
     data.append("category", formData.category)
+    // Cotizaciones: una entrada por cada una, igual que los cuentadantes.
+    // El backend exige de 1 a 3.
+    ;(formData.quotations ?? []).forEach(id => {
+        data.append("quotation_ids", Number(id))
+    })
     data.append("material_model", formData.materialModel ?? "")
     data.append("material_serial", formData.materialSerial ?? "")
     // Fechas de adquisición — obligatorias. Son campos date: solo "YYYY-MM-DD"

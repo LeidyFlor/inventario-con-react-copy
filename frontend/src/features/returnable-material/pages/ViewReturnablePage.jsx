@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
+import { QuotationPickerModal } from "@/features/quotations";
 import { ViewPageTemplate, ViewDetailCard, Alert, Button, TechnicalFilesModal } from "@/shared/";
-import { Router, FileText } from "lucide-react";
+import { Router, FileText, FileStack } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import { getReturnables } from "../services/returnableService";
 import { Ping } from "ldrs/react";
@@ -42,6 +43,7 @@ export default function ViewReturnablePage() {
     // Las fichas técnicas se consultan desde aquí en modo solo lectura, para
     // que también las pueda ver quien no tiene permiso de edición
     const [showFilesModal, setShowFilesModal] = useState(false);
+    const [showQuotations, setShowQuotations] = useState(false);
 
     useEffect(() => {
         getReturnables()
@@ -75,15 +77,19 @@ export default function ViewReturnablePage() {
             onEdit={hasPerm(PERM.RETURNABLE_CHANGE)
                 ? () => navigate(`/dashboard/returnable-materials/${material.id}/edit`)
                 : undefined}
-            topActions={
-                // Mismo botón que en el formulario de edición, pero abre el
-                // modal en modo consulta. Sin hasPerm: ver la ficha técnica no
-                // debería exigir permiso de edición.
+            topActions={<div className="flex gap-2">
+                {/* Los mismos botones del formulario de edición, pero abren los
+                    modales en modo consulta. Sin hasPerm: ver la ficha técnica
+                    o las cotizaciones no debería exigir permiso de edición. */}
                 <Button type="button" size="sm" variant="ghost" onClick={() => setShowFilesModal(true)}>
                     <FileText size={18} />
                     Fichas
                 </Button>
-            }
+                <Button type="button" size="sm" variant="ghost" onClick={() => setShowQuotations(true)}>
+                    <FileStack size={18} />
+                    Cotizaciones
+                </Button>
+            </div>}
         >
             <ViewDetailCard fields={[
                 { label: "Placa SENA",          value: material.material_barcode_sena ?? "—" },
@@ -120,6 +126,16 @@ export default function ViewReturnablePage() {
             setNewTechFiles={() => {}}
             setRemovedFileIds={() => {}}
         />
+
+        {/* Solo lectura: se listan las cotizaciones del material y se pueden
+            abrir en otra pestaña, pero no cambiar. Eso se hace en editar. */}
+        {showQuotations && (
+            <QuotationPickerModal
+                readOnly
+                quotations={material.quotations ?? []}
+                onClose={() => setShowQuotations(false)}
+            />
+        )}
         </>
     );
 }

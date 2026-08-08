@@ -59,6 +59,14 @@ export const getGroupsColumns = (setGroups) => [
     },
 
     {
+        // Ayuda a entender por qué un grupo no se deja desactivar, y de paso
+        // dice a cuántos afecta el botón de retirar usuarios
+        accessorKey: "users_count",
+        header: "Usuarios 🖇️",
+        cell: ({ row }) => row.original.users_count ?? 0,
+    },
+
+    {
         accessorKey: "is_active",
         header: "Estado",
         cell: ({ row }) => <GroupStatusCell group={row.original} setGroups={setGroups} />,

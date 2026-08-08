@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate, useBlocker } from "react-router-dom";
-import { FilePenLine, Image, FileText } from "lucide-react";
+import { FilePenLine, Image, FileText, FileStack } from "lucide-react";
 import { Ping } from "ldrs/react";
 import "ldrs/react/Ping.css";
 
@@ -27,7 +27,9 @@ import {
     getMaterialStates,
     getInventoryNames,
     getCategories,
-    conOpcionActual
+    conOpcionActual,
+    conCuentadantesActuales,
+    cuentadantesSinMarca
 } from "../services/selectService";
 
 import {
@@ -37,6 +39,7 @@ import {
 } from "../services/returnableService";
 
 import { returnableEditSchema } from "../schemas/returnableEditSchema";
+import { QuotationPickerModal } from "@/features/quotations";
 
 const API_URL = "/api";
 
@@ -52,6 +55,11 @@ async function updateReturnable(id, formData, isActive, newImageFile) {
     // Inventario y categoría son obligatorios (validados por Zod y por el serializer)
     data.append("inventory_name", formData.inventoryName);
     data.append("category", formData.category);
+    // Cotizaciones: una entrada por cada una, igual que los cuentadantes.
+    // El backend exige de 1 a 3.
+    ;(formData.quotations ?? []).forEach(id => {
+        data.append("quotation_ids", Number(id))
+    })
     // Varios cuentadantes: se envía una entrada por cada uno bajo la misma
     // clave, que es como DRF espera un ManyToMany en multipart
     ;(formData.inventoryManagers ?? []).forEach(managerId => {
@@ -121,6 +129,8 @@ export default function ReturnableEditForm() {
         materialPurchaseDate: "",
         materialEntryDate: "",
         materialState: "",
+        // Ids de las cotizaciones enlazadas, como texto. De 1 a 3.
+        quotations: [],
     });
 
     const [isActive, setIsActive] = useState(true);
@@ -146,12 +156,18 @@ export default function ReturnableEditForm() {
     /* Nombres legibles del inventario y la categoría que ya tiene el material.
        Sirven para volver a mostrarlos en el select si quedaron desactivados */
     const [etiquetasActuales, setEtiquetasActuales] = useState({ inventoryName: "", category: "", brand: "" });
+    /* Cuentadantes que el material ya tiene, con su nombre. Permiten
+       seguir mostrándolos aunque hoy no aparezcan en el listado */
+    const [cuentadantesActuales, setCuentadantesActuales] = useState([]);
     const materialTypes = getMaterialTypes();
     const materialStateOptions = getMaterialStates();
+    // Cuentadantes asignados que ya perdieron la marca. Vacío = todo en orden.
+    const sinMarca = cuentadantesSinMarca(cuentadantesActuales);
 
     /* Modales */
     const [showImageModal, setShowImageModal] = useState(false);
     const [showFilesModal, setShowFilesModal] = useState(false);
+    const [showQuotations, setShowQuotations] = useState(false);
     // Vigilate de los cambios
     const [isDirty, setIsDirty] = useState(false);
     const blocker = useBlocker(
@@ -216,6 +232,9 @@ export default function ReturnableEditForm() {
                     materialPurchaseDate: material.material_purchase_date ?? "",
                     materialEntryDate: material.material_entry_date ?? "",
                     materialState: material.material_state ?? "",
+                    // El backend devuelve las cotizaciones completas; aquí
+                    // solo interesan los ids para el modal de selección
+                    quotations: (material.quotations ?? []).map(q => String(q.id)),
                 });
 
                 setCurrentImage(material.material_image ?? null);
@@ -229,6 +248,7 @@ export default function ReturnableEditForm() {
                     category: material.category_display ?? "",
                     brand: material.brand_name ?? "",
                 });
+                setCuentadantesActuales(material.inventory_managers_display ?? []);
             } catch {
                 Alert.error("Error", "No se pudo cargar el material");
             } finally {
@@ -327,6 +347,18 @@ export default function ReturnableEditForm() {
                             <FileText size={18} />
                             Fichas
                         </Button>
+                        <div className="flex flex-col">
+                            <Button type="button" size="sm" variant="ghost" onClick={() => setShowQuotations(true)}>
+                                <FileStack size={18} />
+                                Cotizaciones ({formData.quotations.length})
+                            </Button>
+                            {/* El botón por sí solo no dice que sean obligatorias.
+                                Sin este aviso, quien nunca abre el modal no
+                                entiende por qué no puede guardar. */}
+                            {errors.quotations && (
+                                <span className="text-red-800 text-sm">{errors.quotations}</span>
+                            )}
+                        </div>
                     </div>
                 </div>
 
@@ -421,6 +453,16 @@ export default function ReturnableEditForm() {
                                 variant="isEdit"
                             />
                         </div>
+                        <div>
+                            <p className="parrafo-edit-style">Ubicación:</p>
+                            <Input
+                                name="materialLocation"
+                                value={formData.materialLocation}
+                                onChange={handleChange}
+                                error={errors.materialLocation}
+                                variant="isEdit"
+                            />
+                        </div>
 
                     </div>
 
@@ -498,6 +540,33 @@ export default function ReturnableEditForm() {
                                 />
                             </div>
                         )}
+                        <div>
+                            <p className="parrafo-edit-style">Cuentadante(s):</p>
+                            {/* Varios cuentadantes, mínimo uno. MultiSelect no
+                                usa event.target: entrega (name, valor) directo */}
+                            <MultiSelect
+                                widthClass="w-full lg:w-60"
+                                options={conCuentadantesActuales(managers, cuentadantesActuales)}
+                                name="inventoryManagers"
+                                value={formData.inventoryManagers}
+                                onChange={(name, newValue) =>
+                                    setFormData(prev => ({ ...prev, [name]: newValue }))
+                                }
+                                error={errors.inventoryManagers}
+                                variant="isEdit"
+                            />
+                            {/* Advertencia, no bloqueo: el material se puede
+                                guardar tal cual y es la persona quien decide si
+                                le cambia el cuentadante. */}
+                            {sinMarca.length > 0 && (
+                                <p className="text-amber-700 text-sm mt-1">
+                                    {sinMarca.length === 1
+                                        ? `${sinMarca[0]} ya no es cuentadante.`
+                                        : `Estos usuarios ya no son cuentadantes: ${sinMarca.join(", ")}.`}
+                                    {" "}Puedes dejarlo así o asignar otro.
+                                </p>
+                            )}
+                        </div>
 
                     </div>
 
@@ -542,33 +611,7 @@ export default function ReturnableEditForm() {
                             />
                         </div>
 
-                        <div>
-                            <p className="parrafo-edit-style">Cuentadante(s):</p>
-                            {/* Varios cuentadantes, mínimo uno. MultiSelect no
-                                usa event.target: entrega (name, valor) directo */}
-                            <MultiSelect
-                                widthClass="w-full lg:w-60"
-                                options={managers}
-                                name="inventoryManagers"
-                                value={formData.inventoryManagers}
-                                onChange={(name, newValue) =>
-                                    setFormData(prev => ({ ...prev, [name]: newValue }))
-                                }
-                                error={errors.inventoryManagers}
-                                variant="isEdit"
-                            />
-                        </div>
-
-                        <div>
-                            <p className="parrafo-edit-style">Ubicación:</p>
-                            <Input
-                                name="materialLocation"
-                                value={formData.materialLocation}
-                                onChange={handleChange}
-                                error={errors.materialLocation}
-                                variant="isEdit"
-                            />
-                        </div>
+                        
                         <div>
                             <p className="parrafo-edit-style">Descripción:</p>
                             <Textarea
@@ -618,6 +661,20 @@ export default function ReturnableEditForm() {
                 setNewTechFiles={setNewTechFiles}
                 setRemovedFileIds={setRemovedFileIds}
             />
+
+            {/* Cotizaciones — se eligen de las ya cargadas en Configuración.
+                El overlay lo pone el propio Modal compartido */}
+            {showQuotations && (
+                <QuotationPickerModal
+                    value={formData.quotations}
+                    onConfirm={(ids) => {
+                        setFormData((prev) => ({ ...prev, quotations: ids }));
+                        setErrors((prev) => ({ ...prev, quotations: undefined }));
+                        setIsDirty(true);
+                    }}
+                    onClose={() => setShowQuotations(false)}
+                />
+            )}
 
         </div>
     );

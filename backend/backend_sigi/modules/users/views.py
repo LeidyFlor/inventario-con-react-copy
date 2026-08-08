@@ -2,6 +2,7 @@ from rest_framework.decorators import action
 from rest_framework import viewsets, status
 from rest_framework.response import Response
 from django.contrib.auth.models import Group, Permission
+from django.db.models import Count
 from .models import Users, GroupProfile
 from .serializers import UserSerializer, UserCreateSerializer, UserUpdateSerializer, ChangePasswordSerializer, GroupSerializer
 from .constants import esta_dentro_de_vigencia
@@ -515,6 +516,7 @@ class GroupViewSet(viewsets.ViewSet):
       POST   /api/groups/                    - crear grupo
       PUT    /api/groups/{id}/               - editar nombre del grupo
       DELETE /api/groups/{id}/               - desactivar grupo (soft delete)
+      POST   /api/groups/{id}/unlink-users/  - sacar del grupo a todos sus usuarios
       POST   /api/groups/{id}/permissions/   - asignar permisos al grupo
     """
 
@@ -522,7 +524,10 @@ class GroupViewSet(viewsets.ViewSet):
         """GET /api/groups/ — listar grupos con sus permisos e is_active"""
         deny = deny_if_no_perm(request, 'auth.view_group')
         if deny: return deny
-        groups = Group.objects.prefetch_related('permissions', 'profile').all()
+        # El conteo va anotado para que el serializer no consulte por cada fila
+        groups = Group.objects.prefetch_related('permissions', 'profile').annotate(
+            users_count_annotated=Count('user')
+        )
         serializer = GroupSerializer(groups, many=True)
         return Response(serializer.data)
 
@@ -604,6 +609,51 @@ class GroupViewSet(viewsets.ViewSet):
         profile.save()
         log_action(request.user, "DESACTIVAR", "Grupo", group.name)
         return Response({'message': 'Grupo desactivado correctamente'})
+
+    @action(detail=True, methods=['post'], url_path='unlink-users')
+    def unlink_users(self, request, pk=None):
+        """
+        POST /api/groups/{id}/unlink-users/
+
+        Saca del grupo a TODOS los usuarios que pertenecen a él.
+
+        Es el complemento de destroy(): un grupo con usuarios asignados no se
+        puede desactivar, y quitarlos uno por uno desde cada usuario sería
+        impracticable cuando son muchos.
+
+        Los usuarios NO se borran ni se desactivan: solo dejan de pertenecer a
+        este grupo. Los que no tengan otro grupo se quedan sin ninguno, y por
+        lo tanto sin los permisos que heredaban de él, así que la respuesta
+        informa cuántos quedan en esa situación para poder advertirlo antes.
+        """
+        deny = deny_if_no_perm(request, 'auth.change_group')
+        if deny: return deny
+
+        try:
+            group = Group.objects.get(pk=pk)
+        except Group.DoesNotExist:
+            return Response({'error': 'Grupo no encontrado'}, status=status.HTTP_404_NOT_FOUND)
+
+        usuarios = group.user_set.all()
+        total = usuarios.count()
+        if total == 0:
+            return Response({
+                'message': 'El grupo no tiene usuarios asignados.',
+                'unlinked': 0,
+                'left_without': 0,
+            })
+
+        # Cuántos quedarán sin ningún grupo: los que solo pertenecen a este.
+        # Se calcula ANTES de quitarlos.
+        sin_ninguno = sum(1 for u in usuarios if u.groups.count() == 1)
+
+        group.user_set.clear()
+        log_action(request.user, "DESENLAZAR", "Grupo", f"{group.name} — {total} usuario(s)")
+        return Response({
+            'message': f'Se retiraron {total} usuario(s) del grupo.',
+            'unlinked': total,
+            'left_without': sin_ninguno,
+        })
 
     @action(detail=True, methods=['post'], url_path='permissions')
     def assign_permissions(self, request, pk=None):

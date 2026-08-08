@@ -185,7 +185,7 @@ class ConsumableMaterialViewSet(viewsets.ViewSet):
         if deny: return deny
         materials = ConsumableMaterial.objects.select_related(
             'brand', 'inventory_name', 'category'
-        ).prefetch_related('technical_files', 'inventory_managers').all()
+        ).prefetch_related('technical_files', 'inventory_managers', 'quotation_links__quotation').all()
         serializer = ConsumableMaterialSerializer(materials, many=True)
         return Response(serializer.data)
 
@@ -195,7 +195,7 @@ class ConsumableMaterialViewSet(viewsets.ViewSet):
         try:
             material = ConsumableMaterial.objects.select_related(
                 'brand', 'inventory_name', 'category'
-            ).prefetch_related('technical_files', 'inventory_managers').get(pk=pk)
+            ).prefetch_related('technical_files', 'inventory_managers', 'quotation_links__quotation').get(pk=pk)
         except ConsumableMaterial.DoesNotExist:
             return Response({'error': 'Material no encontrado'}, status=status.HTTP_404_NOT_FOUND)
         return Response(ConsumableMaterialSerializer(material).data)
@@ -414,7 +414,7 @@ class ReturnableMaterialViewSet(viewsets.ViewSet):
         if deny: return deny
         materials = ReturnableMaterial.objects.select_related(
             'brand', 'inventory_name', 'category'
-        ).prefetch_related('technical_files', 'inventory_managers').all()
+        ).prefetch_related('technical_files', 'inventory_managers', 'quotation_links__quotation').all()
         serializer = ReturnableMaterialSerializer(materials, many=True)
         return Response(serializer.data)
 
@@ -424,7 +424,7 @@ class ReturnableMaterialViewSet(viewsets.ViewSet):
         try:
             material = ReturnableMaterial.objects.select_related(
                 'brand', 'inventory_name', 'category'
-            ).prefetch_related('technical_files', 'inventory_managers').get(pk=pk)
+            ).prefetch_related('technical_files', 'inventory_managers', 'quotation_links__quotation').get(pk=pk)
         except ReturnableMaterial.DoesNotExist:
             return Response({'error': 'Material no encontrado'}, status=status.HTTP_404_NOT_FOUND)
         return Response(ReturnableMaterialSerializer(material).data)

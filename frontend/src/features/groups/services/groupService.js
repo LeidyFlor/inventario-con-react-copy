@@ -37,6 +37,23 @@ export async function updateGroup(id, name) {
     return res.json()
 }
 
+// Saca del grupo a todos sus usuarios.
+//
+// Es el paso previo para poder desactivarlo: el backend rechaza desactivar un
+// grupo con usuarios asignados. Devuelve { unlinked, left_without }: cuántos
+// se retiraron y cuántos quedaron sin ningún grupo.
+export async function unlinkGroupUsers(id) {
+    const res = await fetch(`${API_URL}/${id}/unlink-users/`, {
+        method: "POST",
+        headers: authHeaders(),
+    })
+    if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        throw new Error(err.error ?? "No se pudieron retirar los usuarios del grupo")
+    }
+    return res.json()
+}
+
 export async function toggleGroupStatus(id, isActive) {
     if (!isActive) {
         // Desactivar → DELETE (soft delete con guardia en backend)

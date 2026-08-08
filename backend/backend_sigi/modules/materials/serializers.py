@@ -1,5 +1,23 @@
 from rest_framework import serializers
-from .models import Brand, ConsumableMaterial, ReturnableMaterial, TechnicalSheetFile
+
+from backend_sigi.modules.users.models import Users
+from backend_sigi.modules.quotation.models import Quotation
+from backend_sigi.modules.quotation.serializers import QuotationSerializer
+
+from .models import (
+    Brand,
+    ConsumableMaterial,
+    MaterialQuotation,
+    ReturnableMaterial,
+    TechnicalSheetFile,
+)
+
+
+# Un material debe quedar enlazado de 1 a 3 cotizaciones. El mínimo y el
+# máximo se validan aquí porque la base de datos no puede exigir una cantidad
+# de filas relacionadas.
+MIN_COTIZACIONES = 1
+MAX_COTIZACIONES = 3
 
 
 # La marca y el modelo son opcionales en los dos tipos de material: hay
@@ -65,6 +83,107 @@ class NombresLegiblesMixin(metaclass=serializers.SerializerMetaclass):
     )
 
 
+class CotizacionesLecturaMixin(metaclass=serializers.SerializerMetaclass):
+    """
+    Expone las cotizaciones enlazadas al material, para las tablas, las
+    pantallas de visualizar y el modal de selección.
+
+    Igual que en los demás mixins, la metaclase es obligatoria: sin ella DRF
+    no recoge los campos declarados en una clase base.
+    """
+    quotations = serializers.SerializerMethodField()
+
+    def get_quotations(self, obj):
+        # quotation_links es la tabla intermedia; de cada enlace se saca la
+        # cotización en sí, que es lo que interesa mostrar
+        cotizaciones = [enlace.quotation for enlace in obj.quotation_links.all()]
+        return QuotationSerializer(cotizaciones, many=True).data
+
+
+class CotizacionesEscrituraMixin(metaclass=serializers.SerializerMetaclass):
+    """
+    Recibe la lista de cotizaciones que se van a enlazar al material.
+
+    Llega como 'quotation_ids' (una entrada por cotización, igual que los
+    cuentadantes) y no es un campo del modelo, así que se saca de
+    validated_data antes de guardar y los enlaces se crean aparte en la tabla
+    intermedia.
+
+    Al crear es obligatorio; al editar es opcional, y si no viene se dejan los
+    enlaces como están (así un PATCH parcial no borra las cotizaciones sin
+    querer).
+    """
+    quotation_ids = serializers.PrimaryKeyRelatedField(
+        many=True,
+        write_only=True,
+        required=False,
+        queryset=Quotation.objects.all(),
+    )
+
+    def get_fields(self):
+        """
+        Vuelve el campo obligatorio solo al crear.
+
+        La obligatoriedad NO puede ir en validate(): los cuatro serializers
+        concretos definen el suyo propio y, al estar más abajo en la jerarquía,
+        pisarían el de este mixin sin llamarlo. get_fields() no lo redefine
+        ninguno, así que es el punto seguro.
+        """
+        fields = super().get_fields()
+        campo = fields.get('quotation_ids')
+        # self.instance es None al crear; al editar se dejan como están si no
+        # vienen en la petición
+        if campo is not None and self.instance is None:
+            campo.required = True
+            campo.allow_empty = False
+        return fields
+
+    def validate_quotation_ids(self, value):
+        # set() para no contar dos veces la misma cotización repetida
+        unicas = {c.pk for c in value}
+        if len(unicas) < MIN_COTIZACIONES:
+            raise serializers.ValidationError(
+                f'Debes enlazar al menos {MIN_COTIZACIONES} cotización.'
+            )
+        if len(unicas) > MAX_COTIZACIONES:
+            raise serializers.ValidationError(
+                f'Solo se pueden enlazar hasta {MAX_COTIZACIONES} cotizaciones.'
+            )
+        return value
+
+    def _sincronizar_cotizaciones(self, material, cotizaciones):
+        """
+        Deja el material enlazado exactamente a las cotizaciones recibidas.
+
+        Se borran los enlaces anteriores y se crean los nuevos. Es más simple
+        que calcular diferencias y el número de filas siempre es 3 o menos.
+        """
+        campo = (
+            'consumable_material' if isinstance(material, ConsumableMaterial)
+            else 'material'
+        )
+        material.quotation_links.all().delete()
+        MaterialQuotation.objects.bulk_create([
+            MaterialQuotation(quotation=cotizacion, **{campo: material})
+            # dict.fromkeys en vez de set() para no perder el orden elegido
+            for cotizacion in dict.fromkeys(cotizaciones)
+        ])
+
+    def create(self, validated_data):
+        cotizaciones = validated_data.pop('quotation_ids', [])
+        material = super().create(validated_data)
+        self._sincronizar_cotizaciones(material, cotizaciones)
+        return material
+
+    def update(self, instance, validated_data):
+        # None distingue "no vino en la petición" de "vino vacío"
+        cotizaciones = validated_data.pop('quotation_ids', None)
+        material = super().update(instance, validated_data)
+        if cotizaciones is not None:
+            self._sincronizar_cotizaciones(material, cotizaciones)
+        return material
+
+
 class CuentadantesMixin(metaclass=serializers.SerializerMetaclass):
     """
     Un material puede estar a cargo de varios cuentadantes, y al menos uno es
@@ -81,12 +200,59 @@ class CuentadantesMixin(metaclass=serializers.SerializerMetaclass):
     """
     inventory_manager_name = serializers.SerializerMethodField()
 
+    # Los mismos cuentadantes pero como pares id/nombre. inventory_manager_name
+    # sirve para mostrar, pero el MultiSelect del formulario de edición necesita
+    # la etiqueta de cada id por separado para poder seguir mostrando a los que
+    # ya no aparecen en /api/inventory-managers/.
+    inventory_managers_display = serializers.SerializerMethodField()
+
     def get_inventory_manager_name(self, obj):
         return ", ".join(nombre_legible(u) for u in obj.inventory_managers.all())
+
+    def get_inventory_managers_display(self, obj):
+        return [
+            {'id': u.id, 'label': nombre_legible(u), 'is_accountant': u.is_accountant}
+            for u in obj.inventory_managers.all()
+        ]
+
+    def get_fields(self):
+        """
+        Amplía el queryset de inventory_managers a todos los usuarios.
+
+        El modelo declara limit_choices_to={'is_accountant': True}, y DRF lo
+        respeta al armar el campo. El problema: si a un usuario le quitan la
+        marca de cuentadante, los materiales que ya tenía asignados dejan de
+        poder guardarse. Al editarlos, el formulario reenvía su id y DRF
+        responde 'Invalid pk - object does not exist'.
+
+        La regla NO se pierde: validate_inventory_managers de abajo sigue
+        exigiendo que todo cuentadante NUEVO lo sea de verdad. Lo único que se
+        permite es conservar los que ya estaban.
+        """
+        fields = super().get_fields()
+        campo = fields.get('inventory_managers')
+        if campo is not None:
+            campo.child_relation.queryset = Users.objects.all()
+        return fields
 
     def validate_inventory_managers(self, value):
         if not value:
             raise serializers.ValidationError('Debes asignar al menos un cuentadante.')
+
+        # Los que ya estaban asignados se conservan aunque hoy no sean
+        # cuentadantes; solo se exige la marca a los que se agregan ahora
+        ya_asignados = set()
+        if self.instance is not None:
+            ya_asignados = set(self.instance.inventory_managers.values_list('pk', flat=True))
+
+        invalidos = [
+            nombre_legible(u) for u in value
+            if not u.is_accountant and u.pk not in ya_asignados
+        ]
+        if invalidos:
+            raise serializers.ValidationError(
+                'Estos usuarios no son cuentadantes: ' + ', '.join(invalidos)
+            )
         return value
 
 #para el crud de marcas
@@ -122,7 +288,7 @@ class TechnicalSheetFileSerializer(serializers.ModelSerializer):
         read_only_fields = ['id', 'uploaded_at']
 
 #Para listar — incluye campos calculados y nombres legibles en vez de solo ids"
-class ConsumableMaterialSerializer(NombresLegiblesMixin, CuentadantesMixin, serializers.ModelSerializer):
+class ConsumableMaterialSerializer(NombresLegiblesMixin, CotizacionesLecturaMixin, CuentadantesMixin, serializers.ModelSerializer):
 
     # Campos calculados (@property del modelo) — read_only porque no se guardan en BD
     material_total_price = serializers.SerializerMethodField()
@@ -151,6 +317,7 @@ class ConsumableMaterialSerializer(NombresLegiblesMixin, CuentadantesMixin, seri
             'category_display',
             'inventory_managers',
             'inventory_manager_name',
+            'inventory_managers_display',
             'material_name',
             'material_description',
             *CAMPOS_COMUNES_NUEVOS,
@@ -165,11 +332,12 @@ class ConsumableMaterialSerializer(NombresLegiblesMixin, CuentadantesMixin, seri
             'is_active',
             'material_state',
             'technical_files',
+            'quotations',
         ]
         read_only_fields = ['id', 'material_quantity_loaned']
 
 #Para crear — sin quantity_loaned (empieza en 0) ni state (empieza disponible)
-class ConsumableMaterialCreateSerializer(CuentadantesMixin, serializers.ModelSerializer):
+class ConsumableMaterialCreateSerializer(CotizacionesEscrituraMixin, CuentadantesMixin, serializers.ModelSerializer):
 
     def validate(self, data):
         # Si tiene placa SENA la cantidad debe ser exactamente 1
@@ -187,6 +355,7 @@ class ConsumableMaterialCreateSerializer(CuentadantesMixin, serializers.ModelSer
             'material_name',
             'material_description',
             *CAMPOS_COMUNES_NUEVOS,
+            'quotation_ids',
             'material_barcode_sena',
             'material_quantity',
             'material_unit_price',
@@ -197,7 +366,7 @@ class ConsumableMaterialCreateSerializer(CuentadantesMixin, serializers.ModelSer
         extra_kwargs = CAMPOS_OPCIONALES_MATERIAL
 
 #Para editar — permite cambiar is_active y state con sus validaciones
-class ConsumableMaterialUpdateSerializer(CuentadantesMixin, serializers.ModelSerializer):
+class ConsumableMaterialUpdateSerializer(CotizacionesEscrituraMixin, CuentadantesMixin, serializers.ModelSerializer):
 
     def validate(self, data):
         # self.instance es el objeto actual en BD (disponible en updates)
@@ -232,6 +401,7 @@ class ConsumableMaterialUpdateSerializer(CuentadantesMixin, serializers.ModelSer
             'material_name',
             'material_description',
             *CAMPOS_COMUNES_NUEVOS,
+            'quotation_ids',
             'material_barcode_sena',
             'material_quantity',
             'material_unit_price',
@@ -248,7 +418,7 @@ class ConsumableMaterialUpdateSerializer(CuentadantesMixin, serializers.ModelSer
 # ──────────────────────────────────────────────────────────────────────────────
 
 # Para listar/ver detalle — expone fichas técnicas y nombres legibles
-class ReturnableMaterialSerializer(NombresLegiblesMixin, CuentadantesMixin, serializers.ModelSerializer):
+class ReturnableMaterialSerializer(NombresLegiblesMixin, CotizacionesLecturaMixin, CuentadantesMixin, serializers.ModelSerializer):
 
     # Campos calculados heredados del modelo abstracto
     material_total_price = serializers.SerializerMethodField()
@@ -277,6 +447,7 @@ class ReturnableMaterialSerializer(NombresLegiblesMixin, CuentadantesMixin, seri
             'category_display',
             'inventory_managers',
             'inventory_manager_name',
+            'inventory_managers_display',
             'material_name',
             'material_description',
             'material_barcode_sena',   # obligatorio en devolutivos
@@ -293,12 +464,13 @@ class ReturnableMaterialSerializer(NombresLegiblesMixin, CuentadantesMixin, seri
             'is_active',
             'material_state',
             'technical_files',
+            'quotations',
         ]
         read_only_fields = ['id', 'material_quantity_loaned']
 
 
 # Para crear
-class ReturnableMaterialCreateSerializer(CuentadantesMixin, serializers.ModelSerializer):
+class ReturnableMaterialCreateSerializer(CotizacionesEscrituraMixin, CuentadantesMixin, serializers.ModelSerializer):
 
     # Cantidad opcional en el request — se calcula en validate()
     material_quantity = serializers.IntegerField(required=False, default=1)
@@ -342,6 +514,7 @@ class ReturnableMaterialCreateSerializer(CuentadantesMixin, serializers.ModelSer
             'material_unit_price',
             'material_location',
             *CAMPOS_COMUNES_NUEVOS,
+            'quotation_ids',
             'material_type',
             'material_dimensions',
             # material_image no va aquí — la view lo maneja vía request.FILES
@@ -350,7 +523,7 @@ class ReturnableMaterialCreateSerializer(CuentadantesMixin, serializers.ModelSer
 
 
 # Para editar — validaciones de estado + reglas por tipo de material
-class ReturnableMaterialUpdateSerializer(CuentadantesMixin, serializers.ModelSerializer):
+class ReturnableMaterialUpdateSerializer(CotizacionesEscrituraMixin, CuentadantesMixin, serializers.ModelSerializer):
 
     # Cantidad opcional — solo editable para herramienta sin placa
     material_quantity = serializers.IntegerField(required=False)
@@ -408,6 +581,7 @@ class ReturnableMaterialUpdateSerializer(CuentadantesMixin, serializers.ModelSer
             'material_unit_price',
             'material_location',
             *CAMPOS_COMUNES_NUEVOS,
+            'quotation_ids',
             'material_type',
             'material_dimensions',
             'is_active',
