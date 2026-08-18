@@ -435,11 +435,11 @@ export default function UserRegisterForm() {
                                     onClick={() => setDatosModalOpen(true)}
                                     className="text-small text-text-primary underline hover:opacity-70 transition-opacity text-left"
                                 >
-                                    Acepto tratamiento de datos personales
+                                    Acepto tratamiento de datos personales <span className="text-error">*</span>
                                 </button>
                             </div>
                             {errors.aceptaTratamientoDatos && (
-                                <span className="text-red-800 text-sm">
+                                <span className="text-red-800 text-caption">
                                     {errors.aceptaTratamientoDatos}
                                 </span>
                             )}

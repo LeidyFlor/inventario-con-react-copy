@@ -2,6 +2,7 @@ import { CircleUserRound, Search, Menu } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
 import { IconButtonReal, Dropdown, DropdownContent, DropdownItem, DropdownTrigger, Button, SearchField } from "@/shared";
+import { NotificationsBell } from "@/features/notifications";
 import { logout } from "@/features/auth/services/logoutService.js";
 import { Alert } from "@/shared";
 import { searchLoanByCode } from "@/features/loans/services/loanService";
@@ -118,14 +119,29 @@ export default function Header( { onMenuToggle } ) {
                         {/* Buscador de préstamos — solo si puede ver préstamos */}
                         {hasPerm(PERM.LOAN_VIEW) && (
                         <div ref={searchRef} className="flex items-center">
-                            <IconButtonReal
-                                variant="primary"
-                                arialLabel="Buscar"
-                                className={`md:hidden ${searchOpen ? "hidden" : "flex"}`}
-                                onClick={() => setSearchOpen(!searchOpen)}
-                            >
-                                <Search />
-                            </IconButtonReal>
+                            {/* Se quita del DOM en vez de ocultarlo con clases.
+                                Antes llevaba `hidden` cuando la barra estaba
+                                abierta, pero IconButtonReal ya trae inline-flex
+                                en sus estilos base: las dos son utilidades de
+                                display con la misma especificidad, y cuál gana
+                                lo decide el orden en que Tailwind las emite,
+                                no el orden en que se escriben. Ganaba
+                                inline-flex y la lupa seguía viéndose al lado
+                                del campo. Así no hay nada que pelear.
+
+                                md:hidden se conserva: de tablet grande en
+                                adelante la barra está siempre visible y este
+                                botón no hace falta. */}
+                            {!searchOpen && (
+                                <IconButtonReal
+                                    variant="primary"
+                                    arialLabel="Buscar"
+                                    className="md:hidden"
+                                    onClick={() => setSearchOpen(true)}
+                                >
+                                    <Search />
+                                </IconButtonReal>
+                            )}
 
                             {/* SearchField: en mobile depende del estado, en md+ siempre visible */}
                             <div className={`${searchOpen ? "flex" : "hidden"} md:flex`}>
@@ -143,11 +159,16 @@ export default function Header( { onMenuToggle } ) {
 
                         </div>
                         )}
+                        {/* Notificaciones */}
+                        <NotificationsBell />
+
                         {/* Icono de usuario */}
-                        <div className="p-10">
+                        <div className="p-2">
                             <Dropdown>
                                 <DropdownTrigger>
-                                    <IconButtonReal label="Usuario" arialLabel="Menu de usuario" variant="primary">
+                                    <IconButtonReal label="Usuario" arialLabel="Menu de usuario" variant="primary"
+                                        hitSize="60"
+                                    >
 
                                         <CircleUserRound />
 
@@ -171,9 +192,7 @@ export default function Header( { onMenuToggle } ) {
                                         </Link>
                                     </DropdownItem>
                                     )}
-                                    {/* Mi perfil siempre visible: cualquier usuario puede
-                                        consultar su propia información aunque no tenga
-                                        permiso para ver o listar otros usuarios */}
+                                    {/* Mi perfil siempre visible: cualquier usuario puede consultar su propia información aunque no tenga permiso para ver o listar otros usuarios */}
                                     <DropdownItem>
                                         <Link to="my-profile" className="block w-full">
                                             Mi perfil

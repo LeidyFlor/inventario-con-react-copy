@@ -31,7 +31,7 @@ export default function ListQuotationPage() {
     )
 
     return (
-        <div className="p-6 max-w-3xl mx-auto">
+        <div className="p-6 max-w-5xl mx-auto">
             <div className="flex justify-between">
                 <div className="mb-2 max-w-max">
                     <h1 className="flex gap-2 text-gradient-title text-h3 pb-0.5">

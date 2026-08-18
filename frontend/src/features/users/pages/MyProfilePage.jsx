@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { ViewPageTemplate, ViewDetailCard, Button } from "@/shared/";
 import { UserRound, KeyRound, ListTodo } from "lucide-react";
 import { Ping } from "ldrs/react";
@@ -25,6 +26,10 @@ export default function MyProfilePage() {
     const [tasks, setTasks]     = useState([]);
     const [showPasswordModal, setShowPasswordModal] = useState(false);
     const [viewTaskModalOpen, setViewTaskModalOpen] = useState(false);
+    // Tarea en la que debe abrir el modal. La campana de notificaciones llega
+    // aquí con ?tarea=12 para mostrar justo esa.
+    const [taskIndex, setTaskIndex] = useState(0);
+    const [searchParams] = useSearchParams();
 
     useEffect(() => {
         getMyProfile()
@@ -40,7 +45,20 @@ export default function MyProfilePage() {
                 )
                 const groupTasks = groupTasksArrays.flat()
 
-                setTasks([...userTasks, ...groupTasks])
+                const todas = [...userTasks, ...groupTasks]
+                setTasks(todas)
+
+                // Si vino ?tarea=, se abre el modal en esa tarea. Se hace aquí
+                // y no en otro efecto porque hasta este punto no se sabe en qué
+                // posición quedó dentro de la lista.
+                const idTarea = searchParams.get("tarea")
+                if (idTarea) {
+                    const i = todas.findIndex(t => String(t.id) === String(idTarea))
+                    if (i >= 0) {
+                        setTaskIndex(i)
+                        setViewTaskModalOpen(true)
+                    }
+                }
             })
             .catch(console.error)
             .finally(() => setLoading(false));
@@ -113,6 +131,7 @@ export default function MyProfilePage() {
                     <div onClick={(e) => e.stopPropagation()}>
                         <TaskViewModal
                             tasks={tasks}
+                            initialIndex={taskIndex}
                             onClose={() => setViewTaskModalOpen(false)}
                         />
                     </div>

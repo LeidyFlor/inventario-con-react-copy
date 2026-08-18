@@ -264,7 +264,7 @@ export default function Navbar( { isOpen, onClose }){
                         </div>
                         )}
                             <div onClick={handleLogOut}>
-                                    <IconButtonReal className="py-8 px-8" hitSize="50" label="Cerrar sesión" arialLabel="Menu de configuración" variant="primary" >
+                                    <IconButtonReal className="py-8 px-8" hitSize="60" label="Cerrar sesión" arialLabel="Menu de configuración" variant="primary" >
                                         <LogOut />
 
                                     </IconButtonReal>

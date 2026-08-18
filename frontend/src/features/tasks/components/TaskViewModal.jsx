@@ -2,8 +2,14 @@ import { IconButton, IconButtonReal } from "@/shared";
 import { useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
-export default function TaskViewModal({ tasks = [], onClose }) {
-    const [currentIndex, setCurrentIndex] = useState(0);
+/**
+ * @param {number} initialIndex  Tarea en la que abre el modal. Por defecto la
+ *                               primera. Lo usa la campana de notificaciones,
+ *                               que llega a Mi perfil con ?tarea=12 y necesita
+ *                               mostrar justo esa.
+ */
+export default function TaskViewModal({ tasks = [], onClose, initialIndex = 0 }) {
+    const [currentIndex, setCurrentIndex] = useState(initialIndex);
 
     const totalTasks = tasks.length;
     const currentTask = tasks[currentIndex];
