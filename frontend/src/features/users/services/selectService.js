@@ -1,8 +1,10 @@
+import { peticion } from "@/shared/services/peticion";
+
 const API_URL = "/api";
 
 export async function getDocumentTypes() {
     const token = sessionStorage.getItem("token")
-    const response = await fetch(`${API_URL}/document-types/`, {
+    const response = await peticion(`${API_URL}/document-types/`, {
         headers: {
             "Authorization": `Bearer ${token}`,
         }
@@ -23,7 +25,7 @@ export async function getDocumentTypes() {
  */
 export async function getUserTypes() {
   const token = sessionStorage.getItem("token");
-  const response = await fetch(`${API_URL}/groups/`, {
+  const response = await peticion(`${API_URL}/groups/`, {
     headers: {
       Authorization: `Bearer ${token}`,
     },

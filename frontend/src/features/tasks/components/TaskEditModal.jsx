@@ -90,13 +90,9 @@ export default function TaskEditModal({
             onSave(updated)
         } catch (error) {
             Alert.close()
-            try {
-                const parsed = JSON.parse(error.message)
-                const msg = Object.values(parsed).flat()[0] ?? "No se pudieron guardar los cambios."
-                Alert.error("Error al guardar", msg)
-            } catch {
-                Alert.error("Error al guardar", "No se pudieron guardar los cambios.")
-            }
+            // El servicio ya entrega el mensaje listo: antes aquí se
+            // parseaba un JSON metido dentro del texto del error
+            Alert.error("Error al guardar", error.message)
         }
     };
 

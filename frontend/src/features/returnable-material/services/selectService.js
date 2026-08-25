@@ -2,12 +2,14 @@
 // Mismo patrón que consumable-material — marca e inventoryManager vienen del backend,
 // tipos de material y estados son constantes que no necesitan request.
 
+import { peticion } from "@/shared/services/peticion";
+
 const API_URL = "/api"
 
 // Marcas activas para el select del formulario
 export async function getBrands() {
     const token = sessionStorage.getItem("token")
-    const response = await fetch(`${API_URL}/brands/`, {
+    const response = await peticion(`${API_URL}/brands/`, {
         headers: { "Authorization": `Bearer ${token}` }
     })
     const brands = await response.json()
@@ -86,7 +88,7 @@ export function cuentadantesSinMarca(actuales = []) {
 // materiales que ya los tenían, pero no se pueden elegir en uno nuevo.
 export async function getInventoryNames() {
     const token = sessionStorage.getItem("token")
-    const response = await fetch(`${API_URL}/inventory-names/`, {
+    const response = await peticion(`${API_URL}/inventory-names/`, {
         headers: { "Authorization": `Bearer ${token}` }
     })
     const inventoryNames = await response.json()
@@ -100,7 +102,7 @@ export async function getInventoryNames() {
 // de getMaterialTypes(), que es el tipo de material.
 export async function getCategories() {
     const token = sessionStorage.getItem("token")
-    const response = await fetch(`${API_URL}/categories/`, {
+    const response = await peticion(`${API_URL}/categories/`, {
         headers: { "Authorization": `Bearer ${token}` }
     })
     const categories = await response.json()
@@ -112,7 +114,7 @@ export async function getCategories() {
 // Cuentadantes (usuarios con is_accountant=True) para el select
 export async function getInventoryManagers() {
     const token = sessionStorage.getItem("token")
-    const response = await fetch(`${API_URL}/inventory-managers/`, {
+    const response = await peticion(`${API_URL}/inventory-managers/`, {
         headers: { "Authorization": `Bearer ${token}` }
     })
     const managers = await response.json()

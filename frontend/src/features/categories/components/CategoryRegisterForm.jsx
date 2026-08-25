@@ -25,13 +25,9 @@ export default function CategoryRegisterForm({ onClose, onCreated }) {
             onClose()
         } catch (err) {
             Alert.close()
-            try {
-                const errObj = JSON.parse(err.message)
-                const first = Object.values(errObj)[0]
-                setError(Array.isArray(first) ? first[0] : String(first))
-            } catch {
-                setError("No se pudo crear la categoría")
-            }
+            // El servicio ya entrega el mensaje listo: antes aquí se
+            // parseaba un JSON metido dentro del texto del error
+            setError(err.message)
         } finally {
             setSaving(false)
         }

@@ -1,5 +1,7 @@
 // src/features/loans/services/loanService.js
 
+import { peticion, mensajeDeError } from "@/shared/services/peticion";
+
 const API_URL = "/api"
 
 //  Helpers 
@@ -45,6 +47,8 @@ function mapLoan(loan) {
         loanDateOut:          loan.loan_date_out,
         loanDateIn:           loan.loan_date_in,
         loanStatus:           loan.loan_status,
+        // Solo para mostrar. loanStatus (crudo) se sigue usando para la lógica
+        loanStatusLabel:      loan.loan_status_display ?? loan.loan_status,
         identityConfirmed:    loan.identity_confirmed,
         // devolución
         returnedById:         loan.returned_by        ?? null,
@@ -73,7 +77,7 @@ function mapLoan(loan) {
  */
 export async function getLoans({ includeMaterials = false } = {}) {
     const query = includeMaterials ? "?include_materials=1" : ""
-    const response = await fetch(`${API_URL}/loans/${query}`, {
+    const response = await peticion(`${API_URL}/loans/${query}`, {
         headers: { Authorization: `Bearer ${getToken()}` },
     })
     if (!response.ok) throw new Error("Error al obtener préstamos")
@@ -84,7 +88,7 @@ export async function getLoans({ includeMaterials = false } = {}) {
 //  GET /api/loans/{id}/ 
 
 export async function getLoan(id) {
-    const response = await fetch(`${API_URL}/loans/${id}/`, {
+    const response = await peticion(`${API_URL}/loans/${id}/`, {
         headers: { Authorization: `Bearer ${getToken()}` },
     })
     if (!response.ok) throw new Error("Error al obtener el préstamo")
@@ -97,7 +101,7 @@ export async function getLoan(id) {
 
 // identityToken: UUID del token confirmado (opcional)
 export async function createLoan(formData, items, identityToken = null) {
-    const response = await fetch(`${API_URL}/loans/`, {
+    const response = await peticion(`${API_URL}/loans/`, {
         method: "POST",
         headers: {
             Authorization:  `Bearer ${getToken()}`,
@@ -121,8 +125,7 @@ export async function createLoan(formData, items, identityToken = null) {
         }),
     })
     if (!response.ok) {
-        const error = await response.json()
-        throw new Error(JSON.stringify(error))
+        throw new Error(await mensajeDeError(response, "No se pudo completar la operación"));
     }
     const data = await response.json()
     return mapLoan(data)
@@ -132,7 +135,7 @@ export async function createLoan(formData, items, identityToken = null) {
 // Solo envía los campos que se pueden editar
 
 export async function updateLoan(id, formData) {
-    const response = await fetch(`${API_URL}/loans/${id}/`, {
+    const response = await peticion(`${API_URL}/loans/${id}/`, {
         method: "PATCH",
         headers: {
             Authorization:  `Bearer ${getToken()}`,
@@ -145,8 +148,7 @@ export async function updateLoan(id, formData) {
         }),
     })
     if (!response.ok) {
-        const error = await response.json()
-        throw new Error(JSON.stringify(error))
+        throw new Error(await mensajeDeError(response, "No se pudo completar la operación"));
     }
     const data = await response.json()
     return mapLoan(data)
@@ -158,7 +160,7 @@ export async function updateLoan(id, formData) {
 
 // returned_by ya no se envía: el backend lo toma del usuario en sesión
 export async function returnLoan(id, { items, returnObservations = "" }) {
-    const response = await fetch(`${API_URL}/loans/${id}/return/`, {
+    const response = await peticion(`${API_URL}/loans/${id}/return/`, {
         method: "POST",
         headers: {
             Authorization:  `Bearer ${getToken()}`,
@@ -170,8 +172,7 @@ export async function returnLoan(id, { items, returnObservations = "" }) {
         }),
     })
     if (!response.ok) {
-        const error = await response.json()
-        throw new Error(JSON.stringify(error))
+        throw new Error(await mensajeDeError(response, "No se pudo completar la operación"));
     }
     return mapLoan(await response.json())
 }
@@ -181,7 +182,7 @@ export async function returnLoan(id, { items, returnObservations = "" }) {
 // (accepted_by se toma automáticamente del usuario logueado en el backend)
 
 export async function acceptReturn(id, { acceptObservations = "" } = {}) {
-    const response = await fetch(`${API_URL}/loans/${id}/accept-return/`, {
+    const response = await peticion(`${API_URL}/loans/${id}/accept-return/`, {
         method: "POST",
         headers: {
             Authorization:  `Bearer ${getToken()}`,
@@ -190,8 +191,7 @@ export async function acceptReturn(id, { acceptObservations = "" } = {}) {
         body: JSON.stringify({ accept_observations: acceptObservations }),
     })
     if (!response.ok) {
-        const error = await response.json()
-        throw new Error(JSON.stringify(error))
+        throw new Error(await mensajeDeError(response, "No se pudo completar la operación"));
     }
     return mapLoan(await response.json())
 }
@@ -200,13 +200,12 @@ export async function acceptReturn(id, { acceptObservations = "" } = {}) {
 // Elimina un ítem del préstamo y restaura su inventario
 
 export async function removeLoanItem(loanId, itemId) {
-    const response = await fetch(`${API_URL}/loans/${loanId}/items/${itemId}/`, {
+    const response = await peticion(`${API_URL}/loans/${loanId}/items/${itemId}/`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${getToken()}` },
     })
     if (!response.ok) {
-        const error = await response.json()
-        throw new Error(JSON.stringify(error))
+        throw new Error(await mensajeDeError(response, "No se pudo completar la operación"));
     }
     return mapLoan(await response.json())
 }
@@ -216,7 +215,7 @@ export async function removeLoanItem(loanId, itemId) {
 // ANTES de crear el préstamo (no necesita loan ID)
 
 export async function verifyToken(tokenUUID) {
-    const response = await fetch(`${API_URL}/loans/verify-token/`, {
+    const response = await peticion(`${API_URL}/loans/verify-token/`, {
         method: "POST",
         headers: {
             Authorization:  `Bearer ${getToken()}`,
@@ -234,7 +233,7 @@ export async function verifyToken(tokenUUID) {
 // Ambos deben abrir su enlace para que el préstamo pueda crearse.
 
 export async function createIdentityToken(lenderId, requesterId, requesterEmail = "") {
-    const response = await fetch(`${API_URL}/loans/identity-token/`, {
+    const response = await peticion(`${API_URL}/loans/identity-token/`, {
         method: "POST",
         headers: {
             Authorization:  `Bearer ${getToken()}`,
@@ -249,8 +248,7 @@ export async function createIdentityToken(lenderId, requesterId, requesterEmail 
         ),
     })
     if (!response.ok) {
-        const error = await response.json()
-        throw new Error(JSON.stringify(error))
+        throw new Error(await mensajeDeError(response, "No se pudo completar la operación"));
     }
     return response.json() // { token, message, errores_envio }
 }
@@ -259,7 +257,7 @@ export async function createIdentityToken(lenderId, requesterId, requesterEmail 
 // Llámalo cuando el prestador presiona "Ya confirmé"
 
 export async function checkIdentity(loanId, token) {
-    const response = await fetch(`${API_URL}/loans/${loanId}/check-identity/`, {
+    const response = await peticion(`${API_URL}/loans/${loanId}/check-identity/`, {
         method: "POST",
         headers: {
             Authorization:  `Bearer ${getToken()}`,
@@ -268,19 +266,17 @@ export async function checkIdentity(loanId, token) {
         body: JSON.stringify({ token }),
     })
     if (!response.ok) {
-        const error = await response.json()
-        throw new Error(JSON.stringify(error))
+        throw new Error(await mensajeDeError(response, "No se pudo completar la operación"));
     }
     return response.json() // { identity_confirmed: true }
 }
 
 export async function searchLoanByCode(code) {
-    const response = await fetch(`${API_URL}/loans/search/?code=${encodeURIComponent(code)}`, {
+    const response = await peticion(`${API_URL}/loans/search/?code=${encodeURIComponent(code)}`, {
         headers: { Authorization: `Bearer ${getToken()}` },
     })
     if (!response.ok) {
-        const error = await response.json()
-        throw new Error(error.error ?? "Préstamo no encontrado")
+        throw new Error(await mensajeDeError(response, "Préstamo no encontrado"));
     }
     return response.json() // { id }
 }

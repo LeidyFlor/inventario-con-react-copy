@@ -2,9 +2,11 @@ import { useState } from "react"
 import { Input, Button, Modal, Alert, IconButton } from "@/shared"
 import { restorePasswordSchema } from "@/features/auth/schemas/restorePasswordSchema"
 
+import { peticion, leerJson, ERROR_RESPUESTA_INVALIDA } from "@/shared/services/peticion";
+
 async function changePassword({ password_actual, password_nueva, password_nueva_confirmacion }) {
     const token = sessionStorage.getItem("token")
-    const res = await fetch("/api/users/change-password/", {
+    const res = await peticion("/api/users/change-password/", {
         method: "POST",
         headers: {
             "Authorization": `Bearer ${token}`,
@@ -13,8 +15,9 @@ async function changePassword({ password_actual, password_nueva, password_nueva_
         body: JSON.stringify({ password_actual, password_nueva, password_nueva_confirmacion }),
     })
     if (!res.ok) {
-        const error = await res.json()
-        throw error
+        // leerJson devuelve null si la respuesta no es JSON (backend caído):
+        // así el llamador recibe un objeto vacío en vez de reventar el parseo
+        throw (await leerJson(res)) ?? { error: ERROR_RESPUESTA_INVALIDA }
     }
     return res.json()
 }

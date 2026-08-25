@@ -1,3 +1,5 @@
+import { peticion, mensajeDeError } from "@/shared/services/peticion";
+
 const API_URL = "/api/groups"
 
 const authHeaders = () => ({
@@ -6,33 +8,31 @@ const authHeaders = () => ({
 })
 
 export async function getGroups() {
-    const res = await fetch(`${API_URL}/`, { headers: authHeaders() })
+    const res = await peticion(`${API_URL}/`, { headers: authHeaders() })
     if (!res.ok) throw new Error("Error al cargar grupos")
     return res.json()
 }
 
 export async function createGroup(name) {
-    const res = await fetch(`${API_URL}/`, {
+    const res = await peticion(`${API_URL}/`, {
         method: "POST",
         headers: authHeaders(),
         body: JSON.stringify({ name }),
     })
     if (!res.ok) {
-        const err = await res.json()
-        throw new Error(JSON.stringify(err))
+        throw new Error(await mensajeDeError(res, "No se pudo completar la operación"));
     }
     return res.json()
 }
 
 export async function updateGroup(id, name) {
-    const res = await fetch(`${API_URL}/${id}/`, {
+    const res = await peticion(`${API_URL}/${id}/`, {
         method: "PUT",
         headers: authHeaders(),
         body: JSON.stringify({ name }),
     })
     if (!res.ok) {
-        const err = await res.json()
-        throw new Error(JSON.stringify(err))
+        throw new Error(await mensajeDeError(res, "No se pudo completar la operación"));
     }
     return res.json()
 }
@@ -43,13 +43,12 @@ export async function updateGroup(id, name) {
 // grupo con usuarios asignados. Devuelve { unlinked, left_without }: cuántos
 // se retiraron y cuántos quedaron sin ningún grupo.
 export async function unlinkGroupUsers(id) {
-    const res = await fetch(`${API_URL}/${id}/unlink-users/`, {
+    const res = await peticion(`${API_URL}/${id}/unlink-users/`, {
         method: "POST",
         headers: authHeaders(),
     })
     if (!res.ok) {
-        const err = await res.json().catch(() => ({}))
-        throw new Error(err.error ?? "No se pudieron retirar los usuarios del grupo")
+        throw new Error(await mensajeDeError(res, "No se pudieron retirar los usuarios del grupo"));
     }
     return res.json()
 }
@@ -57,18 +56,17 @@ export async function unlinkGroupUsers(id) {
 export async function toggleGroupStatus(id, isActive) {
     if (!isActive) {
         // Desactivar → DELETE (soft delete con guardia en backend)
-        const res = await fetch(`${API_URL}/${id}/`, {
+        const res = await peticion(`${API_URL}/${id}/`, {
             method: "DELETE",
             headers: authHeaders(),
         })
         if (!res.ok) {
-            const err = await res.json()
-            throw new Error(err.error ?? "Error al desactivar grupo")
+            throw new Error(await mensajeDeError(res, "Error al desactivar grupo"));
         }
         return
     }
     // Activar → PUT con is_active: true
-    const res = await fetch(`${API_URL}/${id}/`, {
+    const res = await peticion(`${API_URL}/${id}/`, {
         method: "PUT",
         headers: authHeaders(),
         body: JSON.stringify({ is_active: true }),

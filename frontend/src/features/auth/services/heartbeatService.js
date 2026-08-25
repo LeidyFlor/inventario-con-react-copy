@@ -8,6 +8,11 @@ export async function sendHeartbeat() {
 
   // Silencioso a propósito: si falla (por ejemplo, la sesión ya fue
   // invalidada por otra vía) el interceptor global de 401 (credenciales invalidas) se encargande cerrar sesión en el frontend cuando corresponda.
+  //
+  // Es el único servicio que sigue usando fetch directo, y es intencional:
+  // el .catch de abajo se traga cualquier fallo, así que el mensaje amable
+  // que produce peticion() no se mostraría en ningún lado. Envolverlo sería
+  // ruido sin beneficio.
   await fetch("/api/users/heartbeat/", {
     method: "POST",
     headers: {

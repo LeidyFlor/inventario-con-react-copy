@@ -7,6 +7,8 @@ import { Alert } from "@/shared/components/utils/alert"
 // Se usa getFullYear/Month/Date en vez de toISOString() porque toISOString()
 // retorna la fecha en UTC, lo cual en Colombia (UTC-5) puede devolver
 // el día siguiente a partir de las 7 PM hora local.
+import { peticion, mensajeDeError } from "@/shared/services/peticion";
+
 const today = () => {
     const d = new Date()
     return [
@@ -20,13 +22,14 @@ async function downloadAuditLog(date) {
     const token = sessionStorage.getItem("token")
     const url = `/api/audit/download/?date=${date}`
 
-    const response = await fetch(url, {
+    const response = await peticion(url, {
         headers: { Authorization: `Bearer ${token}` },
     })
 
     if (!response.ok) {
-        const err = await response.json().catch(() => ({}))
-        throw new Error(err.error ?? "No se pudo descargar el log")
+        // mensajeDeError revisa el content-type antes de parsear: con el
+        // backend caído la respuesta es HTML, no JSON
+        throw new Error(await mensajeDeError(response, "No se pudo descargar el historial"))
     }
 
     const blob = await response.blob()

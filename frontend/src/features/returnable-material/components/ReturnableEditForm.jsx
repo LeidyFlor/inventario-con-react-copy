@@ -39,6 +39,7 @@ import {
 } from "../services/returnableService";
 
 import { returnableEditSchema } from "../schemas/returnableEditSchema";
+import { peticion, mensajeDeError } from "@/shared/services/peticion";
 import { QuotationPickerModal } from "@/features/quotations";
 
 const API_URL = "/api";
@@ -91,15 +92,16 @@ async function updateReturnable(id, formData, isActive, newImageFile) {
         data.append("material_image", newImageFile);
     }
 
-    const response = await fetch(`${API_URL}/returnable-materials/${id}/`, {
+    const response = await peticion(`${API_URL}/returnable-materials/${id}/`, {
         method: "PATCH",
         headers: { Authorization: `Bearer ${token}` },
         body: data
     });
 
     if (!response.ok) {
-        const error = await response.json();
-        throw new Error(JSON.stringify(error));
+        // mensajeDeError revisa el content-type: con el backend caído la
+        // respuesta es HTML y el parseo directo reventaba con "<!DOCTYPE"
+        throw new Error(await mensajeDeError(response, "No se pudo guardar el material"));
     }
 
     return response.json();
@@ -304,13 +306,9 @@ export default function ReturnableEditForm() {
 
         } catch (err) {
             Alert.close();
-            try {
-                const errObj = JSON.parse(err.message);
-                const first = Object.values(errObj)[0];
-                Alert.error("Error", Array.isArray(first) ? first[0] : String(first));
-            } catch {
-                Alert.error("Error", "No se pudo guardar el material");
-            }
+            // El servicio ya entrega el mensaje listo: antes aquí se
+            // parseaba un JSON metido dentro del texto del error
+            Alert.error("Error", err.message)
         } finally {
             setSaving(false);
         }

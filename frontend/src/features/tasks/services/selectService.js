@@ -1,3 +1,5 @@
+import { peticion } from "@/shared/services/peticion";
+
 const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:8000/api"
 
 function getHeaders() {
@@ -7,7 +9,7 @@ function getHeaders() {
 
 /** Usuarios disponibles para asignar tarea → { label: 'Nombre Apellido', value: id } */
 export async function getUserName() {
-    const res = await fetch(`${API_URL}/users/`, { headers: getHeaders() })
+    const res = await peticion(`${API_URL}/users/`, { headers: getHeaders() })
     if (!res.ok) throw new Error("Error al obtener usuarios")
     const data = await res.json()
     return data.map(u => ({
@@ -23,7 +25,7 @@ export async function getUserName() {
  * que ya no está en uso.
  */
 export async function getUserTypes() {
-    const res = await fetch(`${API_URL}/groups/`, { headers: getHeaders() })
+    const res = await peticion(`${API_URL}/groups/`, { headers: getHeaders() })
     if (!res.ok) throw new Error("Error al obtener grupos")
     const data = await res.json()
     return data
@@ -33,7 +35,7 @@ export async function getUserTypes() {
 
 /** Estados disponibles para tareas → { label, value } */
 export async function getTaskState() {
-    const res = await fetch(`${API_URL}/tasks/states/`, { headers: getHeaders() })
+    const res = await peticion(`${API_URL}/tasks/states/`, { headers: getHeaders() })
     if (!res.ok) throw new Error("Error al obtener estados de tarea")
     return res.json()
 }

@@ -5,6 +5,7 @@ import { Settings } from "lucide-react";
 import Select from "@/shared/components/Select.jsx";
 import { Alert } from "@/shared/components/utils/alert.js";
 import PermissionsForm from "../components/PermissionsForm";
+import { peticion } from "@/shared/services/peticion";
 import {
     getPermissions,
     getGroupDetail,
@@ -18,14 +19,14 @@ import { usePermissions } from "../context/PermissionsContext"
 
 async function fetchGroups() {
     const token = sessionStorage.getItem("token")
-    const res = await fetch("/api/groups/", { headers: { "Authorization": `Bearer ${token}` } })
+    const res = await peticion("/api/groups/", { headers: { "Authorization": `Bearer ${token}` } })
     if (!res.ok) throw new Error()
     return res.json()
 }
 
 async function fetchUsers() {
     const token = sessionStorage.getItem("token")
-    const res = await fetch("/api/users/", { headers: { "Authorization": `Bearer ${token}` } })
+    const res = await peticion("/api/users/", { headers: { "Authorization": `Bearer ${token}` } })
     if (!res.ok) throw new Error()
     return res.json()
 }

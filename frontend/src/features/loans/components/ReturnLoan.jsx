@@ -171,14 +171,9 @@ export default function ReturnLoan() {
         } catch (err) {
             console.error(err);
             Alert.close();
-            try {
-                const parsed = JSON.parse(err.message);
-                const raw    = parsed.error ?? parsed.items;
-                const text   = Array.isArray(raw) ? raw[0] : (raw ?? "No se pudo registrar la devolución. Verifica los datos.");
-                Alert.error("Error al registrar", text);
-            } catch {
-                Alert.error("Error al registrar", "No se pudo registrar la devolución. Verifica los datos.");
-            }
+            // El servicio ya entrega el mensaje listo: antes aquí se
+            // parseaba un JSON metido dentro del texto del error
+            Alert.error("Error al registrar", err.message);
         }
     };
 

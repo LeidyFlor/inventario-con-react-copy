@@ -74,8 +74,8 @@ export default function LoginForm() {
             // o cerró abruptamente y aún no pasó el periodo de gracia del heartbeat).
             // Este caso sí se distingue porque no revela nada sobre la contraseña,
             // solo informa un estado legítimo para que la persona entienda qué pasa.
-            // Cualquier otro error (401, red, etc.) se muestra genérico a propósito,
-            // para no revelar si el usuario existe o si la contraseña es incorrecta.
+            // El 401 se muestra genérico a propósito, para no revelar si el
+            // usuario existe o si la contraseña es incorrecta.
             //
             // 403 = la cuenta está desactivada. Pasa cuando el usuario nunca
             // cambió su contraseña temporal dentro del plazo de 2 horas, o
@@ -83,13 +83,31 @@ export default function LoginForm() {
             // este estado si la contraseña era correcta, así que mostrarlo no
             // revela nada de más. Se usa el mensaje que manda el backend para
             // no repetir el texto en dos lugares.
-            if (err.status === 409) {
+            // La falta de red va primero: no tiene status, así que antes caía
+            // en el else y se anunciaba como credenciales inválidas aunque
+            // fueran correctas. Decir que no hay conexión no revela nada sobre
+            // la cuenta, así que sí se puede mostrar tal cual.
+            if (err.esRedError) {
+                Alert.error("Sin conexión", err.message)
+            } else if (err.status === 409) {
                 Alert.error(
                     "Sesión ya activa",
                     "Este usuario ya tiene una sesión abierta en otro dispositivo o pestaña. Ciérrala, o espera unos minutos si se cerró abruptamente."
                 )
             } else if (err.status === 403) {
                 Alert.error("Cuenta desactivada", err.message)
+            } else if (err.status >= 500) {
+                // 5xx = el backend respondió, pero reventó. El caso típico es
+                // que no logre conectarse a la base de Supabase. Esto NO dice
+                // nada de las credenciales, así que anunciarlo como
+                // "inválidas" confunde: la persona reescribe la contraseña
+                // correcta una y otra vez sin que nada cambie.
+                // Se usa texto fijo y no err.message: la respuesta puede ser
+                // la página de error de Django con la traza dentro.
+                Alert.error(
+                    "Servicio no disponible",
+                    "El servidor no pudo procesar el inicio de sesión. Intenta de nuevo en un momento."
+                )
             } else {
                 Alert.error("Credenciales inválidas", "Verifica tus datos e intenta de nuevo.")
             }

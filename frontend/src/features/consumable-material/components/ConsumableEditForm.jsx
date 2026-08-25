@@ -169,13 +169,9 @@ export default function ConsumableEditForm() {
             navigate(-1);
         } catch (err) {
             Alert.close();
-            try {
-                const errObj = JSON.parse(err.message);
-                const first = Object.values(errObj)[0];
-                Alert.error("Error", Array.isArray(first) ? first[0] : String(first));
-            } catch {
-                Alert.error("Error", "No se pudo guardar el material");
-            }
+            // El servicio ya entrega el mensaje listo: antes aquí se
+            // parseaba un JSON metido dentro del texto del error
+            Alert.error("Error", err.message)
         } finally {
             setSaving(false);
         }

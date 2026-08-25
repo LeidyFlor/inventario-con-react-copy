@@ -1,5 +1,7 @@
 // Las notificaciones no tienen tabla propia: el backend las arma al vuelo
 // desde tareas y préstamos. Ver backend_sigi/utils/notification_views.py
+import { peticion } from "@/shared/services/peticion";
+
 const API_URL = "/api/notifications";
 
 // Clave donde se guarda la fecha de la última vez que se abrió el menú.
@@ -11,7 +13,7 @@ const API_URL = "/api/notifications";
 const CLAVE_ULTIMA_VISTA = "sigi_notificaciones_vistas";
 
 export async function getNotifications() {
-    const res = await fetch(`${API_URL}/`, {
+    const res = await peticion(`${API_URL}/`, {
         headers: { Authorization: `Bearer ${sessionStorage.getItem("token")}` },
     });
     if (!res.ok) throw new Error("Error al cargar las notificaciones");

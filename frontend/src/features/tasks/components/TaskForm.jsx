@@ -109,13 +109,9 @@ export default function TaskForm() {
             setCurrentPage(0);
         } catch (error) {
             Alert.close();
-            try {
-                const parsed = JSON.parse(error.message);
-                const msg = Object.values(parsed).flat()[0] ?? "No se pudo registrar la tarea.";
-                Alert.error("Error al asignar tarea", msg);
-            } catch {
-                Alert.error("Error al asignar tarea", "No se pudo registrar la tarea.");
-            }
+            // El servicio ya entrega el mensaje listo: antes aquí se
+            // parseaba un JSON metido dentro del texto del error
+            Alert.error("Error al asignar tarea", error.message);
         }
     };
 

@@ -1,3 +1,5 @@
+import { peticion } from "@/shared/services/peticion";
+
 const API_URL = "/api"
 
 function getToken() {
@@ -6,7 +8,7 @@ function getToken() {
 
 // Trae todos los usuarios activos para el select de "usuario solicitante"
 export async function getUserName() {
-    const response = await fetch(`${API_URL}/users/`, {
+    const response = await peticion(`${API_URL}/users/`, {
         headers: { Authorization: `Bearer ${getToken()}` },
     })
     if (!response.ok) throw new Error("Error al obtener usuarios")
@@ -33,7 +35,7 @@ export async function getLoanTypes() {
 // cuentadantes. Prestar dejó de depender de esa bandera: ahora es cualquiera
 // con permiso de crear préstamos, y ese filtro lo hace el backend.
 export async function getLenders() {
-    const response = await fetch(`${API_URL}/loans/lenders/`, {
+    const response = await peticion(`${API_URL}/loans/lenders/`, {
         headers: { Authorization: `Bearer ${getToken()}` },
     })
     if (!response.ok) throw new Error("Error al obtener prestadores")

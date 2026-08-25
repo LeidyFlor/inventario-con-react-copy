@@ -103,7 +103,7 @@ export default function ViewLoan() {
                             label: "Justificación", 
                             value: <JustificationText value={loan.loanJustification} /> 
                         },
-                        { label: "Estado préstamo",     value: loan.loanStatus },
+                        { label: "Estado préstamo",     value: loan.loanStatusLabel },
                         { label: "Tipo de préstamo",    value: loan.loanType },
                         { label: "Grupo aprendices",    value: String(loan.loanStudentsGroup) },
                     ]} />

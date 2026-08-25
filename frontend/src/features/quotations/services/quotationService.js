@@ -1,5 +1,7 @@
 // Las cotizaciones no siguen el patrón de marca/inventario/categoría: no se
 // escriben campos de texto, se suben archivos PDF, y el borrado es real.
+import { peticion, mensajeDeError } from "@/shared/services/peticion";
+
 const API_URL = "/api/quotations";
 
 const authHeader = () => ({
@@ -12,7 +14,7 @@ const authHeader = () => ({
 export const MAX_ARCHIVOS_POR_TANDA = 6;
 
 export async function getQuotations() {
-    const res = await fetch(`${API_URL}/`, { headers: authHeader() });
+    const res = await peticion(`${API_URL}/`, { headers: authHeader() });
     if (!res.ok) throw new Error("Error al cargar las cotizaciones");
     return res.json();
 }
@@ -24,14 +26,15 @@ export async function uploadQuotations(files) {
     // Todos bajo la misma clave: el backend usa request.FILES.getlist('files')
     files.forEach(file => data.append("files", file));
 
-    const res = await fetch(`${API_URL}/`, {
+    const res = await peticion(`${API_URL}/`, {
         method: "POST",
         headers: authHeader(),
         body: data,
     });
     if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err.files ?? err.error ?? "No se pudieron subir las cotizaciones");
+        // mensajeDeError revisa el content-type: con el backend caído la
+        // respuesta es HTML y antes reventaba el parseo
+        throw new Error(await mensajeDeError(res, "No se pudieron subir las cotizaciones"));
     }
     return res.json();
 }
@@ -42,13 +45,12 @@ export async function uploadQuotations(files) {
 // { unlinked, left_without }: cuántos materiales se desenlazaron y cuántos
 // quedaron sin ninguna cotización.
 export async function unlinkQuotationMaterials(id) {
-    const res = await fetch(`${API_URL}/${id}/unlink-materials/`, {
+    const res = await peticion(`${API_URL}/${id}/unlink-materials/`, {
         method: "POST",
         headers: authHeader(),
     });
     if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err.error ?? "No se pudo desenlazar la cotización");
+        throw new Error(await mensajeDeError(res, "No se pudo desenlazar la cotización"));
     }
     return res.json();
 }
@@ -56,13 +58,12 @@ export async function unlinkQuotationMaterials(id) {
 // Borrado real: elimina el registro y el PDF. El backend lo rechaza si algún
 // material la tiene enlazada.
 export async function deleteQuotation(id) {
-    const res = await fetch(`${API_URL}/${id}/`, {
+    const res = await peticion(`${API_URL}/${id}/`, {
         method: "DELETE",
         headers: authHeader(),
     });
     if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err.error ?? "No se pudo eliminar la cotización");
+        throw new Error(await mensajeDeError(res, "No se pudo eliminar la cotización"));
     }
     return res.json();
 }

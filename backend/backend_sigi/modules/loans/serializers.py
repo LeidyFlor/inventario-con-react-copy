@@ -98,6 +98,16 @@ class LoanListSerializer(serializers.ModelSerializer):
     requester_document     = serializers.SerializerMethodField()
     requester_is_registered = serializers.SerializerMethodField()
     loan_user_lender       = serializers.SerializerMethodField()
+    # Etiqueta legible del estado: 'devolucion_parcial' → 'Devolución parcial'.
+    # Sale de get_loan_status_display(), que Django genera a partir de
+    # LOAN_STATUSES. Así las etiquetas viven en un solo lugar: repetirlas en el
+    # frontend sería una segunda fuente de verdad que se desincroniza.
+    #
+    # El campo crudo loan_status se conserva porque el frontend lo usa para
+    # decidir (== 'finalizado', estados bloqueados, el select de editar).
+    loan_status_display    = serializers.CharField(
+        source='get_loan_status_display', read_only=True
+    )
     returned_by_name       = serializers.SerializerMethodField()
     accepted_by_name       = serializers.SerializerMethodField()
 
@@ -118,6 +128,7 @@ class LoanListSerializer(serializers.ModelSerializer):
             'loan_date_out',
             'loan_date_in',
             'loan_status',
+            'loan_status_display',
             'identity_confirmed',
             # devolución
             'returned_by',

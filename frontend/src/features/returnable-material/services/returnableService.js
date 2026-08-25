@@ -1,11 +1,13 @@
 // src/features/returnable-material/services/returnableService.js
 
+import { peticion, mensajeDeError } from "@/shared/services/peticion";
+
 const API_URL = "/api"
 
 // Trae todos los materiales devolutivos con sus fichas técnicas incluidas
 export async function getReturnables() {
     const token = sessionStorage.getItem("token")
-    const response = await fetch(`${API_URL}/returnable-materials/`, {
+    const response = await peticion(`${API_URL}/returnable-materials/`, {
         headers: { "Authorization": `Bearer ${token}` }
     })
     if (!response.ok) throw new Error("Error al obtener materiales devolutivos")
@@ -67,15 +69,14 @@ export async function createReturnable(formData) {
         })
     }
 
-    const response = await fetch(`${API_URL}/returnable-materials/`, {
+    const response = await peticion(`${API_URL}/returnable-materials/`, {
         method: "POST",
         headers: { "Authorization": `Bearer ${token}` },
         body: data,
     })
 
     if (!response.ok) {
-        const error = await response.json()
-        throw new Error(JSON.stringify(error))
+        throw new Error(await mensajeDeError(response, "No se pudo completar la operación"));
     }
     return response.json()
 }
@@ -86,7 +87,7 @@ export async function toggleReturnableStatus(id, isActive, materialState = null)
     const body = { is_active: isActive }
     if (!isActive && materialState) body.material_state = materialState
 
-    const response = await fetch(`${API_URL}/returnable-materials/${id}/`, {
+    const response = await peticion(`${API_URL}/returnable-materials/${id}/`, {
         method: "PATCH",
         headers: {
             "Authorization": `Bearer ${token}`,
@@ -104,7 +105,7 @@ export async function uploadTechnicalFiles(id, files) {
     const data = new FormData()
     files.forEach(file => data.append("technical_files", file))
 
-    const response = await fetch(`${API_URL}/returnable-materials/${id}/upload-technical-files/`, {
+    const response = await peticion(`${API_URL}/returnable-materials/${id}/upload-technical-files/`, {
         method: "POST",
         headers: { "Authorization": `Bearer ${token}` },
         body: data,
@@ -116,7 +117,7 @@ export async function uploadTechnicalFiles(id, files) {
 // Elimina una ficha técnica específica por su ID
 export async function deleteTechnicalFile(materialId, fileId) {
     const token = sessionStorage.getItem("token")
-    const response = await fetch(
+    const response = await peticion(
         `${API_URL}/returnable-materials/${materialId}/delete-technical-file/${fileId}/`,
         {
             method: "DELETE",
@@ -125,8 +126,7 @@ export async function deleteTechnicalFile(materialId, fileId) {
     )
     if (!response.ok) {
         // El backend explica el motivo cuando se intenta borrar la única ficha
-        const error = await response.json().catch(() => ({}))
-        throw new Error(error.error ?? "Error al eliminar la ficha técnica")
+        throw new Error(await mensajeDeError(response, "Error al eliminar la ficha técnica"));
     }
     return response.json()
 }

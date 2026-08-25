@@ -1,9 +1,11 @@
 //debe ser un FormData, yaq ue el backend recibe imagen, por eso no pude ser json. Este es el traductor para el back
+import { peticion, mensajeDeError } from "@/shared/services/peticion";
+
 const API_URL = "/api"
 
 export async function getUsers() {
     const token = sessionStorage.getItem("token")
-    const response = await fetch(`${API_URL}/users/`, {
+    const response = await peticion(`${API_URL}/users/`, {
         headers: { "Authorization": `Bearer ${token}` }
     })
     if (!response.ok) throw new Error("Error al obtener usuarios")
@@ -12,7 +14,7 @@ export async function getUsers() {
 
 export async function getUser(id) {
     const token = sessionStorage.getItem("token")
-    const response = await fetch(`${API_URL}/users/${id}/`, {
+    const response = await peticion(`${API_URL}/users/${id}/`, {
         headers: { "Authorization": `Bearer ${token}` }
     })
     if (!response.ok) throw new Error("Error al obtener el usuario")
@@ -29,7 +31,7 @@ export async function getUser(id) {
  */
 export async function resetUserPassword(id) {
     const token = sessionStorage.getItem("token")
-    const response = await fetch(`${API_URL}/users/${id}/reset-password/`, {
+    const response = await peticion(`${API_URL}/users/${id}/reset-password/`, {
         method: "POST",
         headers: {
             "Authorization": `Bearer ${token}`,
@@ -45,7 +47,7 @@ export async function resetUserPassword(id) {
 
 export async function toggleUserStatus(id, isActive) {
     const token = sessionStorage.getItem("token")
-    const response = await fetch(`${API_URL}/users/${id}/`, {
+    const response = await peticion(`${API_URL}/users/${id}/`, {
         method: "PATCH",
         headers: {
             "Authorization": `Bearer ${token}`,
@@ -57,8 +59,7 @@ export async function toggleUserStatus(id, isActive) {
         // El backend puede rechazar la activación con un motivo concreto
         // (por ejemplo, que la fecha fin del usuario siga vencida). Se
         // conserva ese mensaje en vez de mostrar uno genérico.
-        const error = await response.json().catch(() => ({}))
-        throw new Error(error.error ?? "Error al actualizar estado del usuario")
+        throw new Error(await mensajeDeError(response, "Error al actualizar estado del usuario"));
     }
     return response.json()
 }
@@ -105,7 +106,7 @@ export async function createUser(formData) {
         data.append("user_image", formData.userImage[0])
     }
 
-    const response = await fetch(`${API_URL}/users/`, {
+    const response = await peticion(`${API_URL}/users/`, {
         method: "POST",
         headers: {
             "Authorization": `Bearer ${token}`,
@@ -115,8 +116,7 @@ export async function createUser(formData) {
     })
 
     if (!response.ok) {
-        const error = await response.json()
-        throw new Error(JSON.stringify(error))
+        throw new Error(await mensajeDeError(response, "No se pudo completar la operación"));
     }
 
     return response.json()
@@ -170,17 +170,16 @@ export async function updateUser(id, formData) {
         data.append("user_image", formData.userImage[0])
     }
 
-    const response = await fetch(`/api/users/${id}/`, {
+    const response = await peticion(`/api/users/${id}/`, {
         method: "PATCH", //actualiza solo cambios que cambiaron
         headers: { "Authorization": `Bearer ${token}` },
         body: data,
     })
 
     if (!response.ok) {
-        const error = await response.json().catch(() => ({}))
-        // Si el backend mandó un motivo legible (clave 'error'), se muestra tal
-        // cual. Si son errores por campo de DRF, se cae al JSON crudo.
-        throw new Error(error.error ?? JSON.stringify(error))
+        // mensajeDeError ya elige el mensaje legible: 'error', 'detail' o el
+        // primer error de campo de DRF
+        throw new Error(await mensajeDeError(response, "No se pudo completar la operación"))
     }
     return response.json()
 }

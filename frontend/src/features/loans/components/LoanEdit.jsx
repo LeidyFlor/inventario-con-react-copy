@@ -114,12 +114,9 @@ export default function LoanEditPage() {
       await Alert.success("Material devuelto", "El material fue regresado al inventario correctamente.");
     } catch (err) {
       Alert.close();
-      try {
-        const parsed = JSON.parse(err.message);
-        Alert.error("Error", parsed.error ?? "No se pudo quitar el material.");
-      } catch {
-        Alert.error("Error", "No se pudo quitar el material.");
-      }
+      // El servicio ya entrega el mensaje listo: antes aquí se
+      // parseaba un JSON metido dentro del texto del error
+      Alert.error("Error", err.message);
     }
   };
 

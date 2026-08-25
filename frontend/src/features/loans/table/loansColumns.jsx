@@ -144,7 +144,8 @@ export const loansColumns = [
 
     // Columna estado del préstamo
     {
-        accessorKey: "loanStatus",
+        // La etiqueta legible la arma el backend con get_loan_status_display()
+        accessorKey: "loanStatusLabel",
         header: "Estado",
     },
 

@@ -1,3 +1,5 @@
+import { peticion, mensajeDeError } from "@/shared/services/peticion";
+
 const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:8000/api"
 
 function getHeaders() {
@@ -13,7 +15,7 @@ function getHeaders() {
  * Usada desde ViewUserPage (inmediato) y como segundo request en UserRegisterForm (tras crear usuario).
  */
 export async function createTaskForUser(userId, taskData) {
-    const res = await fetch(`${API_URL}/tasks/for-user/${userId}/`, {
+    const res = await peticion(`${API_URL}/tasks/for-user/${userId}/`, {
         method: "POST",
         headers: getHeaders(),
         body: JSON.stringify({
@@ -24,8 +26,7 @@ export async function createTaskForUser(userId, taskData) {
         }),
     })
     if (!res.ok) {
-        const err = await res.json()
-        throw new Error(JSON.stringify(err))
+        throw new Error(await mensajeDeError(res, "No se pudo completar la operación"));
     }
     return res.json()
 }
@@ -52,21 +53,20 @@ export async function createTask(taskData) {
     if (taskData.userName)  body.user  = taskData.userName
     if (taskData.userType)  body.group = taskData.userType
 
-    const res = await fetch(`${API_URL}/tasks/`, {
+    const res = await peticion(`${API_URL}/tasks/`, {
         method: "POST",
         headers: getHeaders(),
         body: JSON.stringify(body),
     })
     if (!res.ok) {
-        const err = await res.json()
-        throw new Error(JSON.stringify(err))
+        throw new Error(await mensajeDeError(res, "No se pudo completar la operación"));
     }
     return res.json()
 }
 
 /** Lista todas las tareas. */
 export async function getTasks() {
-    const res = await fetch(`${API_URL}/tasks/`, {
+    const res = await peticion(`${API_URL}/tasks/`, {
         headers: getHeaders(),
     })
     if (!res.ok) throw new Error("Error al obtener tareas")
@@ -75,7 +75,7 @@ export async function getTasks() {
 
 /** Lista tareas de un usuario. */
 export async function getTasksByUser(userId) {
-    const res = await fetch(`${API_URL}/tasks/?user=${userId}`, {
+    const res = await peticion(`${API_URL}/tasks/?user=${userId}`, {
         headers: getHeaders(),
     })
     if (!res.ok) throw new Error("Error al obtener tareas del usuario")
@@ -84,7 +84,7 @@ export async function getTasksByUser(userId) {
 
 /** Lista tareas de un grupo. */
 export async function getTasksByGroup(groupId) {
-    const res = await fetch(`${API_URL}/tasks/?group=${groupId}`, {
+    const res = await peticion(`${API_URL}/tasks/?group=${groupId}`, {
         headers: getHeaders(),
     })
     if (!res.ok) throw new Error("Error al obtener tareas del grupo")
@@ -93,21 +93,20 @@ export async function getTasksByGroup(groupId) {
 
 /** Edita una tarea (PATCH parcial). */
 export async function updateTask(taskId, taskData) {
-    const res = await fetch(`${API_URL}/tasks/${taskId}/`, {
+    const res = await peticion(`${API_URL}/tasks/${taskId}/`, {
         method: "PATCH",
         headers: getHeaders(),
         body: JSON.stringify(taskData),
     })
     if (!res.ok) {
-        const err = await res.json()
-        throw new Error(JSON.stringify(err))
+        throw new Error(await mensajeDeError(res, "No se pudo completar la operación"));
     }
     return res.json()
 }
 
 /** Elimina una tarea. */
 export async function deleteTask(taskId) {
-    const res = await fetch(`${API_URL}/tasks/${taskId}/`, {
+    const res = await peticion(`${API_URL}/tasks/${taskId}/`, {
         method: "DELETE",
         headers: getHeaders(),
     })

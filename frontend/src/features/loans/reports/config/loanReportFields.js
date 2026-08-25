@@ -43,7 +43,7 @@ export const loanReportFields = [
         default: false,
     },
     {
-        key: "loanStatus",
+        key: "loanStatusLabel",
         label: "Estado",
         default: false,
     },
