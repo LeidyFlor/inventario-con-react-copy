@@ -5,6 +5,9 @@ from rest_framework.permissions import IsAuthenticated
 from django.conf import settings
 from backend_sigi.utils.audit import log_action
 from backend_sigi.utils.perm_check import deny_if_no_perm
+from backend_sigi.utils.file_rules import (
+    error_de_archivo, error_de_archivos, IMAGENES, IMAGENES_Y_PDF,
+)
 from django.utils import timezone
 from django.db.models import Count
 import requests as http_requests
@@ -98,6 +101,35 @@ def falta_ficha_tecnica(request):
 
 
 ERROR_SIN_FICHA = {'technical_files': 'Debes adjuntar al menos una ficha técnica.'}
+
+
+def error_en_archivos(request):
+    """
+    Revisa los archivos que puede traer una petición de material.
+
+    Devuelve el cuerpo del error listo para el 400, o None si todo sirve.
+
+    La imagen y las fichas se tratan distinto a propósito: la imagen se muestra
+    como la foto del material, así que solo admite imágenes; una ficha técnica
+    en cambio suele ser un PDF, y a veces una foto del manual.
+
+    Se llama al principio de crear y editar, antes de guardar nada: si se
+    validara junto a la subida, el material ya existiría cuando se rechaza el
+    archivo.
+    """
+    imagen = request.FILES.get('material_image')
+    if imagen:
+        error = error_de_archivo(imagen, IMAGENES)
+        if error:
+            return {'material_image': [error]}
+
+    fichas = request.FILES.getlist('technical_files')
+    if fichas:
+        error = error_de_archivos(fichas, IMAGENES_Y_PDF)
+        if error:
+            return {'technical_files': [error]}
+
+    return None
 ERROR_ULTIMA_FICHA = {
     'error': 'No se puede eliminar la única ficha técnica del material. '
              'Sube una nueva antes de borrar esta.'
@@ -209,6 +241,10 @@ class ConsumableMaterialViewSet(viewsets.ViewSet):
         if falta_ficha_tecnica(request):
             return Response(ERROR_SIN_FICHA, status=status.HTTP_400_BAD_REQUEST)
 
+        error = error_en_archivos(request)
+        if error:
+            return Response(error, status=status.HTTP_400_BAD_REQUEST)
+
         serializer = ConsumableMaterialCreateSerializer(data=request.data)
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -254,6 +290,10 @@ class ConsumableMaterialViewSet(viewsets.ViewSet):
             material = ConsumableMaterial.objects.get(pk=pk)
         except ConsumableMaterial.DoesNotExist:
             return Response({'error': 'Material no encontrado'}, status=status.HTTP_404_NOT_FOUND)
+
+        error = error_en_archivos(request)
+        if error:
+            return Response(error, status=status.HTTP_400_BAD_REQUEST)
 
         old_is_active = material.is_active
         serializer = ConsumableMaterialUpdateSerializer(material, data=request.data, partial=True)
@@ -324,6 +364,10 @@ class ConsumableMaterialViewSet(viewsets.ViewSet):
         if not files:
             return Response({'error': 'No se enviaron archivos'}, status=status.HTTP_400_BAD_REQUEST)
 
+        error = error_de_archivos(files, IMAGENES_Y_PDF)
+        if error:
+            return Response({'error': error}, status=status.HTTP_400_BAD_REQUEST)
+
         creados = subir_fichas_tecnicas(
             material, files, carpeta='consumable', es_consumible=True
         )
@@ -363,6 +407,12 @@ class ConsumableMaterialViewSet(viewsets.ViewSet):
         file = request.FILES.get('material_image')
         if not file:
             return Response({'error': 'No se envió ninguna imagen'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Se valida antes de borrar la anterior: si no, un archivo rechazado
+        # dejaría al material sin la imagen que ya tenía
+        error = error_de_archivo(file, IMAGENES)
+        if error:
+            return Response({'error': error}, status=status.HTTP_400_BAD_REQUEST)
 
         # Borrar imagen anterior si existe
         if material.material_image:
@@ -438,6 +488,10 @@ class ReturnableMaterialViewSet(viewsets.ViewSet):
         if falta_ficha_tecnica(request):
             return Response(ERROR_SIN_FICHA, status=status.HTTP_400_BAD_REQUEST)
 
+        error = error_en_archivos(request)
+        if error:
+            return Response(error, status=status.HTTP_400_BAD_REQUEST)
+
         serializer = ReturnableMaterialCreateSerializer(data=request.data)
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -483,6 +537,10 @@ class ReturnableMaterialViewSet(viewsets.ViewSet):
             material = ReturnableMaterial.objects.get(pk=pk)
         except ReturnableMaterial.DoesNotExist:
             return Response({'error': 'Material no encontrado'}, status=status.HTTP_404_NOT_FOUND)
+
+        error = error_en_archivos(request)
+        if error:
+            return Response(error, status=status.HTTP_400_BAD_REQUEST)
 
         old_is_active = material.is_active
         serializer = ReturnableMaterialUpdateSerializer(material, data=request.data, partial=True)
@@ -554,6 +612,10 @@ class ReturnableMaterialViewSet(viewsets.ViewSet):
         files = request.FILES.getlist('technical_files')
         if not files:
             return Response({'error': 'No se enviaron archivos'}, status=status.HTTP_400_BAD_REQUEST)
+
+        error = error_de_archivos(files, IMAGENES_Y_PDF)
+        if error:
+            return Response({'error': error}, status=status.HTTP_400_BAD_REQUEST)
 
         creados = subir_fichas_tecnicas(
             material, files, carpeta='returnable', es_consumible=False

@@ -116,7 +116,20 @@ export default function ChangePasswordModal({ onClose, forced = false, onSuccess
             else onClose()
         } catch (error) {
             Alert.close()
-            const msg = error?.error || error?.password_actual?.[0] || "No se pudo cambiar la contraseña."
+            // Solo se leían 'error' y 'password_actual', así que los rechazos de
+            // la contraseña nueva (por ejemplo, parecerse al propio correo) y
+            // los de non_field_errors salían como "No se pudo cambiar la
+            // contraseña", sin decir qué pasaba. El campo puede traer varios
+            // motivos a la vez, por eso se unen.
+            const primero = (campo) =>
+                Array.isArray(campo) ? campo.join(" ") : campo
+
+            const msg =
+                error?.error
+                ?? primero(error?.password_nueva)
+                ?? primero(error?.password_actual)
+                ?? primero(error?.non_field_errors)
+                ?? "No se pudo cambiar la contraseña."
             Alert.error("Error", msg)
         } finally {
             setLoading(false)

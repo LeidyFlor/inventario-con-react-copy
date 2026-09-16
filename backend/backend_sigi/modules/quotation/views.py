@@ -9,6 +9,7 @@ from rest_framework.response import Response
 
 from backend_sigi.utils.audit import log_action
 from backend_sigi.utils.perm_check import deny_if_no_perm
+from backend_sigi.utils.file_rules import error_de_archivos, DOCUMENTOS
 
 from .models import Quotation
 from .serializers import QuotationSerializer
@@ -132,13 +133,13 @@ class QuotationViewSet(viewsets.ViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        # Solo PDF: se valida aquí porque el frontend puede saltarse el accept
-        no_pdf = [a.name for a in archivos if not a.name.lower().endswith('.pdf')]
-        if no_pdf:
-            return Response(
-                {'files': f"Solo se admiten archivos PDF. Revisa: {', '.join(no_pdf)}"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+        # Solo PDF: se valida aquí porque el frontend puede saltarse el accept.
+        # Antes se miraba únicamente que el nombre terminara en .pdf, y con eso
+        # bastaba renombrar cualquier archivo para colarlo. error_de_archivos
+        # revisa además el content_type y los primeros bytes del contenido.
+        error = error_de_archivos(archivos, DOCUMENTOS)
+        if error:
+            return Response({'files': error}, status=status.HTTP_400_BAD_REQUEST)
 
         creadas = subir_cotizaciones(archivos)
         if not creadas:

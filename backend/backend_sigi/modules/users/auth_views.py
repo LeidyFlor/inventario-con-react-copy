@@ -15,8 +15,28 @@ from backend_sigi.utils.password_rules import errores_de_password
 import random
 import string
 from django.core.mail import send_mail
+from django.core.validators import validate_email
+from django.core.exceptions import ValidationError
 from django.utils.html import strip_tags
 from django.conf import settings
+
+
+def correo_con_formato_valido(email):
+    """
+    True si el texto tiene forma de correo.
+
+    Solo mira la FORMA, nunca la base de datos: por eso se puede rechazar sin
+    revelar nada. "correo-sin-arroba" es inválido esté o no registrado, así que
+    contestar 400 no le dice al atacante qué cuentas existen.
+    """
+    if not isinstance(email, str):
+        return False
+    try:
+        validate_email(email)
+    except ValidationError:
+        return False
+    return True
+
 
 class LoginView(APIView):
     def post(self, request):
@@ -142,10 +162,28 @@ class ForgotPasswordView(APIView):
 
     def post(self, request):
         email = request.data.get('email')
+        # Se quitan los espacios de los extremos: al copiar y pegar el correo
+        # suele arrastrarse uno, y sin esto la búsqueda no encontraría al usuario
+        if isinstance(email, str):
+            email = email.strip()
 
         # Validar que venga el correo
         if not email:
             return Response({'error': 'El correo es obligatorio'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # El formato se revisa antes de tocar la base de datos o el envío de
+        # correo. Un texto como "correo-sin-arroba" no puede pertenecer a nadie,
+        # así que no tiene sentido consultarlo ni responder el mensaje neutro:
+        # solo gastaría una consulta y dejaría al usuario pensando que su código
+        # viene en camino cuando en realidad se equivocó al escribir.
+        #
+        # Este 400 no rompe el anonimato del endpoint: depende únicamente de la
+        # forma del texto, nunca de si el correo está registrado.
+        if not correo_con_formato_valido(email):
+            return Response(
+                {'error': 'El correo electrónico no tiene un formato válido.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         try:
             # Buscar el usuario por correo en la base de datos
@@ -250,13 +288,6 @@ class ResetPasswordView(APIView):
         if not all([email, code, new_password]):
             return Response({'error': 'Todos los campos son obligatorios'}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Mismas reglas que el esquema Zod del frontend. El formulario ya las
-        # revisa, pero esta ruta es pública (AllowAny): sin esta validación se
-        # podría fijar una contraseña débil llamando la API directamente.
-        errores = errores_de_password(new_password)
-        if errores:
-            return Response({'error': ' '.join(errores)}, status=status.HTTP_400_BAD_REQUEST)
-
         # Verificar el código de nuevo por seguridad
         # (el usuario pudo haber manipulado el flujo saltándose el paso de verificación)
         saved_code = cache.get(f'reset_code_{email}')
@@ -267,6 +298,17 @@ class ResetPasswordView(APIView):
             user = Users.objects.get(email=email)
         except Users.DoesNotExist:
             return Response({'error': 'Usuario no encontrado'}, status=status.HTTP_404_NOT_FOUND)
+
+        # Mismas reglas que el esquema Zod del frontend, más el parecido con los
+        # datos del usuario. El formulario ya revisa la fuerza, pero esta ruta
+        # es pública (AllowAny): sin esta validación se podría fijar una
+        # contraseña débil llamando la API directamente.
+        #
+        # Va después de buscar al usuario, y no antes como estaba, porque la
+        # comprobación de parecido necesita justamente ese usuario.
+        errores = errores_de_password(new_password, user)
+        if errores:
+            return Response({'error': ' '.join(errores)}, status=status.HTTP_400_BAD_REQUEST)
 
         # set_password hace el hash de la contraseña automáticamente (nunca se guarda en texto plano)
         user.set_password(new_password)

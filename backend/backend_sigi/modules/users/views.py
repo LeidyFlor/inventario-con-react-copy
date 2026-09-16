@@ -18,6 +18,7 @@ from django.core.mail import send_mail
 from django.utils.html import strip_tags
 from backend_sigi.utils.audit import log_action
 from backend_sigi.utils.perm_check import deny_if_no_perm
+from backend_sigi.utils.file_rules import error_de_archivo, IMAGENES
 
 class UserViewSet(viewsets.ViewSet):
     """
@@ -45,6 +46,16 @@ class UserViewSet(viewsets.ViewSet):
         """POST /api/users/ — crear nuevo usuario"""
         deny = deny_if_no_perm(request, 'users.add_users')
         if deny: return deny
+
+        # La foto se revisa ANTES de crear al usuario. Si se validara más abajo,
+        # junto a la subida, el usuario ya existiría cuando se rechaza el
+        # archivo y quedaría creado sin foto pero con la petición en error.
+        imagen = request.FILES.get('user_image')
+        if imagen:
+            error = error_de_archivo(imagen, IMAGENES)
+            if error:
+                return Response({'user_image': [error]}, status=status.HTTP_400_BAD_REQUEST)
+
         serializer = UserCreateSerializer(data=request.data)
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -149,6 +160,13 @@ class UserViewSet(viewsets.ViewSet):
             user = Users.objects.get(pk=pk)
         except Users.DoesNotExist:
             return Response({'error': 'Usuario no encontrado'}, status=status.HTTP_404_NOT_FOUND)
+        # Igual que en create: la foto se revisa antes de guardar nada
+        imagen = request.FILES.get('user_image')
+        if imagen:
+            error = error_de_archivo(imagen, IMAGENES)
+            if error:
+                return Response({'user_image': [error]}, status=status.HTTP_400_BAD_REQUEST)
+
         # Se guarda el estado previo para detectar una reactivación
         estaba_inactivo = not user.is_active
 
@@ -244,6 +262,12 @@ class UserViewSet(viewsets.ViewSet):
     @action(detail=True, methods=['post'], url_path='upload-image')
     def upload_image(self, request, pk=None):
         """POST /api/users/{id}/upload-image/ — subir foto de perfil a Supabase Storage"""
+        # Cambia la foto de otro usuario, así que pide el mismo permiso que
+        # editarlo. Antes no pedía ninguno: cualquiera podía reemplazar la foto
+        # de cualquier cuenta llamando la ruta directamente.
+        deny = deny_if_no_perm(request, 'users.change_users')
+        if deny: return deny
+
         try:
             user = Users.objects.get(pk=pk)
         except Users.DoesNotExist:
@@ -252,6 +276,14 @@ class UserViewSet(viewsets.ViewSet):
         file = request.FILES.get('image')
         if not file:
             return Response({'error': 'No se envió ninguna imagen'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Solo imágenes: esta foto se muestra como avatar, un PDF no se vería.
+        # Se valida antes de borrar la anterior, o un archivo rechazado dejaría
+        # al usuario sin la foto que ya tenía.
+        error = error_de_archivo(file, IMAGENES)
+        if error:
+            return Response({'error': error}, status=status.HTTP_400_BAD_REQUEST)
+
         #para borrar la anterior imagen de la base de datps de supabase
         if user.user_image:
             # Extraer el path del archivo desde la URL guardada
@@ -397,13 +429,26 @@ class UserViewSet(viewsets.ViewSet):
         </html>
         """
 
-    @action(detail=False, methods=['post'], url_path='change-password')
+    @action(
+        detail=False,
+        methods=['post'],
+        url_path='change-password',
+        # Esta acción cambia la contraseña de request.user, así que sin sesión
+        # no tiene sentido. Antes no lo declaraba: el proyecto no define
+        # DEFAULT_PERMISSION_CLASSES, así que la ruta quedaba abierta, entraba
+        # como AnonymousUser y reventaba con 500 al llamar check_password
+        # sobre él. Con IsAuthenticated responde 401, que es lo correcto.
+        permission_classes=[IsAuthenticated],
+    )
     def change_password(self, request):
-        serializer = ChangePasswordSerializer(data=request.data)
+        user = request.user
+
+        # El usuario es el dato con el que se compara la contraseña nueva, así
+        # que el serializer necesita conocerlo para rechazar una clave parecida
+        # a su propio correo o nombre.
+        serializer = ChangePasswordSerializer(data=request.data, context={'usuario': user})
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-        user = request.user
 
         # Verifica que la contraseña actual sea correcta
         if not user.check_password(serializer.validated_data['password_actual']):

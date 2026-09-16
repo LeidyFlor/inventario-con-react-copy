@@ -250,8 +250,12 @@ class ChangePasswordSerializer(serializers.Serializer):
         """
         Mismas reglas que el esquema Zod del frontend: mínimo 8 caracteres,
         una mayúscula, una minúscula, un número y un carácter especial.
+
+        Además se rechaza la contraseña que se parezca demasiado al correo o al
+        nombre del propio usuario. Esa parte solo puede revisarse aquí, en el
+        backend: el formulario no conoce esa regla.
         """
-        errores = errores_de_password(value)
+        errores = errores_de_password(value, self.context.get('usuario'))
         if errores:
             raise serializers.ValidationError(errores)
         return value
