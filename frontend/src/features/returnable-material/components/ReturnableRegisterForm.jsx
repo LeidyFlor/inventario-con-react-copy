@@ -132,7 +132,7 @@ export default function ReturnableRegisterForm() {
 
                         {/* Fichas técnicas */}
                         <div className="flex flex-col gap-3 items-center text-center">
-                            <h2 className="font-bold text-body">Ficha técnica</h2>
+                            <h2 className="font-bold text-body">Ficha técnica<span className="text-error">*</span></h2>
                             <p className="text-text-muted text-small text-center">
                                 Se admiten hasta 3 archivos (PNG, JPG, PDF). Máx 10MB.
                             </p>
@@ -151,7 +151,7 @@ export default function ReturnableRegisterForm() {
                         {/* Cotizaciones — se eligen de las ya cargadas en
                             Configuración, aquí no se suben archivos */}
                         <div className="flex flex-col gap-3 items-center text-center">
-                            <h2 className="font-bold text-body">Cotizaciones</h2>
+                            <h2 className="font-bold text-body">Cotizaciones<span className="text-error">*</span></h2>
                             <p className="text-text-muted text-small text-center">
                                 Elige de 1 a 3 cotizaciones ya cargadas.
                             </p>

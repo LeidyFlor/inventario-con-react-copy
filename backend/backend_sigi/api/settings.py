@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     'backend_sigi.modules.category',
     'backend_sigi.modules.quotation',
     'backend_sigi.modules.audit',
+    'backend_sigi.modules.configuration',
     'corsheaders',
 ]
 AUTH_USER_MODEL = 'users.Users' #Para usar el models de users propio

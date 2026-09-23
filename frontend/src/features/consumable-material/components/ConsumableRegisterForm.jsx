@@ -145,7 +145,7 @@ export default function ConsumableRegisterForm() {
 
                             {/* Ficha técnica — obligatoria, igual que en devolutivo */}
                             <h2 className="mt-6 mb-4 font-bold text-body">
-                                Agregar ficha técnica
+                                Agregar ficha técnica<span className="text-error">*</span>
                             </h2>
                             <div className="flex flex-col gap-3 place-items-center">
                                 <p className="text-text-muted text-small text-center">
@@ -166,7 +166,7 @@ export default function ConsumableRegisterForm() {
                             {/* Cotizaciones — se eligen de las ya cargadas en
                                 Configuración, aquí no se suben archivos */}
                             <h2 className="mt-6 mb-4 font-bold text-body">
-                                Cotizaciones
+                                Cotizaciones<span className="text-error">*</span>
                             </h2>
                             <div className="flex flex-col gap-3 place-items-center">
                                 <p className="text-text-muted text-small text-center">

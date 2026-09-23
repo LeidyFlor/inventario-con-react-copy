@@ -8,6 +8,7 @@ import ReportLoanModal from "@/features/loans/reports/components/ReportLoanModal
 import { ReportConfigModal as ReportConsumableModal } from "@/features/consumable-material/reports/components/ReportConfigModal";
 import { ReportConfigModal as ReportReturnableModal } from "@/features/returnable-material/reports/components/ReportConfigModal";
 import LogsModal from "@/features/audit/components/LogsModal";
+import SupportEmailModal from "@/features/configuration/components/SupportEmailModal";
 import { usePermissions } from "@/features/permissions/context/PermissionsContext";
 import { PERM, MODULE_PERMS, SCREEN_PERMS } from "@/features/permissions/config/perms";
 
@@ -18,6 +19,7 @@ export default function Navbar( { isOpen, onClose }){
     const [consumableReportOpen, setConsumableReportOpen] = useState(false)
     const [returnableReportOpen, setReturnableReportOpen] = useState(false)
     const [logsOpen, setLogsOpen] = useState(false)
+    const [supportEmailOpen, setSupportEmailOpen] = useState(false)
 
     // La gestión de tareas necesita los tres permisos: el formulario además de
     // guardar carga los selects de usuarios y de grupos. Con la misma condición
@@ -258,6 +260,14 @@ export default function Navbar( { isOpen, onClose }){
                                         Historial
                                     </DropdownItem>
                                     )}
+                                    {/* El correo de soporte sale en el login, que ve
+                                        todo el mundo, así que solo lo cambia el
+                                        superadministrador (verificado en el backend) */}
+                                    {isSuperuser && (
+                                    <DropdownItem onClick={() => setSupportEmailOpen(true)}>
+                                        Cambiar correo soporte
+                                    </DropdownItem>
+                                    )}
 
                                 </DropdownContent>
                             </Dropdown>
@@ -277,6 +287,7 @@ export default function Navbar( { isOpen, onClose }){
         <ReportConsumableModal isOpen={consumableReportOpen} onClose={() => setConsumableReportOpen(false)} />
         <ReportReturnableModal isOpen={returnableReportOpen} onClose={() => setReturnableReportOpen(false)} />
         <LogsModal isOpen={logsOpen} onClose={() => setLogsOpen(false)} />
+        <SupportEmailModal isOpen={supportEmailOpen} onClose={() => setSupportEmailOpen(false)} />
         </>
     )
 }

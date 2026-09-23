@@ -1,5 +1,6 @@
 import { Input, Button, IconButton  } from "@/shared"
-import React, {useState} from "react";
+import React, {useState, useEffect} from "react";
+import { getSupportEmail } from "@/features/configuration/services/supportEmailService";
 // Sin validación Zod en el login: no queremos revelar al usuario
 // si el formato del usuario es un correo ni el largo mínimo de la contraseña.
 import  logoSigi  from "@/assets/images/LOGO-SIGI.png";
@@ -15,6 +16,17 @@ export default function LoginForm() {
         userPassword: "",
     });
     // No se usan errores por campo — todo error se muestra como credenciales inválidas
+
+    // Correo de soporte. Arranca vacío y no con un valor escrito aquí: si se
+    // pusiera uno por defecto y el administrador lo hubiera cambiado, durante
+    // un instante se mostraría el viejo y luego saltaría al nuevo.
+    const [supportEmail, setSupportEmail] = useState("")
+
+    useEffect(() => {
+        // Si falla no se avisa: el pie es informativo y sin sesión todavía. Un
+        // error aquí no debe estorbar a quien solo quiere entrar.
+        getSupportEmail().then(setSupportEmail).catch(() => {})
+    }, [])
 
 
     
@@ -166,9 +178,13 @@ export default function LoginForm() {
                      
             </form>
             </div>
-            <p className="mt-4 text-small text-text-muted bg-background ">
-                Para registrarse comunícarse al correo yleon@sena.edu.co.
-            </p>
+            {/* Mientras carga no se dibuja nada, para que no aparezca una frase
+                incompleta como "al correo ." y luego se complete sola */}
+            {supportEmail && (
+                <p className="mt-4 text-small text-text-muted bg-background ">
+                    Para registrarse comunícarse al correo {supportEmail}.
+                </p>
+            )}
         </div>
     )
 };

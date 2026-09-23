@@ -9,6 +9,7 @@ import { TaskViewModal } from "@/features/tasks";
 import { getMyProfile } from "@/features/permissions/services/permissionsService";
 import { getTasksByUser, getTasksByGroup } from "@/features/tasks/services/taskService";
 import { formatearFechaFin } from "../config/indefiniteEndDate";
+import { getSupportEmail } from "@/features/configuration/services/supportEmailService";
 
 /**
  * Página "Mi perfil" — accesible para cualquier usuario autenticado.
@@ -30,6 +31,13 @@ export default function MyProfilePage() {
     // aquí con ?tarea=12 para mostrar justo esa.
     const [taskIndex, setTaskIndex] = useState(0);
     const [searchParams] = useSearchParams();
+    // Correo de soporte, configurable por el superadministrador. Va en su propio
+    // efecto porque no depende del perfil: si uno falla, el otro se muestra igual.
+    const [supportEmail, setSupportEmail] = useState("");
+
+    useEffect(() => {
+        getSupportEmail().then(setSupportEmail).catch(() => {});
+    }, []);
 
     useEffect(() => {
         getMyProfile()
@@ -118,9 +126,11 @@ export default function MyProfilePage() {
                     { label: "Staff",                value: user.is_staff      ? "Sí" : "No" },
                 ]} />
 
-                <p className="mt-4 text-small text-text-muted">
-                    Para modificar tus datos personales comunícarse al correo yleon@sena.edu.co.
-                </p>
+                {supportEmail && (
+                    <p className="mt-4 text-small text-text-muted">
+                        Para modificar tus datos personales comunícarse al correo {supportEmail}.
+                    </p>
+                )}
             </ViewPageTemplate>
 
             {viewTaskModalOpen && (

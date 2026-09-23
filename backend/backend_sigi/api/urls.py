@@ -4,6 +4,7 @@ from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from backend_sigi.modules.users.auth_views import LoginView
 from backend_sigi.utils.audit_views import download_audit_log
 from backend_sigi.utils.notification_views import notifications
+from backend_sigi.utils.config_views import SupportEmailView
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('backend_sigi.modules.users.urls')),
@@ -17,4 +18,5 @@ urlpatterns = [
     path('api/auth/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('api/audit/download/', download_audit_log, name='audit_download'),
     path('api/notifications/', notifications, name='notifications'),
+    path('api/config/support-email/', SupportEmailView.as_view(), name='support_email'),
 ]
