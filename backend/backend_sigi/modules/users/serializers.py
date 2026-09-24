@@ -2,6 +2,7 @@ import random
 from django.utils import timezone
 from datetime import timedelta
 from rest_framework import serializers
+from rest_framework.validators import UniqueValidator
 from django.contrib.auth.models import Group
 from .models import Users, GroupProfile
 from .constants import fecha_fin_indefinida, tiene_vencimiento_indefinido
@@ -27,6 +28,67 @@ def _error_grupos_desactivados(grupos):
         f'No se pueden asignar grupos desactivados: {nombres}. '
         'Actívalos en Gestión de grupos si necesitas usarlos.'
     )
+
+
+def campo_email_unico(required=True):
+    """
+    Campo de correo con los mensajes en español.
+
+    Se declara a mano en vez de dejar que ModelSerializer lo arme solo. Cuando
+    lo arma DRF, le cuelga un UniqueValidator cuyo mensaje es "This field must
+    be unique.", en inglés, porque el proyecto tiene LANGUAGE_CODE = 'en-us'.
+
+    Ese validador automático es además el motivo por el que un validate_email
+    escrito aparte no servía de nada: los validadores del campo corren ANTES,
+    así que el error en inglés salía primero y el método propio nunca llegaba
+    a ejecutarse.
+
+    UniqueValidator excluye por su cuenta al usuario que se está editando, así
+    que el mismo campo sirve para crear y para editar.
+    """
+    return serializers.EmailField(
+        required=required,
+        validators=[UniqueValidator(
+            queryset=Users.objects.all(),
+            message='Este correo ya está registrado por otro usuario.',
+        )],
+        error_messages={
+            'invalid': 'El correo electrónico no tiene un formato válido.',
+            'blank':   'El correo electrónico es obligatorio.',
+        },
+    )
+
+
+def validar_documento_unico(data, instance=None):
+    """
+    Impide dos usuarios con el MISMO tipo y número de documento.
+
+    El número solo no puede ser único: CC, TI, PPT, PEP y CE vienen de series
+    distintas, así que dos personas reales pueden coincidir en el número si el
+    tipo es diferente. Lo que no puede repetirse es la pareja completa.
+
+    La base también lo impide con una restricción (ver Users.Meta), pero esa
+    salta como IntegrityError y se traduciría en un 500. Esta comprobación
+    existe para responder un 400 con un mensaje entendible; la de la base es la
+    red de seguridad para los casos que no pasan por aquí.
+    """
+    # En edición la petición es parcial: los campos que no se tocan no vienen,
+    # y hay que leerlos del usuario que ya existe.
+    tipo   = data.get('user_document_type') or getattr(instance, 'user_document_type', None)
+    numero = data.get('user_document')      or getattr(instance, 'user_document', None)
+
+    if not tipo or not numero:
+        return
+
+    repetidos = Users.objects.filter(user_document_type=tipo, user_document=numero)
+    if instance is not None:
+        repetidos = repetidos.exclude(pk=instance.pk)
+
+    if repetidos.exists():
+        etiqueta = dict(Users.USER_DOCUMENT_TYPES).get(tipo, tipo)
+        raise serializers.ValidationError({
+            'user_document': f'Ya existe un usuario con {etiqueta} número {numero}.'
+        })
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -66,11 +128,16 @@ class UserSerializer(serializers.ModelSerializer):
 
 class UserCreateSerializer(serializers.ModelSerializer):
     """Serializer para crear usuarios — incluye password y grupos obligatorios"""
+    email = campo_email_unico()
     groups = serializers.PrimaryKeyRelatedField(
         queryset=Group.objects.all(),
         many=True,
         required=True  # obligatorio al crear
     )
+
+    def validate(self, data):
+        validar_documento_unico(data)
+        return data
 
     class Meta:
         model = Users
@@ -141,7 +208,7 @@ class UserUpdateSerializer(serializers.ModelSerializer):
         many=True,
         required=False
     )
-    email = serializers.EmailField(required=False)
+    email = campo_email_unico(required=False)
 
     def validate_groups(self, value):
         """
@@ -159,13 +226,14 @@ class UserUpdateSerializer(serializers.ModelSerializer):
             raise _error_grupos_desactivados(nuevos_desactivados)
         return value
 
-    def validate_email(self, value):
-        # Obtiene el usuario que se está editando
-        user = self.instance
-        # Verifica si otro usuario ya tiene ese correo
-        if Users.objects.filter(email=value).exclude(pk=user.pk).exists():
-            raise serializers.ValidationError("Este correo ya está registrado por otro usuario.")
-        return value
+    # Ya no hace falta un validate_email propio: el UniqueValidator de
+    # campo_email_unico excluye solo al usuario que se está editando, y así el
+    # mensaje vive en un único lugar para crear y para editar.
+
+    def validate(self, data):
+        validar_documento_unico(data, self.instance)
+        return data
+
     class Meta:
         model = Users
         fields = [

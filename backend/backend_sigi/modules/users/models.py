@@ -27,8 +27,26 @@ class UserManager(BaseUserManager):
         extra_fields.setdefault('is_superuser', True)
         extra_fields.setdefault('is_active',    True)
         extra_fields.setdefault('username',     email)
-        # Valores por defecto para los campos requeridos del modelo
-        extra_fields.setdefault('user_document', '0000000000')
+
+        # El documento NO tiene valor por defecto, a diferencia del resto.
+        #
+        # Antes se usaba '0000000000' para todos, y eso funcionaba mientras
+        # hubiera un solo superusuario. Con la restricción de tipo + documento
+        # única, el segundo chocaría contra el primero y la consola mostraría un
+        # IntegrityError sin explicar la causa. Mejor pedirlo de una vez:
+        # REQUIRED_FIELDS hace que createsuperuser lo pregunte.
+        documento = extra_fields.get('user_document')
+        if not documento:
+            raise ValueError('El número de documento es obligatorio.')
+
+        tipo = extra_fields.setdefault('user_document_type', 'CC')
+        if self.filter(user_document_type=tipo, user_document=documento).exists():
+            raise ValueError(
+                f'Ya existe un usuario con {tipo} número {documento}. '
+                'Usa un documento distinto.'
+            )
+
+        # Valores por defecto para el resto de campos requeridos del modelo
         extra_fields.setdefault('user_addres',   'Sin dirección')
         extra_fields.setdefault('user_tel',      '0000000000')
         extra_fields.setdefault('user_date_end', timezone.now() + timezone.timedelta(days=3650))
@@ -41,7 +59,11 @@ class Users(AbstractUser):
 
     email = models.EmailField(unique=True) # email debe ser único
     USERNAME_FIELD = 'email' # Django usa email para autenticar
-    REQUIRED_FIELDS = []      # quita username de los campos requeridos
+    # Quita username de los campos requeridos y agrega el documento: lo que
+    # esté aquí es lo que createsuperuser pregunta en consola, además del
+    # correo y la contraseña. El documento se pide porque ya no puede repetirse
+    # entre superusuarios (ver la restricción en Meta).
+    REQUIRED_FIELDS = ['user_document']
 
     #Para indicar el nombre exacto que se quiere en la base de datos
     class Meta:
@@ -53,6 +75,21 @@ class Users(AbstractUser):
         ('listar_usuarios',          'Listar usuarios'),
         ('generar_reporte_usuarios', 'Generar reporte usuarios'),
     ]
+        # El número de documento por sí solo NO puede ser único: CC, TI, PPT,
+        # PEP y CE vienen de series de numeración distintas, así que dos
+        # personas reales pueden tener el mismo número con tipos diferentes.
+        # Lo que no puede repetirse es la pareja completa: dos CC con el mismo
+        # número ya no son dos personas, son un duplicado.
+        #
+        # El serializer valida esto antes para poder dar un 400 con un mensaje
+        # claro. Esta restricción es la red de seguridad: cubre los casos que
+        # no pasan por el serializer, como un import o el shell de Django.
+        constraints = [
+            models.UniqueConstraint(
+                fields=['user_document_type', 'user_document'],
+                name='usuario_documento_unico_por_tipo',
+            ),
+        ]
     # Validadoar para correo sena y soy.sena
     sena_email_validator = RegexValidator(
         regex=r"^[a-zA-Z0-9._%+-]+@(soy\.)?sena\.edu\.co$",
