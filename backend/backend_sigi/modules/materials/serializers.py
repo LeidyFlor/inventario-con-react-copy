@@ -1,3 +1,5 @@
+import re
+
 from rest_framework import serializers
 
 from backend_sigi.modules.users.models import Users
@@ -18,6 +20,54 @@ from .models import (
 # de filas relacionadas.
 MIN_COTIZACIONES = 1
 MAX_COTIZACIONES = 3
+
+
+# Mismo formato que exige el esquema Zod del frontend, en
+# returnableMaterialSchema.js y returnableEditSchema.js: 120x75x20cm
+FORMATO_DIMENSIONES = re.compile(r'^\d+x\d+x\d+(cm|m|mm)$', re.IGNORECASE)
+
+
+def revisar_dimensiones(data, tipo, actuales=None):
+    """
+    Aplica la regla de dimensiones según el tipo de material devolutivo.
+
+    - muebles_enseres: obligatorias, y con el formato 120x75x20cm
+    - cualquier otro tipo: se descartan, aunque vengan en la petición
+
+    El frontend ya valida las dos cosas, pero esa validación solo existe para
+    dar mensajes inmediatos mientras se llena el formulario. Quien llame la API
+    directamente —Postman, un script— se la salta entera, y así era posible
+    crear un mueble sin dimensiones.
+
+    `actuales` son las dimensiones que ya tiene el material. Hace falta al
+    editar: la petición es parcial, así que si el campo no viaja no significa
+    que esté vacío, sino que no se está cambiando.
+
+    Modifica `data` en el sitio y no devuelve nada, igual que hacían las líneas
+    que reemplazó.
+    """
+    if tipo != 'muebles_enseres':
+        data['material_dimensions'] = None
+        return
+
+    dimensiones = data.get('material_dimensions', actuales) or ''
+    # Se quitan los espacios antes de comparar, igual que en el frontend:
+    # "120 x 75 x 20 cm" es lo mismo que "120x75x20cm" para quien lo escribe
+    limpio = dimensiones.replace(' ', '')
+
+    if not limpio:
+        raise serializers.ValidationError({
+            'material_dimensions': 'Las dimensiones son obligatorias para Muebles y enseres.'
+        })
+
+    if not FORMATO_DIMENSIONES.match(limpio):
+        raise serializers.ValidationError({
+            'material_dimensions': 'Formato inválido. Ejemplo: 120x75x20cm.'
+        })
+
+    # Se guarda ya normalizado para que todos los registros queden escritos
+    # igual y las búsquedas no dependan de dónde puso los espacios cada quien
+    data['material_dimensions'] = limpio
 
 
 # La marca y el modelo son opcionales en los dos tipos de material: hay
@@ -496,9 +546,8 @@ class ReturnableMaterialCreateSerializer(CotizacionesEscrituraMixin, Cuentadante
                     'material_quantity': 'La cantidad debe ser mayor a 0.'
                 })
 
-        # Solo muebles_enseres puede tener dimensiones
-        if data.get('material_dimensions') and tipo != 'muebles_enseres':
-            data['material_dimensions'] = None
+        # Obligatorias para muebles_enseres, descartadas para el resto
+        revisar_dimensiones(data, tipo)
 
         return data
 
@@ -563,9 +612,10 @@ class ReturnableMaterialUpdateSerializer(CotizacionesEscrituraMixin, Cuentadante
                 })
             data['material_quantity'] = qty
 
-        # Dimensiones solo aplican a muebles_enseres
-        if data.get('material_dimensions') and tipo != 'muebles_enseres':
-            data['material_dimensions'] = None
+        # Obligatorias para muebles_enseres, descartadas para el resto.
+        # Se pasan las actuales porque la edición es parcial: que el campo no
+        # venga significa "no lo estoy cambiando", no "déjalo vacío".
+        revisar_dimensiones(data, tipo, self.instance.material_dimensions)
 
         return data
 
