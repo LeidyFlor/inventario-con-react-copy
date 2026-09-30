@@ -1,13 +1,18 @@
 import { X } from "lucide-react";
 import DataTable from "@/shared/components/DataTable";
-import { IconButtonReal, Input } from "@/shared";
+import { IconButtonReal } from "@/shared";
 
 // Recibe el array loanMaterials de loans.js y lo muestra en la tabla
 // Cada item ya tiene: { id, name, placaSena, serial, cantidad, tipo }
-export default function LoanMaterialsTable({ 
+//
+// La cantidad NO se puede editar, en ningún modo. Antes los consumibles traían
+// un campo editable, pero solo cambiaba el estado de la pantalla: el servicio
+// nunca lo enviaba y el backend tampoco lo acepta, así que el número se perdía
+// al guardar. Para cambiar una cantidad hay que quitar el material y volverlo a
+// agregar, que es lo único que ajusta el inventario correctamente.
+export default function LoanMaterialsTable({
         materials = [],     // - materials: lista de materiales que se mostrarán en la tabla
-        editable = false,   // - editable: controla si la tabla se puede editar
-        onQuantityChange,   // - onQuantityChange: callback cuando se cambia la cantidad de un material
+        editable = false,   // - editable: agrega la columna de acciones (Quitar)
         onRemoveMaterial    // - onRemoveMaterial: callback cuando se quita un material de la tabla
     }) {
     // Normaliza valores nulos para que la tabla no muestre celdas vacías
@@ -48,44 +53,11 @@ export default function LoanMaterialsTable({
         {
             accessorKey: "cantidad",
             header: () => <span className="block min-w-20 text-center">Cantidad</span>,
-
-            // En modo no editable se muestra solo el valor actual.
-            // En modo editable la cantidad será editable solo para materiales de tipo consumo
-            // Para materiales devolutivos mostramos el valor fijo y no permitimos la edición desde aquí.
-            cell: ({ row }) => {
-                const tipo = String(row.original.tipo ?? "").toLowerCase();
-                const EditQuantity = editable && tipo.includes("consum");
-
-                if (!EditQuantity) {
-                    return (
-                        <span className="block min-w-20 py-3 text-center">
-                            {row.original.cantidad}
-                        </span>
-                    );
-                }
-
-                return (
-                    <div className="flex min-w-20 justify-center">
-                        <div className="w-16">
-                            <Input
-                                type="text"
-                                inputMode="numeric"
-                                variant="isEdit"
-                                value={row.original.cantidad ?? ""}
-                                onChange={(event) => {
-                                    // Mantener controlado como string antes de parsear
-                                    const value = event.target.value.replace(/\D/g, "");
-                                    const parsed = value === "" ? "" : Number(value);
-                                    onQuantityChange?.(
-                                        row.original.id,
-                                        value === "" || Number.isNaN(parsed) ? 0 : parsed
-                                    );
-                                }}
-                            />
-                        </div>
-                    </div>
-                );
-            },
+            cell: ({ row }) => (
+                <span className="block min-w-20 py-3 text-center">
+                    {row.original.cantidad}
+                </span>
+            ),
         },
         {
             accessorKey: "tipo",

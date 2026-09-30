@@ -1,11 +1,10 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams, useBlocker } from "react-router-dom";
-import { Button, IconButton, Input, Select, Textarea } from "@/shared";
+import { Button, IconButton, Input, Textarea } from "@/shared";
 import { ClipboardList, Pencil } from "lucide-react";
-import { loanSchema } from "../schemas/loanSchema";
+import { loanEditSchema } from "../schemas/loanSchema";
 import LoanMaterialsTable from "../components/LoanMaterialsTable";
 import { getLoan, updateLoan, removeLoanItem } from "../services/loanService";
-import { getUserName } from "../services/selectService";
 import { Alert } from "@/shared/components/utils/alert";
 import { Ping } from "ldrs/react";
 import "ldrs/react/Ping.css";
@@ -21,7 +20,6 @@ export default function LoanEditPage() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [formData, setFormData]   = useState({});
   const [materials, setMaterials] = useState([]);
-  const [userOptions, setUserOptions] = useState([]);
 
   const blocker = useBlocker(
     ({ currentLocation, nextLocation }) =>
@@ -43,14 +41,17 @@ export default function LoanEditPage() {
   }, [blocker]);
 
   useEffect(() => {
-    Promise.all([getLoan(id), getUserName()])
-      .then(([data, users]) => {
+    // Ya no se pide la lista de usuarios: el solicitante pasó a ser de solo
+    // lectura, así que no hay ningún select que llenar
+    getLoan(id)
+      .then((data) => {
         setLoan(data);
         setMaterials(data.loanMaterials ?? []);
-        setUserOptions(users);
         setFormData({
           idLoan:            data.idLoan,
-          loanUserRequester: data.loanUserRequester,
+          // Viene como nombre ya listo para mostrar. Cuando el solicitante no
+          // está registrado se usa su correo, que es lo único que se conoce.
+          loanUserRequester: data.loanUserRequester || data.requesterEmail || "—",
           loanUserLender:    data.loanUserLender,
           loanDateOut:       data.loanDateOut ? data.loanDateOut.slice(0, 10) : "",
           loanDateIn:        data.loanDateIn  ? data.loanDateIn.slice(0, 10)  : "",
@@ -120,23 +121,20 @@ export default function LoanEditPage() {
     }
   };
 
-  const handleQuantityChange = (materialId, newQuantity) => {
-    setMaterials((prev) =>
-      prev.map((m) => m.id === materialId ? { ...m, cantidad: newQuantity } : m)
-    );
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const result = loanSchema.safeParse({
-      loanUserRequester: formData.loanUserRequester,
-      loanUserLender:    formData.loanUserLender,
+    // Se valida con loanEditSchema y no con loanSchema.
+    //
+    // loanSchema es el del formulario de CREAR, y pide campos que esta
+    // pantalla no tiene, empezando por requesterIsRegistered. Al no llegar,
+    // la validación fallaba siempre y handleSubmit hacía return sin avisar:
+    // el error apuntaba a un campo que aquí no se dibuja, así que el botón
+    // Guardar no hacía nada visible.
+    const result = loanEditSchema.safeParse({
       loanJustification: formData.loanJustification,
-      loanType:          formData.loanType,
       loanDateOut:       formData.loanDateOut,
       loanDateIn:        formData.loanDateIn,
-      loanStudentsGroup: formData.loanStudentsGroup,
     });
 
     if (!result.success) {
@@ -194,7 +192,6 @@ export default function LoanEditPage() {
             <LoanMaterialsTable
               materials={materials}
               editable
-              onQuantityChange={handleQuantityChange}
               onRemoveMaterial={handleRemoveMaterial}
             />
           </div>
@@ -221,13 +218,16 @@ export default function LoanEditPage() {
                   variant="isEdit"
                 />
 
-                <Select
+                {/* Solo lectura, igual que el prestador. El préstamo lleva una
+                    confirmación de identidad hecha por correo por esta persona:
+                    cambiarla dejaría esa firma a nombre de alguien que ya no es
+                    el solicitante. Antes era un Select, pero ni el servicio ni
+                    LoanUpdateSerializer enviaban el cambio, así que permitía
+                    elegir algo que nunca se guardaba. */}
+                <Input
                   label="Usuario solicitante"
-                  name="loanUserRequester"
-                  options={userOptions}
                   value={formData.loanUserRequester}
-                  onChange={handleChange}
-                  error={errors.loanUserRequester}
+                  disabled
                   variant="isEdit"
                 />
 

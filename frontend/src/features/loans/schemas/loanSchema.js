@@ -23,6 +23,45 @@ const datePreprocess = (mensajeError) =>
       }),
   );
 
+// Compartida por los dos esquemas para no tener la misma regla escrita dos veces
+const reglaJustificacion = z
+  .string()
+  .min(10, "Ingrese una justificación más detallada")
+  .max(500, "Justificación demasiado larga");
+
+// Mensaje único: la regla es la misma en crear y en editar
+const MENSAJE_FECHA_INVERTIDA =
+  "La fecha de entrega no puede ser anterior a la fecha de salida";
+
+const fechaEntregaValida = (data) => {
+  // Si falta alguna, el error lo reporta el campo por su cuenta
+  if (!data.loanDateIn || !data.loanDateOut) return true;
+  return data.loanDateIn >= data.loanDateOut;
+};
+
+/**
+ * Esquema de la pantalla de EDITAR préstamo.
+ *
+ * Solo lleva los tres campos que esa pantalla puede cambiar de verdad. El
+ * resto —solicitante, prestador, tipo, ficha, fecha de salida— está
+ * deshabilitado en el formulario y el backend tampoco los acepta
+ * (ver LoanUpdateSerializer), así que validarlos aquí solo servía para
+ * bloquear el guardado con errores que nadie podía ver ni corregir.
+ *
+ * loanDateOut va incluida aunque no se pueda editar: hace falta para
+ * comprobar que la fecha de entrega no quede antes que ella.
+ */
+export const loanEditSchema = z
+  .object({
+    loanJustification: reglaJustificacion,
+    loanDateOut: datePreprocess("La fecha de inicio es obligatoria"),
+    loanDateIn:  datePreprocess("La fecha fin es obligatoria"),
+  })
+  .refine(fechaEntregaValida, {
+    message: MENSAJE_FECHA_INVERTIDA,
+    path: ["loanDateIn"],
+  });
+
 export const loanSchema = z
   .object({
     // Marcado por defecto. Al desmarcarlo, el solicitante deja de elegirse de
@@ -52,11 +91,7 @@ export const loanSchema = z
       .optional()
       .or(z.literal("")),
 
-    loanJustification: z
-        .string()
-        .min(10, "Ingrese una justificación más detallada")
-        .max(500, "Justificación demasiado larga")
-    ,
+    loanJustification: reglaJustificacion,
 
     loanType: z
         .string()
@@ -73,16 +108,10 @@ export const loanSchema = z
     ),
   })
   //Valida que la fecha fin no sea antes que la de inicio
-  .refine(
-    (data) => {
-      if (!data.loanDateIn || !data.loanDateOut) return true; //si alguna de las fechas es nula, se debe activar el error de fecha inválida
-      return data.loanDateIn >= data.loanDateOut;
-    },
-    {
-      message: "La fecha de entrega no puede ser anterior a la fecha de salida",
-      path: ["loanDateIn"],
-    },
-  )
+  .refine(fechaEntregaValida, {
+    message: MENSAJE_FECHA_INVERTIDA,
+    path: ["loanDateIn"],
+  })
   // El solicitante se exige en uno u otro campo según la casilla. No se puede
   // hacer con .min() en cada uno porque solo uno de los dos está en pantalla.
   .superRefine((data, ctx) => {
