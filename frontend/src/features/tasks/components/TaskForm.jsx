@@ -5,6 +5,7 @@ import { getUserTypes, getTaskState, getUserName } from "@/features/tasks/servic
 import { tasksSchema } from "../schemas/tasksSchema";
 import { Settings, ChevronLeft, ChevronRight } from "lucide-react";
 import TaskEditModal from "./TaskEditModal";
+import { formatearFecha } from "@/shared/components/utils/fechas";
 import { createTask, getTasks } from "@/features/tasks/services/taskService";
 import { GroupCreateModalPage } from "@/features/groups";
 
@@ -153,12 +154,9 @@ export default function TaskForm() {
     };
 
     // Formatea fecha ISO a DD/MM/AAAA
-    const formatDate = (iso) => {
-        const d = new Date(iso);
-        return d.toLocaleDateString("es-CO", {
-            day: "2-digit", month: "2-digit", year: "numeric"
-        });
-    };
+    // Mismo motivo que en TaskViewModal: sin hora, new Date() las lee en UTC
+    // y en Colombia caía al día anterior
+    const formatDate = formatearFecha;
 
     return (
         <div className="w-full flex justify-center relative">

@@ -8,6 +8,7 @@ import { Ping } from "ldrs/react";
 import "ldrs/react/Ping.css";
 import { usePermissions } from "@/features/permissions/context/PermissionsContext";
 import { PERM, SCREEN_PERMS } from "@/features/permissions/config/perms";
+import { formatearFecha } from "@/shared/components/utils/fechas";
 
 const MATERIAL_TYPE_LABELS = {
     herramienta:       "Herramienta",
@@ -25,13 +26,10 @@ const STATE_LABELS = {
 const formatPrice = (value) =>
     value != null ? `$${Number(value).toLocaleString("es-CO")}` : "—";
 
-// Las fechas llegan como "YYYY-MM-DD". Se parten a mano en vez de usar
-// new Date(), que las interpreta en UTC y en Colombia muestra el día anterior.
-const formatDate = (value) => {
-    if (!value) return "—";
-    const [anio, mes, dia] = String(value).split("-");
-    return `${dia}/${mes}/${anio}`;
-};
+// Las fechas llegan como "YYYY-MM-DD". formatearFecha las parte a mano en vez
+// de usar new Date(), que las interpreta en UTC y en Colombia muestra el día
+// anterior. Antes esta función estaba copiada en las dos pantallas de material.
+const formatDate = formatearFecha;
 
 export default function ViewReturnablePage() {
     const navigate = useNavigate();

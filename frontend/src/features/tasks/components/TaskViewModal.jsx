@@ -1,6 +1,7 @@
 import { IconButton, IconButtonReal } from "@/shared";
 import { useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { formatearFecha } from "@/shared/components/utils/fechas";
 
 /**
  * @param {number} initialIndex  Tarea en la que abre el modal. Por defecto la
@@ -14,12 +15,9 @@ export default function TaskViewModal({ tasks = [], onClose, initialIndex = 0 })
     const totalTasks = tasks.length;
     const currentTask = tasks[currentIndex];
 
-    const formatDate = (iso) => {
-        if (!iso) return "—";
-        return new Date(iso).toLocaleDateString("es-CO", {
-            day: "2-digit", month: "2-digit", year: "numeric",
-        });
-    };
+    // Las fechas de la tarea son DateField: llegan sin hora, y new Date() las
+    // interpreta en UTC, lo que en Colombia mostraba el día anterior
+    const formatDate = formatearFecha;
 
     return (
         <div className="bg-background border-4 border-border-green-container p-6 rounded-4xl w-full max-w-md">

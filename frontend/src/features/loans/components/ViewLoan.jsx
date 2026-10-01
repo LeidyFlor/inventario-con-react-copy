@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import LoanMaterialsTable from "../components/LoanMaterialsTable";
 import { getLoan } from "../services/loanService";
+import { formatearFecha } from "@/shared/components/utils/fechas";
 import { Ping } from "ldrs/react";
 import "ldrs/react/Ping.css";
 
@@ -34,14 +35,9 @@ export default function ViewLoan() {
     };
 
     // Formatea fecha ISO → "DD/MM/YYYY"
-    const formatDate = (isoDate) => {
-        if (!isoDate) return "—";
-        return new Date(isoDate).toLocaleDateString("es-CO", {
-            day:   "2-digit",
-            month: "2-digit",
-            year:  "numeric",
-        });
-    };
+    // formatearFecha y no new Date(): las fechas del préstamo llegan sin hora,
+    // y new Date() las lee como UTC, lo que en Colombia muestra el día anterior
+    const formatDate = formatearFecha;
 
     // Si el texto es corto (menos de 20 caracteres) se muestra completo 
     // Estado independiente (useState local)

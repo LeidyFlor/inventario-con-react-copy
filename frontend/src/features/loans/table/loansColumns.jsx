@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { StatusSwitch, Modal } from "@/shared/";
 import LoanRowActions from "../components/LoanRowActions";
+import { formatearFecha } from "@/shared/components/utils/fechas";
 
 // Componente separado para poder usar el hook useNavigate
 // (los hooks no se pueden llamar dentro de la función cell directamente)
@@ -97,19 +98,13 @@ export const loansColumns = [
     //     },
     // },
 
-    // Columna fecha salida — convierte ISO → DD/MM/YYYY
+    // Columna fecha salida — DD/MM/YYYY.
+    // formatearFecha y no new Date(): la fecha llega sin hora, y new Date() la
+    // interpreta en UTC, lo que en Colombia muestra el día anterior.
     {
         accessorKey: "loanDateOut",
         header: "Fecha salida",
-        cell: ({ getValue }) => {
-            const value = getValue();
-            if (!value) return "";
-            return new Date(value).toLocaleDateString("es-CO", {
-                day:   "2-digit",
-                month: "2-digit",
-                year:  "numeric",
-            });
-        },
+        cell: ({ getValue }) => formatearFecha(getValue(), ""),
     },
 
     // Columna usuario solicitante — puede traer un nombre o un correo largo
