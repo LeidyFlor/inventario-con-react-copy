@@ -1,6 +1,6 @@
 from django.conf import settings
 from django.shortcuts import redirect
-from django.core.mail import send_mail
+from django.core.mail import EmailMultiAlternatives, get_connection
 from django.utils.html import strip_tags
 from backend_sigi.utils.audit import log_action
 from backend_sigi.utils.perm_check import deny_if_no_perm, usuarios_con_permiso
@@ -57,9 +57,15 @@ class LoanViewSet(viewsets.ViewSet):
 
         incluir_materiales = request.query_params.get('include_materials') == '1'
 
+        # returned_by y accepted_by también van aquí: el serializer muestra
+        # sus nombres, y sin traerlos en la misma consulta se disparaba una
+        # consulta por cada préstamo devuelto o aceptado (N+1).
         loans = (
             Loan.objects
-            .select_related('loan_user_requester', 'loan_user_lender')
+            .select_related(
+                'loan_user_requester', 'loan_user_lender',
+                'returned_by', 'accepted_by',
+            )
             .order_by('-created_at')
         )
 
@@ -99,7 +105,10 @@ class LoanViewSet(viewsets.ViewSet):
         try:
             loan = (
                 Loan.objects
-                .select_related('loan_user_requester', 'loan_user_lender')
+                .select_related(
+                    'loan_user_requester', 'loan_user_lender',
+                    'returned_by', 'accepted_by',
+                )
                 .prefetch_related('items__consumable_material', 'items__returnable_material')
                 .get(pk=pk)
             )
@@ -363,21 +372,41 @@ class LoanViewSet(viewsets.ViewSet):
                 ("", token_obj.requester_email, requester_url, "recibirás")
             )
 
+        # Los dos correos salen por UNA sola conexión SMTP. Antes cada
+        # send_mail abría la suya, y solo el saludo TLS con Brevo cuesta ~0,7 s,
+        # así que el usuario esperaba el doble con el botón cargando.
+        #
+        # Se siguen enviando por separado (no un solo correo con dos
+        # destinatarios) porque cada uno lleva su propio enlace y su rol, y así
+        # un fallo en uno no impide el otro.
         errores = []
-        for nombre, correo, url, rol_texto in destinatarios:
-            html_body = self._identity_email_html(nombre, url, rol_texto)
+        try:
+            conexion = get_connection(fail_silently=False)
+            conexion.open()
+        except Exception as e:
+            conexion = None
+            errores = [f"{correo}: {e}" for _, correo, _, _ in destinatarios]
+            print(f"Error conectando al servidor de correo: {e}")
+
+        if conexion is not None:
             try:
-                send_mail(
-                    subject="SIGI - Confirmación de identidad para préstamo",
-                    message=strip_tags(html_body),
-                    from_email=settings.DEFAULT_FROM_EMAIL,
-                    recipient_list=[correo],
-                    html_message=html_body,
-                    fail_silently=False,
-                )
-            except Exception as e:
-                errores.append(f"{correo}: {e}")
-                print(f"Error enviando correo de confirmación de identidad: {e}")
+                for nombre, correo, url, rol_texto in destinatarios:
+                    html_body = self._identity_email_html(nombre, url, rol_texto)
+                    mensaje = EmailMultiAlternatives(
+                        subject="SIGI - Confirmación de identidad para préstamo",
+                        body=strip_tags(html_body),
+                        from_email=settings.DEFAULT_FROM_EMAIL,
+                        to=[correo],
+                        connection=conexion,
+                    )
+                    mensaje.attach_alternative(html_body, "text/html")
+                    try:
+                        mensaje.send(fail_silently=False)
+                    except Exception as e:
+                        errores.append(f"{correo}: {e}")
+                        print(f"Error enviando correo de confirmación de identidad: {e}")
+            finally:
+                conexion.close()
 
         return Response(
             {

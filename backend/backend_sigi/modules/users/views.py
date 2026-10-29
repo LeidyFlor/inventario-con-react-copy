@@ -7,7 +7,9 @@ from .models import Users, GroupProfile
 from .serializers import UserSerializer, UserCreateSerializer, UserUpdateSerializer, ChangePasswordSerializer, GroupSerializer
 from .constants import esta_dentro_de_vigencia
 from django.conf import settings
-from supabase import create_client
+# El SDK de supabase no se usa: la subida de archivos a Storage se hace con
+# peticiones HTTP directas (ver upload_image más abajo), así que importar
+# create_client solo cargaba una librería pesada sin llamarla nunca.
 from django.utils import timezone
 from datetime import timedelta
 import random

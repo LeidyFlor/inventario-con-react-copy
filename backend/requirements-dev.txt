@@ -1,7 +1,28 @@
+# Herramientas de desarrollo y calidad. NO se instalan en producción.
+#
+#     pip install -r requirements-dev.txt
+#
+# La primera línea trae también las dependencias de ejecución, así que con
+# este archivo basta para montar un entorno de trabajo completo.
 -r requirements.txt
 
+# Cobertura de pruebas
 coverage
+
+# Análisis estático. pylint-django le enseña a pylint las particularidades de
+# Django (los managers, los campos de los modelos) para que no reporte errores
+# donde no los hay.
 pylint
 pylint-django
+
+# Revisión de seguridad del código propio
 bandit
+
+# Revisa si alguna dependencia instalada tiene vulnerabilidades conocidas
 pip-audit
+
+# Métricas de código: líneas, densidad de comentarios y complejidad ciclomática.
+# Se usó para el informe del proyecto:
+#     python -m radon raw backend_sigi -s --exclude "*/migrations/*,*/venv/*"
+#     python -m radon cc  backend_sigi -a -s --total-average --exclude "*/migrations/*,*/venv/*"
+radon

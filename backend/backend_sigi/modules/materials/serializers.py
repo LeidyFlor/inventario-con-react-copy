@@ -4,7 +4,7 @@ from rest_framework import serializers
 
 from backend_sigi.modules.users.models import Users
 from backend_sigi.modules.quotation.models import Quotation
-from backend_sigi.modules.quotation.serializers import QuotationSerializer
+from backend_sigi.modules.quotation.serializers import QuotationLinkSerializer
 
 from .models import (
     Brand,
@@ -147,7 +147,9 @@ class CotizacionesLecturaMixin(metaclass=serializers.SerializerMetaclass):
         # quotation_links es la tabla intermedia; de cada enlace se saca la
         # cotización en sí, que es lo que interesa mostrar
         cotizaciones = [enlace.quotation for enlace in obj.quotation_links.all()]
-        return QuotationSerializer(cotizaciones, many=True).data
+        # QuotationLinkSerializer y no QuotationSerializer: el conteo de
+        # materials_count disparaba una consulta por cotización (N+1)
+        return QuotationLinkSerializer(cotizaciones, many=True).data
 
 
 class CotizacionesEscrituraMixin(metaclass=serializers.SerializerMetaclass):

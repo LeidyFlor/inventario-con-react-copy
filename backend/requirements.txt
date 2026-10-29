@@ -1,8 +1,39 @@
-Django>=6.0.6
-psycopg2-binary>=2.9.9
-python-dotenv>=1.0.0
-djangorestframework>=3.15.0
-djangorestframework-simplejwt>=5.3.0
-supabase>=2.0.0
-requests>=2.31.0
-django-cors-headers>=4.3.0
+# Dependencias de ejecución del backend SIGI.
+#
+# Instalación:
+#     pip install -r requirements.txt
+#
+# Cada línea fija el mínimo probado y acota la versión MAYOR siguiente. El
+# tope importa: con un ">=" suelto, una instalación futura traería Django 7
+# —o la versión mayor que exista ese día— y el proyecto dejaría de arrancar
+# sin que nadie hubiera tocado el código. Las versiones menores y los parches
+# sí entran, que es donde vienen las correcciones de seguridad.
+
+# ── Núcleo ────────────────────────────────────────────────────────────────
+Django>=6.0.6,<7.0
+djangorestframework>=3.15.0,<4.0
+
+# Autenticación por JWT. El proyecto extiende JWTAuthentication en
+# modules/users/backends.py para permitir una sola sesión por usuario.
+djangorestframework-simplejwt>=5.3.0,<6.0
+
+# ── Base de datos ─────────────────────────────────────────────────────────
+# Driver de PostgreSQL. La versión "-binary" trae los archivos ya compilados:
+# sin ella haría falta tener las cabeceras de Postgres instaladas en el equipo.
+psycopg2-binary>=2.9.9,<3.0
+
+# ── Infraestructura ───────────────────────────────────────────────────────
+# Lee el archivo .env con las credenciales
+python-dotenv>=1.0.0,<2.0
+
+# Permite que el frontend (otro puerto) consuma la API
+django-cors-headers>=4.3.0,<5.0
+
+# Peticiones HTTP salientes: subida de archivos a Supabase Storage
+requests>=2.31.0,<3.0
+
+# Caché en Redis. Se usa para los códigos de recuperación de contraseña.
+# settings.py solo la activa cuando existe la variable REDIS_URL; en
+# desarrollo usa la memoria local y esta librería no se toca. Aun así tiene
+# que estar instalada, o el despliegue en producción falla al arrancar.
+django-redis>=5.4.0,<8.0

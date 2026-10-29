@@ -27,3 +27,19 @@ class QuotationSerializer(serializers.ModelSerializer):
         model = Quotation
         fields = ['id', 'file_url', 'file_name', 'uploaded_at', 'materials_count']
         read_only_fields = fields
+
+
+class QuotationLinkSerializer(serializers.ModelSerializer):
+    """
+    La cotización tal como se muestra dentro de un material.
+
+    Igual que QuotationSerializer pero SIN materials_count. Ese conteo solo lo
+    necesita la pantalla de Cotizaciones (para avisar antes de borrar). Dentro
+    de la lista de materiales nadie lo usa, y calcularlo costaba una consulta
+    por cada cotización de cada material (N+1).
+    """
+
+    class Meta:
+        model = Quotation
+        fields = ['id', 'file_url', 'file_name', 'uploaded_at']
+        read_only_fields = fields
